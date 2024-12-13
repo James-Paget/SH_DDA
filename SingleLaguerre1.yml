@@ -1,0 +1,125 @@
+#============================================================================================
+# Dipole Multi Program Suite configuration file
+# Version 1.0 16/07/24
+#============================================================================================
+# Beam type parameters: BEAMTYPE_PLANE, BEAMTYPE_GAUSS_BARTON5, BEAMTYPE_GAUSS_CSP,
+#   BEAMTYPE_BESSEL, BEAMTYPE_LAGUERRE_GAUSSIAN
+#============================================================================================
+# Jones vector names: POLARISATION_X, POLARISATION_Y, POLARISATION_RCP, POLARISATION_LCP,
+#   POLARISATION_RADIAL, POLARISATION_AZIMUTHAL
+#============================================================================================
+# System options
+#============================================================================================
+options:
+  frames: 1
+#============================================================================================
+# System parameters
+#============================================================================================
+parameters:
+  wavelength: 1.0e-6 # meters in vacuum
+  dipole_radius: 40e-9 # meters   #40e-9
+  time_step: 1e-4 # seconds   #1e-4
+#============================================================================================
+# Output parameters
+#============================================================================================
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+#============================================================================================
+# Display parameters
+#============================================================================================
+display:
+  show_output: True
+  frame_interval: 1
+  max_size: 2e-6 # range will be 2 times this
+  resolution: 201 # number of points in each direction of plot
+  frame_min: 0 # starting frame for animation
+  frame_max: 1 # will default to number of frames
+  z_offset: 0.0e-6
+#============================================================================================
+# Beam descriptions
+#============================================================================================
+beams:
+  beam_1:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN # parameter
+    E0: 300
+    order: 3
+    w0: 0.6 # fraction of wavelength
+    jones: POLARISATION_LCP # parameter
+    translation: None # translation in meters or None
+    rotation: None # x rotation followed by z rotation in degrees or None
+#============================================================================================
+# Particle descriptions
+#============================================================================================
+particles:
+  default_radius: 100e-9
+  default_material: FusedSilica
+  particle_list:
+    # part_1:
+    #   material: FusedSilica
+    #   radius: 500e-9
+    #   shape: torus
+    #   args: 1e-6 0.15e-6 0.1 1.6
+    #   coords: 0.77e-6 0.77e-6 0.0
+    #   altcolour: True
+    # part_2:
+    #   material: FusedSilica
+    #   radius: 500e-9
+    #   shape: torus
+    #   args: 1e-6 0.15e-6 -1.5 0.0
+    #   coords: 0.77e-6 -0.77e-6 0.0
+    #   altcolour: True
+    # part_3:
+    #   material: FusedSilica
+    #   radius: 500e-9
+    #   shape: torus
+    #   args: 1e-6 0.15e-6 1.7 3.1
+    #   coords: -0.77e-6 0.77e-6 0.0
+    #   altcolour: True
+    # part_4:
+    #   material: FusedSilica
+    #   radius: 500e-9
+    #   shape: torus
+    #   args: 1e-6 0.15e-6 -3.1 -1.6
+    #   coords: -0.77e-6 -0.77e-6 0.0
+    #   altcolour: True
+
+    part_1:
+      material: FusedSilica
+      radius: 500e-9
+      shape: torus
+      args: 1e-6 0.15e-6 -1.0 1.6
+      coords: 1.0e-6 0.0 0.0
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: -1.0e-6 0.0 0.0
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 400e-9
+      coords: 0.0 -1.0e-6 0.0
+      altcolour: True
+
+
+    #part_2:
+    #  material: FusedSilica
+    #  #radius: 500e-9
+    #  shape: torus
+    #  args: 1e-6 0.1e-6 0.647 1.447
+    #  coords: 0.5e-6 0.866e-6 0.0
+    #  altcolour: True
+    #part_3:
+    #  material: FusedSilica
+    #  #radius: 500e-9
+    #  shape: torus
+    #  args: 1e-6 0.1e-6 2.742 0.4
+    #  coords: -1.0e-6 0.0 0.0
+    #  altcolour: True
+
+

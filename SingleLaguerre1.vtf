@@ -1,0 +1,40 @@
+####################################################################
+# Output from multi-bead simulation
+# File written: 2024-12-04 11:53:33
+# Elapsed time: 0.140619 s
+# System: james-HP-Pavilion-Laptop-14-dv2xxx
+####################################################################
+# Number of beams: 1
+# Number of particles: 1
+# Particle radius (m): 2.000000e-07
+# Dipole radius (m): 4.000000e-08
+# z-offset for plot (m): 0.000000e+00
+####################################################################
+# Number of timesteps: 1
+# Time step (s): 1.000000e-04
+####################################################################
+# Beam type parameters:
+#   BEAMTYPE_PLANE = 0
+#   BEAMTYPE_GAUSS_BARTON5 = 1
+#   BEAMTYPE_GAUSS_CSP = 2
+#   BEAMTYPE_BESSEL = 3
+#   BEAMTYPE_LAGUERRE_GAUSSIAN = 4
+####################################################################
+# Beam number: 0
+#  -beamtype = 4
+#  -E0 = 300.000000
+#  -k = 6283185.307180
+#  -kz = 6018200.042132
+#  -kt = 1805460.012640
+#  -kt_by_kz = 0.300000
+#  -order = 3
+#  -jones = 0.707107 0.000000 0.000000 0.707107
+#  -translation = 0.000000e+00 0.000000e+00 0.000000e+00
+#  -rotation = 1.000000 0.000000 0.000000 0.000000 1.000000 0.000000 0.000000 0.000000 1.000000
+#  -w0 = 6.000000e-07
+####################################################################
+atom 0 radius 0.25 name B
+
+
+timestep
+1.1099 0.0372 1.0168
