@@ -145,7 +145,6 @@ class DisplayObject (object):
         zupper = 2e-6
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
 
-        ax.set_aspect('equal','box')
         Z = np.zeros(X.shape) + self.z_offset
         cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
 
@@ -227,7 +226,6 @@ class DisplayObject (object):
                     x, y, z = self.make_sphere_surface(args[i], positions[0, i])
                 case "torus":
                     x, y, z = self.make_torus_sector_surface(args[i], positions[0, i])
-            #x, y, z = self.make_particle_surface(radii[i], positions[0, i])
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 
@@ -235,5 +233,59 @@ class DisplayObject (object):
 
         plt.show()
 
+
+    def quiver_particles(self, positions, forces, shapes, args, colours, time_index, ignore_z_force=False, fig=None, ax=None):
+        # 3D plot of particle surfaces and forces at time_index.
+        # self used to set plot parameters.
+        # positions and forces list for each time for each particle.
+        # shapes, args, colours specify how to display the particle.
+        # fig, ax default to None, but can be passed in to plot a beam too.
+        
+        # Scale the force arrows to be visible.
+        quiver_scale = 7e4
+
+        # Initialise
+        positions = np.array(positions)
+        num_particles = len(positions[0])
+        upper = self.max_size
+        lower = -upper
+
+        # time_index cannot exceed self.frame_max.
+        if time_index > self.frame_max:
+            time_index = self.frame_max
+            print(f"Display.quiver: Set time_index to self.frame_max, {self.frame_max}.")
+
+        if fig == None or ax == None:
+            fig = plt.figure()
+            zlower = -2e-6
+            zupper = 2e-6
+            ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
+
+            ax.set_aspect('equal','box')
+            ax.set_xlabel("x (m)")
+            ax.set_ylabel("y (m)")
+
+        # Plot particle surfaces
+        for i in range(num_particles):
+            position = positions[time_index, i]
+            # Convert hex colours to tuples
+            hex = colours[i][1:]
+            colour = tuple(int(hex[j:j+2], 16) / 255 for j in (0, 2, 4))
+
+            match shapes[i]:
+                case "sphere":
+                    x, y, z = self.make_sphere_surface(args[i], position)
+                case "torus":
+                    x, y, z = self.make_torus_sector_surface(args[i], position)
+            ax.plot_surface(x, y, z, color=colour, alpha=0.6)
+
+        # Quiver plot
+        pos_x, pos_y, pos_z = np.transpose(positions[time_index, :, :])
+        force_x, force_y, force_z = np.transpose(forces[time_index, :, :]) * quiver_scale
+        if ignore_z_force:
+            force_z = np.zeros(force_z.shape)
+        ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
+
+        plt.show()
 
 

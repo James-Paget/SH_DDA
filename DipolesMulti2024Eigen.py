@@ -670,7 +670,7 @@ def torus_sector_size(args, dipole_radius):
     # Counts number of points in object
     #
     number_of_dipoles = 0
-    print("args= ",args);
+
     for i in range(-num_xy,num_xy+1):
         i2 = i*i
         for j in range(-num_xy,num_xy+1):
@@ -693,7 +693,7 @@ def torus_sector_size(args, dipole_radius):
                     #pow( centre_R-sqrt( pow(point.x,2) + pow(point.y,2) ) ,2) +pow(point.z,2) <= pow(tube_R,2)
                     if (torus_centre_radius -np.sqrt(rad_xy_2))**2 +k2*dd2 < ttr2:
                         number_of_dipoles += 1
-    print("nuber_diples= ",number_of_dipoles);
+
     return number_of_dipoles
 
 def torus_sector_positions(args, dipole_radius, number_of_dipoles_total):
@@ -1046,21 +1046,28 @@ for i in range(optforces.shape[0]):
 
 if display.show_output==True:
 
+    # 2D animation
     #fig,ax = display.plot_intensity(beam_collection)
     #display.animate_particles(fig,ax,particles,radius,colors)
-    fig, ax = display.plot_intensity3d(beam_collection)
 
     ###
-    ### FIX HERE FOR RADIUS
+    ### FIX HERE FOR RADIUS, swap optpos for particles (positions)?
     ###
-    #effective_radii = np.zeros(n_particles, dtype=np.float64)
-    #for i in range(n_particles):
-    #    match shapes[i]:
-    #        case "sphere":
-    #            effective_radii[i] = args[i][0]
-    #        case "torus":
-    #            effective_radii[i] = (args[i][0] + args[i][1])
-    display.animate_particles3d(fig, ax, optpos, shapes, args, colors)
+   
+    # 3D particles matplotlib animation
+    # fig, ax = display.plot_intensity3d(beam_collection)
+    # display.animate_particles3d(fig, ax, optpos, shapes, args, colors)
+
+    # 3D particles matplotlib quiver
+    time_index = 0
+    ignore_z_force = True
+
+    # Plot just particles and forces
+    display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force)
+
+    # Plot particles, forces and beam (as fig, ax are optional)
+    # fig, ax = display.plot_intensity3d(beam_collection)
+    # display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force, fig, ax)
 
 
 

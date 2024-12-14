@@ -57,54 +57,42 @@ particles:
   default_radius: 100e-9
   default_material: FusedSilica
   particle_list:
-    # part_1:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 0.1 1.6
-    #   coords: 0.77e-6 0.77e-6 0.0
-    #   altcolour: True
-    # part_2:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 -1.5 0.0
-    #   coords: 0.77e-6 -0.77e-6 0.0
-    #   altcolour: True
-    # part_3:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 1.7 3.1
-    #   coords: -0.77e-6 0.77e-6 0.0
-    #   altcolour: True
-    # part_4:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 -3.1 -1.6
-    #   coords: -0.77e-6 -0.77e-6 0.0
-    #   altcolour: True
-
     part_1:
       material: FusedSilica
       radius: 500e-9
       shape: torus
-      args: 1e-6 0.15e-6 -1.0 1.6
-      coords: 1.0e-6 0.0 0.0
+      args: 1e-6 0.15e-6 0.1 1.6
+      coords: 0.707e-6 0.707e-6 0.0
       altcolour: True
     part_2:
       material: FusedSilica
-      shape: sphere
-      args: 200e-9
-      coords: -1.0e-6 0.0 0.0
+      radius: 500e-9
+      shape: torus
+      args: 1e-6 0.15e-6 -1.5 0.0
+      coords: 0.707e-6 -0.707e-6 0.0
       altcolour: True
     part_3:
       material: FusedSilica
-      shape: sphere
-      args: 400e-9
-      coords: 0.0 -1.0e-6 0.0
+      radius: 500e-9
+      shape: torus
+      args: 1e-6 0.15e-6 1.7 3.1
+      coords: -0.707e-6 0.707e-6 0.0
       altcolour: True
+    part_4:
+      material: FusedSilica
+      radius: 500e-9
+      shape: torus
+      args: 1e-6 0.15e-6 -3.1 -1.6
+      coords: -0.707e-6 -0.707e-6 0.0
+      altcolour: True
+
+    # part_1:
+    #   material: FusedSilica
+    #   radius: 500e-9
+    #   shape: torus
+    #   args: 1e-6 0.15e-6 -3.0 3.0
+    #   coords: 1.0e-6 0.0 0.0
+    #   altcolour: True
 
 
     #part_2:
