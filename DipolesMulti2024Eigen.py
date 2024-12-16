@@ -751,9 +751,6 @@ def torus_sector_positions(args, dipole_radius, number_of_dipoles_total):
     return pts
 
 
-#
-# Have both sphere radius and dipole radius in argument list
-#
 def simulation(number_of_particles, positions, shapes, args):
     #
     # shapes = List of shape types used
@@ -815,6 +812,7 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
+    print("----> HERE");
     for i in range(number_of_timesteps):
         #        print("positions: ",position_vectors)
         
@@ -841,7 +839,7 @@ def simulation(number_of_particles, positions, shapes, args):
                     for k in range(3):
                         optcouple[i,j,k] = couples[j][k] + torques[j][k]
 
-        if i%10 ==0:
+        if i%10 == 0:
             print("Step ",i)
             print(i,optical)
 
@@ -861,7 +859,7 @@ def simulation(number_of_particles, positions, shapes, args):
         #
 
         ##
-        ## TODO; NEEDS TO BE PER PARTICLE
+        ## TODO; NEEDS TO BE PER PARTICLE, Not the same for every particle (as is currently done)
         ##
         D = diffusion_matrix(position_vectors, args[0][0])
         #D = diffusion_matrix(position_vectors, dipole_radius)
@@ -872,7 +870,7 @@ def simulation(number_of_particles, positions, shapes, args):
 #        driver = driving_force_array(position_vectors)
 #        bending = bending_force_array(position_vectors, radius)
 #        gravity = gravity_force_array(position_vectors, radius)
-        total_force_array = optical + buckingham# + gravity#+ spring #+ driver#+ gravity# + spring + bending
+        total_force_array = optical #+ buckingham# + gravity#+ spring #+ driver#+ gravity# + spring + bending
         #        print("buckingham: ",buckingham_force_array(position_vectors,radius))
         #        print("Springs: ",spring_force_array(position_vectors,radius))
         F = np.hstack(total_force_array)
@@ -1045,7 +1043,15 @@ for i in range(optforces.shape[0]):
     print("optforces "+str(i)+"= ",optforces[i]);
 
 if display.show_output==True:
+    # Plot beam, particles, forces and tracers (forces and tracers optional)
+    fig, ax = None, None                                   #
+    fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
 
+
+    ## ===
+    ## Legacy Plotting Functions -> Remove
+    ## ===
     # 2D animation
     #fig,ax = display.plot_intensity(beam_collection)
     #display.animate_particles(fig,ax,particles,radius,colors)
@@ -1059,15 +1065,14 @@ if display.show_output==True:
     # display.animate_particles3d(fig, ax, optpos, shapes, args, colors)
 
     # 3D particles matplotlib quiver
-    time_index = 0
-    ignore_z_force = True
-
+    ####
+    ## NOTE; Previous plotting functions combined into animate_system3d, hence others can be removed now
+    ####
+    #time_index = 0
+    #ignore_z_force = True
     # Plot just particles and forces
-    display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force)
-
-    # Plot particles, forces and beam (as fig, ax are optional)
-    # fig, ax = display.plot_intensity3d(beam_collection)
-    # display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force, fig, ax)
+    #display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force)
+    #display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force, fig, ax)
 
 
 
