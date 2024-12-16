@@ -192,9 +192,101 @@ class DisplayObject (object):
         return x, y, z
     
 
-    def animate_particles3d(self, fig, ax, positions, shapes, args, colours):
-        #pow( centre_R-sqrt( pow(point.x,2) + pow(point.y,2) ) ,2) +pow(point.z,2) <= pow(tube_R,2)
+    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, quiver_scale=3e5):
+        #
+        # Plots particles with optional quiver (force forces) and tracer (for positions) plots too
+        # NOTE; If a quiver plot is wanted, a list of forces must be provided as well (in the format of optforces)
+        # 
+        # ignore_coords = list of coordinates to ignore force components for in the quiver plot, e.g. 'X', 'Y', 'Z'
+        # quiver_scale  = Scale the force arrows to be visible
+        #
 
+        # Animation function
+        def update(t):
+            # Clear old plot elements (particles, quivers, etc)
+            for plot in plots:
+                plot.remove()
+            plots.clear()
+
+            # Add new particle plot elements
+            for i in range(num_particles):
+                match shapes[i]:
+                    case "sphere":
+                        x, y, z = self.make_sphere_surface(args[i], positions[t, i])
+                    case "torus":
+                        x, y, z = self.make_torus_sector_surface(args[i], positions[t, i])
+                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
+                plots.append(plot)
+            
+            # Add new quiver plot elements
+            if(include_quiver):
+                if( len(forces) == 0 ):
+                    print("!! No forces provided, Unable to plot quiver plot !!")
+                else:
+                    pos_x, pos_y, pos_z = np.transpose(positions[t, :, :])
+                    force_x, force_y, force_z = np.transpose(forces[t, :, :]) * quiver_scale
+                    for ignore_coord in ignore_coords:
+                        match ignore_coord:
+                            case "X":
+                                force_x = np.zeros(force_x.shape)
+                            case "Y":
+                                force_y = np.zeros(force_y.shape)
+                            case "Z":
+                                force_z = np.zeros(force_z.shape)
+                    quiver = ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
+                    plots.append(quiver)
+            
+            # Plot tracers
+            if(include_tracer):
+                if(t % 5 == 0): # Only place tracers periodically to reduce lag
+                    for i in range(num_particles):
+                        t1 = t
+                        t2 = t+1 if(t+1 < positions.shape[0]) else t
+                        pos_x1, pos_y1, pos_z1 = np.transpose(positions[t1, :, :])
+                        pos_x2, pos_y2, pos_z2 = np.transpose(positions[t2, :, :])
+                        ax.quiver(pos_x1, pos_y1, pos_z1, pos_x2-pos_x1, pos_y2-pos_y1, pos_z2-pos_z1)
+
+        # Initialise
+        positions = np.array(positions)
+        steps = len(positions)
+        num_particles = len(positions[0])
+
+        #If no axes given
+        if fig == None or ax == None:
+            fig = plt.figure()
+            upper = self.max_size
+            lower = -upper
+            zlower = -2e-6
+            zupper = 2e-6
+            ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
+
+            ax.set_aspect('equal','box')
+            ax.set_xlabel("x (m)")
+            ax.set_ylabel("y (m)")
+
+        plots = []
+        for i in range(num_particles):
+            # Convert hex colours to tuples
+            hex = colours[i][1:]
+            colour = tuple(int(hex[j:j+2], 16) / 255 for j in (0, 2, 4))
+            match shapes[i]:
+                case "sphere":
+                    x, y, z = self.make_sphere_surface(args[i], positions[0, i])
+                case "torus":
+                    x, y, z = self.make_torus_sector_surface(args[i], positions[0, i])
+            plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
+            plots.append(plot)
+
+        ani = animation.FuncAnimation(fig, update, frames=steps, interval=100)
+
+        plt.show()
+
+
+
+    #
+    # BELOW CAN BE REPLACED BY 'animate_system3d()'
+    #
+    def animate_particles3d(self, fig, ax, positions, shapes, args, colours):
         # Animation function
         def update(t):
             # Clear old particles
@@ -287,5 +379,38 @@ class DisplayObject (object):
         ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
 
         plt.show()
+
+
+    #
+    # A series of plots for analysis of forces on particles being brought close together
+    # These plots use the '*_combined_data.xlsx' files generated in 'SimulationVaryRun.py'
+    #
+    def plot_tangential_force_against_number():
+        #
+        # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the numebr of particles in the system
+        # Applies for spherical and torus particles
+        #
+        pass
+
+    def plot_tangential_force_avg_against_number():
+        #
+        # Generates a plot of tangential force magnitude average for the system of M particles
+        # Applies for spherical and torus particles
+        #
+        pass
+
+    def plot_tangential_force_against_latticeResolution():
+        #
+        # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the resolution of the lattice
+        # Applicable to spherical and torus particles
+        #
+        pass
+    
+    def plot_tangential_force_against_separation():
+        #
+        # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the separation between torus sectors
+        # NOTE; This is only applicable to torus sectors
+        #
+        pass
 
 
