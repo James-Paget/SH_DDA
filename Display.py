@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.animation as animation
+import pandas as pd
 
 import Beams
 
@@ -381,36 +382,62 @@ class DisplayObject (object):
         plt.show()
 
 
+#
+# A series of plots for analysis of forces on particles being brought close together
+# These plots use the '*_combined_data.xlsx' files generated in 'SimulationVaryRun.py'
+#
+def plot_tangential_force_against_number(filename, particle_target):
     #
-    # A series of plots for analysis of forces on particles being brought close together
-    # These plots use the '*_combined_data.xlsx' files generated in 'SimulationVaryRun.py'
+    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the numebr of particles in the system
+    # Applies for spherical and torus particles
     #
-    def plot_tangential_force_against_number():
-        #
-        # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the numebr of particles in the system
-        # Applies for spherical and torus particles
-        #
-        pass
+    data = pd.read_excel(filename+".xlsx")
+    data_num = data.count(axis='columns')
+    force_magnitudes = []
+    particle_numbers = []
+    for scenario_index in range(len(data) ):
+        #Look through each scenario setup, get number of particles involved, try extract data from this scenario
+        number_of_particles = int(np.floor(data_num[scenario_index]/(6.0)))
+        force_value = 0.0
+        if(particle_target < number_of_particles):
+            ####
+            ## NOTE; NEED TO GET PURELY TANGENTIAL COMPONENT
+            ####
+            force_value = np.sqrt(
+                 pow(data.iloc[scenario_index, 3 +6*particle_target], 2) 
+                +pow(data.iloc[scenario_index, 4 +6*particle_target], 2)
+            )
+        #Add values to plot
+        force_magnitudes.append(force_value)
+        particle_numbers.append(number_of_particles)
+    #Plot data
+    print("particle_numbers = ", particle_numbers)
+    print("force_magnitudes = ", force_magnitudes)
+    plt.plot(particle_numbers, force_magnitudes)
+    plt.xlabel("Particle Number")
+    plt.ylabel("Force Magnitude (N)")
+    plt.title("Tangential force for varying particle numbers")
+    plt.show()
 
-    def plot_tangential_force_avg_against_number():
-        #
-        # Generates a plot of tangential force magnitude average for the system of M particles
-        # Applies for spherical and torus particles
-        #
-        pass
+def plot_tangential_force_avg_against_number():
+    #
+    # Generates a plot of tangential force magnitude average for the system of M particles
+    # Applies for spherical and torus particles
+    #
+    pass
 
-    def plot_tangential_force_against_latticeResolution():
-        #
-        # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the resolution of the lattice
-        # Applicable to spherical and torus particles
-        #
-        pass
-    
-    def plot_tangential_force_against_separation():
-        #
-        # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the separation between torus sectors
-        # NOTE; This is only applicable to torus sectors
-        #
-        pass
+def plot_tangential_force_against_latticeResolution():
+    #
+    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the resolution of the lattice
+    # Applicable to spherical and torus particles
+    #
+    pass
+
+def plot_tangential_force_against_separation():
+    #
+    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the separation between torus sectors
+    # NOTE; This is only applicable to torus sectors
+    #
+    pass
 
 

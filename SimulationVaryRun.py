@@ -10,6 +10,8 @@ import xlsxwriter
 import pandas as pd
 import random
 
+import Display
+
 
 def generate_sphere_yaml(particle_formation, number_of_particles, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9):
     #
@@ -275,7 +277,8 @@ if int(len(sys.argv)) != 2:
 
 match(sys.argv[1]):
     case "spheresInCircle":
-        simulations_singleFrame_optForce_spheresInCircle([1,2,4,8,12], "SingleLaguerre_SphereVary");
+        #simulations_singleFrame_optForce_spheresInCircle([1,2,4,8,12], "SingleLaguerre_SphereVary");
+        Display.plot_tangential_force_against_number("SingleLaguerre_SphereVary_combined_data", 0)
     case "torusInCircle":
         simulations_singleFrame_optForce_torusInCircle([10], "SingleLaguerre_TorusVary");
     case _:
