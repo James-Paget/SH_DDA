@@ -386,37 +386,63 @@ class DisplayObject (object):
 # A series of plots for analysis of forces on particles being brought close together
 # These plots use the '*_combined_data.xlsx' files generated in 'SimulationVaryRun.py'
 #
-def plot_tangential_force_against_number(filename, particle_target):
+def plot_tangential_force_against_number(filename, particle_target, parameter_text=""):
     #
     # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the numebr of particles in the system
     # Applies for spherical and torus particles
     #
     data = pd.read_excel(filename+".xlsx")
     data_num = data.count(axis='columns')
-    force_magnitudes = []
+    total_force_magnitudes = []
+    tangential_force_magnitudes = []
     particle_numbers = []
     for scenario_index in range(len(data) ):
         #Look through each scenario setup, get number of particles involved, try extract data from this scenario
         number_of_particles = int(np.floor(data_num[scenario_index]/(6.0)))
         force_value = 0.0
         if(particle_target < number_of_particles):
-            ####
-            ## NOTE; NEED TO GET PURELY TANGENTIAL COMPONENT
-            ####
-            force_value = np.sqrt(
+            # Total Force Magnitude
+            total_force_mag = np.sqrt(
                  pow(data.iloc[scenario_index, 3 +6*particle_target], 2) 
                 +pow(data.iloc[scenario_index, 4 +6*particle_target], 2)
             )
+
+            # Tangential Force Magnitude
+            position_xy_mag = np.sqrt(
+                pow(data.iloc[scenario_index, 0 +6*particle_target],2) +
+                pow(data.iloc[scenario_index, 1 +6*particle_target],2)
+            )
+            position_xy_vector_norm = [
+                data.iloc[scenario_index, 0 +6*particle_target] / position_xy_mag,
+                data.iloc[scenario_index, 1 +6*particle_target] / position_xy_mag
+            ]
+            tangential_xy_vector = [
+                -position_xy_vector_norm[1],
+                 position_xy_vector_norm[0]
+            ]
+            tangential_force_mag = tangential_xy_vector[0]*data.iloc[scenario_index, 3 +6*particle_target] + tangential_xy_vector[1]*data.iloc[scenario_index, 4 +6*particle_target]
         #Add values to plot
-        force_magnitudes.append(force_value)
+        total_force_magnitudes.append(total_force_mag)
+        tangential_force_magnitudes.append(tangential_force_mag)
         particle_numbers.append(number_of_particles)
     #Plot data
     print("particle_numbers = ", particle_numbers)
-    print("force_magnitudes = ", force_magnitudes)
-    plt.plot(particle_numbers, force_magnitudes)
+    print("force_magnitudes = ", total_force_magnitudes)
+    print("force_magnitudes = ", tangential_force_magnitudes)
+
+    fig, ax = plt.subplots()
+    ax.plot(particle_numbers, total_force_magnitudes, label="total", color="red")
+    ax.plot(particle_numbers, tangential_force_magnitudes, label="tangential", color="blue")
+    ax.text(
+        0.0, 0.85,
+        parameter_text,
+        transform=ax.transAxes,
+        fontsize=12
+    )
     plt.xlabel("Particle Number")
-    plt.ylabel("Force Magnitude (N)")
+    plt.ylabel("Force (N)")
     plt.title("Tangential force for varying particle numbers")
+    plt.legend()
     plt.show()
 
 def plot_tangential_force_avg_against_number():
