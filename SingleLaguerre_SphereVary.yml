@@ -1,5 +1,5 @@
 options:
-  frames: 1
+  frames: 100
 parameters:
   wavelength: 1.0e-6
   dipole_radius: 40e-9
@@ -15,7 +15,7 @@ display:
   max_size: 2e-6
   resolution: 201
   frame_min: 0
-  frame_max: 1
+  frame_max: 100
   z_offset: 0.0e-6
 beams:
   beam_1:
@@ -32,73 +32,37 @@ particles:
   particle_list:
     part_0:
       material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -0.21832112692958416 -2.923271526660209
+      shape: sphere
+      args: 2e-07
       coords: 1.15e-06 0.0 1e-06
       altcolour: True
     part_2:
       material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -2.8363150049210786 -2.3996727510619102
-      coords: 1.1326524858980428e-06 1.9899333202141212e-07 1e-06
+      shape: sphere
+      args: 2e-07
+      coords: 5.750000000000001e-07 9.959292143521043e-07 1e-06
       altcolour: True
     part_4:
       material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -2.3127162293227794 -1.8760739754636113
-      coords: 1.08113331097568e-06 3.919831168542383e-07 1e-06
+      shape: sphere
+      args: 2e-07
+      coords: -5.749999999999998e-07 9.959292143521046e-07 1e-06
       altcolour: True
     part_6:
       material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -1.7891174537244807 -1.3524751998653124
-      coords: 9.969967876041933e-07 5.731469318655723e-07 1e-06
+      shape: sphere
+      args: 2e-07
+      coords: -1.15e-06 1.408343819019456e-22 1e-06
       altcolour: True
     part_8:
       material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -1.265518678126182 -0.8288764242670137
-      coords: 8.827812801760634e-07 7.370191390803297e-07 1e-06
+      shape: sphere
+      args: 2e-07
+      coords: -5.750000000000005e-07 -9.959292143521041e-07 1e-06
       altcolour: True
     part_10:
       material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -0.7419199025278833 -0.305277648668715
-      coords: 7.419326236926327e-07 8.786557812366378e-07 1e-06
-      altcolour: True
-    part_12:
-      material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -0.21832112692958416 -2.923271526660209
-      coords: 5.787001643357931e-07 9.937837389481306e-07 1e-06
-      altcolour: True
-    part_14:
-      material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -2.8363150049210786 -2.3996727510619102
-      coords: 3.9800855843700527e-07 1.0789296489627564e-06 1e-06
-      altcolour: True
-    part_16:
-      material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -2.31271622932278 -1.876073975463611
-      coords: 2.053091976161558e-07 1.1315246941071195e-06 1e-06
-      altcolour: True
-    part_18:
-      material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -1.7891174537244812 -1.352475199865312
-      coords: 6.415742532858018e-09 1.149982103446724e-06 1e-06
-      altcolour: True
-    part_20:
-      material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -1.265518678126183 -0.8288764242670137
-      coords: -1.9267127287055005e-07 1.1337450245140845e-06 1e-06
-      altcolour: True
-    part_22:
-      material: FusedSilica
-      shape: torus
-      args: 1.15e-06 1e-07 -0.7419199025278838 -0.30527764866871454
-      coords: -3.8594547501628176e-07 1.0833033233192153e-06 1e-06
+      shape: sphere
+      args: 2e-07
+      coords: 5.749999999999993e-07 -9.95929214352105e-07 1e-06
       altcolour: True
