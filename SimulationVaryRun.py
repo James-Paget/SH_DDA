@@ -13,6 +13,100 @@ import random
 import Display
 
 
+def generate_yaml(filename, particle_list, parameters_arg):
+
+    # All possible parameters_arg keys as strings are: 
+    # frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval,
+    # max_size, resolution, frame_min, frame_max, z_offset, beamtype, E0, order, w0, jones, translation, rotation, default_radius, default_material
+
+    # particle_list contains dictionaries with keys: material, shape, args, coords, altcolour
+
+    # Set default parameters
+    parameters = {
+        "frames" : 1,
+        "wavelength": 1.0e-6,
+        "dipole_radius": 40e-9,
+        "time_step": 1e-4,
+
+        "vmd_output": True,
+        "excel_output": True,
+        "include_force": True,
+        "include_couple": True,
+
+        "show_output": True,
+        "frame_interval": 2,
+        "max_size": 2e-6,
+        "resolution": 201,
+        "frame_min": 0,
+        "frame_max": 1,
+        "z_offset": 0.0e-6,
+
+        "beamtype": "BEAMTYPE_LAGUERRE_GAUSSIAN",
+        "E0": 300,
+        "order": 3,
+        "w0": 0.6,
+        "jones": "POLARISATION_LCP",
+        "translation": None,
+        "rotation": None,
+
+        "default_radius": 100e-9,
+        "default_material": "FusedSilica",
+    }
+
+    # Overwrite parameters with any passed in with parameters_arg
+    parameters.update(parameters_arg)
+    
+    # Write into a YAML file
+    print(f"Generated YAML : {filename}")
+    file = open(f"{filename}.yml", "w")
+    
+    file.write("options:\n")
+    file.write(f"  frames: {parameters['frames']}\n")
+
+    file.write("parameters:\n")
+    for arg in ["wavelength", "dipole_radius", "time_step"]:
+        file.write(f"  {arg}: {parameters[arg]}\n")
+
+    file.write("output:\n")
+    for arg in ["vmd_output", "excel_output", "include_force", "include_couple"]:
+        file.write(f"  {arg}: {parameters[arg]}\n")
+
+    file.write("display:\n")
+    for arg in ["show_output", "frame_interval", "max_size", "resolution", "frame_min", "frame_max", "z_offset"]:
+        file.write(f"  {arg}: {parameters[arg]}\n")
+
+    file.write("beams:\n")
+    file.write("  beam_1:\n")
+    for arg in ["beamtype", "E0", "order", "w0", "jones", "translation", "rotation"]:
+        file.write(f"    {arg}: {parameters[arg]}\n")
+
+    file.write("particles:\n")
+    for arg in ["default_radius", "default_material"]:
+        file.write(f"  {arg}: {parameters[arg]}\n")
+
+
+    # Write particle list.
+    file.write("  particle_list:\n")
+    for i, particle in enumerate(particle_list):
+        # Test correct number of args
+        if not (
+            (particle["shape"] == "sphere" and len(particle["args"]) == 1) or
+            (particle["shape"] == "torus" and len(particle["args"]) == 4)
+        ):
+            print(f"Particle {i} has invalid args: {particle}")
+            break
+
+        file.write(f"    part_{i}:\n")
+        file.write(f"      material: {particle['material']}\n")
+        file.write(f"      shape: {particle['shape']}\n")
+        file.write(f"      args: {' '.join([str(elem) for elem in particle['args']])}\n")
+        file.write(f"      coords: {' '.join([str(elem) for elem in particle['coords']])}\n")
+        file.write(f"      altcolour: {particle['altcolour']}\n")
+
+    file.close()
+
+
+
 def generate_sphere_yaml(particle_formation, number_of_particles, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9, frames_of_animation=1):
     #
     # Generates a YAML file for a set of identical spheres with given parameters
@@ -24,46 +118,10 @@ def generate_sphere_yaml(particle_formation, number_of_particles, particle_mater
     
     # Create / overwrite YAML file
     # Writing core system parameters
-    print("Generated sphere YAML")
-    file = open("SingleLaguerre_SphereVary.yml", "w")
-    
-    file.write("options:\n")
-    file.write("  frames: "+str(frames_of_animation)+"\n")
 
-    file.write("parameters:\n")
-    file.write("  wavelength: 1.0e-6\n")    #1.0e-6
-    file.write("  dipole_radius: 40e-9\n")
-    file.write("  time_step: 1e-4\n")
-
-    file.write("output:\n")
-    file.write("  vmd_output: True\n")
-    file.write("  excel_output: True\n")
-    file.write("  include_force: True\n")
-    file.write("  include_couple: True\n")
-
-    file.write("display:\n")
-    file.write("  show_output: True\n")
-    file.write("  frame_interval: 2\n")
-    file.write("  max_size: 2e-6\n")
-    file.write("  resolution: 201\n")
-    file.write("  frame_min: 0\n")
-    file.write("  frame_max: "+str(frames_of_animation)+"\n")
-    file.write("  z_offset: 0.0e-6\n")
-
-    file.write("beams:\n")
-    file.write("  beam_1:\n")
-    file.write("    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN\n")
-    file.write("    E0: 300\n")
-    file.write("    order: 3\n")
-    file.write("    w0: 0.6\n")
-    file.write("    jones: POLARISATION_LCP\n")
-    file.write("    translation: None\n")
-    file.write("    rotation: None\n")
-
-    file.write("particles:\n")
-    file.write("  default_radius: 100e-9\n")
-    file.write("  default_material: FusedSilica\n")
-    file.write("  particle_list:\n")
+    filename = "SingleLaguerre_SphereVary"
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
+    particle_list = []
 
     # Writing specific parameters for particle formation
     for particle_index in range(number_of_particles):
@@ -77,16 +135,14 @@ def generate_sphere_yaml(particle_formation, number_of_particles, particle_mater
                     0.0,#random.random()*0.02*characteristic_distance, 
                     0.0#random.random()*0.02*characteristic_distance
                 ]
-                file.write("    part_"+str(2*particle_index)+":\n")
-                file.write("      material: "+str(particle_material)+"\n")
-                file.write("      shape: sphere\n")
-                file.write("      args: "+str(particle_radii)+"\n")
-                file.write("      coords: "+str(particle_position[0] +position_offsets[0])+" "+str(particle_position[1] +position_offsets[1])+" "+str(particle_position[2] +position_offsets[2])+"\n")
-                file.write("      altcolour: True\n")
+                coords = np.array(particle_position) + np.array(position_offsets)
+                particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radii], "coords": coords, "altcolour": True})
+            
             case _:
                 print("Particle formation invalid: ",particle_formation);
 
-    file.close()
+    generate_yaml(filename, particle_list, parameters)
+    
 
 def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica", frames_of_animation=1):
     #
@@ -101,46 +157,10 @@ def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating
     
     # Create / overwrite YAML file
     # Writing core system parameters
-    print("Generated torus YAML")
-    file = open("SingleLaguerre_TorusVary.yml", "w")
-    
-    file.write("options:\n")
-    file.write("  frames: "+str(frames_of_animation)+"\n")
 
-    file.write("parameters:\n")
-    file.write("  wavelength: 1.0e-6\n")        #1.0e-6
-    file.write("  dipole_radius: 40e-9\n")
-    file.write("  time_step: 1e-4\n")
-
-    file.write("output:\n")
-    file.write("  vmd_output: True\n")
-    file.write("  excel_output: True\n")
-    file.write("  include_force: True\n")
-    file.write("  include_couple: True\n")
-
-    file.write("display:\n")
-    file.write("  show_output: True\n")
-    file.write("  frame_interval: 2\n")
-    file.write("  max_size: 2e-6\n")
-    file.write("  resolution: 201\n")
-    file.write("  frame_min: 0\n")
-    file.write("  frame_max: "+str(frames_of_animation)+"\n")
-    file.write("  z_offset: 0.0e-6\n")
-
-    file.write("beams:\n")
-    file.write("  beam_1:\n")
-    file.write("    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN\n")
-    file.write("    E0: 300\n")
-    file.write("    order: 3\n")
-    file.write("    w0: 0.6\n")
-    file.write("    jones: POLARISATION_LCP\n")
-    file.write("    translation: None\n")
-    file.write("    rotation: None\n")
-
-    file.write("particles:\n")
-    file.write("  default_radius: 100e-9\n")
-    file.write("  default_material: FusedSilica\n")
-    file.write("  particle_list:\n")
+    filename = "SingleLaguerre_TorusVary"
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
+    particle_list = []
 
     # Writing specific parameters for particle formation
     torus_gap_theta    = separating_dist/inner_radii    # Full angle occupied by gap between torus sectors
@@ -158,14 +178,12 @@ def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating
             0.0,#random.random()*0.02*characteristic_distance, 
             0.0#random.random()*0.02*characteristic_distance
         ]
-        file.write("    part_"+str(2*particle_index)+":\n")
-        file.write("      material: "+str(particle_material)+"\n")
-        file.write("      shape: torus\n")
-        file.write("      args: "+str(inner_radii)+" "+str(tube_radii)+" "+str(lower_phi)+" "+str(upper_phi)+"\n")
-        file.write("      coords: "+str(particle_position[0] +position_offsets[0])+" "+str(particle_position[1] +position_offsets[1])+" "+str(particle_position[2] +position_offsets[2])+"\n")
-        file.write("      altcolour: True\n")
 
-    file.close()
+        coords = np.array(particle_position) + np.array(position_offsets)
+        particle_list.append({"material": particle_material, "shape": "torus", "args": [inner_radii, tube_radii, lower_phi, upper_phi], "coords": coords, "altcolour": True})
+
+    generate_yaml(filename, particle_list, parameters)
+
 
 def generate_torus_fixedPhi_yaml(number_of_particles, inner_radii, tube_radii, fixedPhi, particle_material="FusedSilica", frames_of_animation=1):
     #
@@ -180,50 +198,14 @@ def generate_torus_fixedPhi_yaml(number_of_particles, inner_radii, tube_radii, f
     
     # Create / overwrite YAML file
     # Writing core system parameters
-    print("Generated torus YAML")
-    file = open("SingleLaguerre_TorusVary.yml", "w")
-    
-    file.write("options:\n")
-    file.write("  frames: "+str(frames_of_animation)+"\n")
 
-    file.write("parameters:\n")
-    file.write("  wavelength: 1.0e-6\n")
-    file.write("  dipole_radius: 40e-9\n")
-    file.write("  time_step: 1e-4\n")
-
-    file.write("output:\n")
-    file.write("  vmd_output: True\n")
-    file.write("  excel_output: True\n")
-    file.write("  include_force: True\n")
-    file.write("  include_couple: True\n")
-
-    file.write("display:\n")
-    file.write("  show_output: True\n")
-    file.write("  frame_interval: 2\n")
-    file.write("  max_size: 2e-6\n")
-    file.write("  resolution: 201\n")
-    file.write("  frame_min: 0\n")
-    file.write("  frame_max: "+str(frames_of_animation)+"\n")
-    file.write("  z_offset: 0.0e-6\n")
-
-    file.write("beams:\n")
-    file.write("  beam_1:\n")
-    file.write("    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN\n")
-    file.write("    E0: 300\n")
-    file.write("    order: 3\n")
-    file.write("    w0: 0.6\n")
-    file.write("    jones: POLARISATION_LCP\n")
-    file.write("    translation: None\n")
-    file.write("    rotation: None\n")
-
-    file.write("particles:\n")
-    file.write("  default_radius: 100e-9\n")
-    file.write("  default_material: FusedSilica\n")
-    file.write("  particle_list:\n")
+    filename = "SingleLaguerre_TorusVary"
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
+    particle_list = []
 
     # Writing specific parameters for particle formation
+    centre_phi = 2.0*np.pi/number_of_particles
     for particle_index in range(number_of_particles):
-        centre_phi = 2.0*np.pi/number_of_particles
         lower_phi = particle_index*(centre_phi) -fixedPhi/2.0
         upper_phi = particle_index*(centre_phi) +fixedPhi/2.0
         particle_position = [
@@ -236,14 +218,11 @@ def generate_torus_fixedPhi_yaml(number_of_particles, inner_radii, tube_radii, f
             0.0,#random.random()*0.02*characteristic_distance, 
             0.0#random.random()*0.02*characteristic_distance
         ]
-        file.write("    part_"+str(2*particle_index)+":\n")
-        file.write("      material: "+str(particle_material)+"\n")
-        file.write("      shape: torus\n")
-        file.write("      args: "+str(inner_radii)+" "+str(tube_radii)+" "+str(lower_phi)+" "+str(upper_phi)+"\n")
-        file.write("      coords: "+str(particle_position[0] +position_offsets[0])+" "+str(particle_position[1] +position_offsets[1])+" "+str(particle_position[2] +position_offsets[2])+"\n")
-        file.write("      altcolour: True\n")
+        coords = np.array(particle_position) + np.array(position_offsets)
+        particle_list.append({"material": particle_material, "shape": "torus", "args": [inner_radii, tube_radii, lower_phi, upper_phi], "coords": coords, "altcolour": True})
 
-    file.close()
+    generate_yaml(filename, particle_list, parameters)
+
 
 def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_theta, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9, frames_of_animation=1):
     #
@@ -258,49 +237,11 @@ def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_
     
     # Create / overwrite YAML file
     # Writing core system parameters
-    print("Generated sphere /w slider sphere YAML")
-    file = open("SingleLaguerre_SphereVary.yml", "w")
-    
-    file.write("options:\n")
-    file.write("  frames: "+str(frames_of_animation)+"\n")
-
-    file.write("parameters:\n")
-    file.write("  wavelength: 1.0e-6\n")    #1.0e-6
-    file.write("  dipole_radius: 40e-9\n")
-    file.write("  time_step: 1e-4\n")
-
-    file.write("output:\n")
-    file.write("  vmd_output: True\n")
-    file.write("  excel_output: True\n")
-    file.write("  include_force: True\n")
-    file.write("  include_couple: True\n")
-
-    file.write("display:\n")
-    file.write("  show_output: True\n")
-    file.write("  frame_interval: 2\n")
-    file.write("  max_size: 2e-6\n")
-    file.write("  resolution: 201\n")
-    file.write("  frame_min: 0\n")
-    file.write("  frame_max: "+str(frames_of_animation)+"\n")
-    file.write("  z_offset: 0.0e-6\n")
-
-    file.write("beams:\n")
-    file.write("  beam_1:\n")
-    file.write("    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN\n")
-    file.write("    E0: 300\n")
-    file.write("    order: 3\n")
-    file.write("    w0: 0.6\n")
-    file.write("    jones: POLARISATION_LCP\n")
-    file.write("    translation: None\n")
-    file.write("    rotation: None\n")
-
-    file.write("particles:\n")
-    file.write("  default_radius: 100e-9\n")
-    file.write("  default_material: FusedSilica\n")
-    file.write("  particle_list:\n")
+    filename = "SingleLaguerre_SphereVary"
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
+    particle_list = []
 
     # Writing specific parameters for particle formation
-    max_index = 0
     for particle_index in range(number_of_particles):
         match(particle_formation):
             case "circle":
@@ -312,27 +253,17 @@ def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_
                     0.0,#random.random()*0.02*characteristic_distance, 
                     0.0#random.random()*0.02*characteristic_distance
                 ]
-                file.write("    part_"+str(2*particle_index)+":\n")
-                file.write("      material: "+str(particle_material)+"\n")
-                file.write("      shape: sphere\n")
-                file.write("      args: "+str(particle_radii)+"\n")
-                file.write("      coords: "+str(particle_position[0] +position_offsets[0])+" "+str(particle_position[1] +position_offsets[1])+" "+str(particle_position[2] +position_offsets[2])+"\n")
-                file.write("      altcolour: True\n")
-                max_index = particle_index
+                coords = np.array(particle_position) + np.array(position_offsets)
+                particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radii], "coords": coords, "altcolour": True})
+
             case _:
                 print("Particle formation invalid: ",particle_formation);
+    
     slider_position = [characteristic_distance*np.cos(slider_theta), characteristic_distance*np.sin(slider_theta), particle_position[2]]
-    ##
-    ## CHECK WHY 2* INDEX HAS BEEN USED -> 1* SHOULD BE FINE?
-    ##
-    file.write("    part_"+str(2.0*max_index+1)+":\n")
-    file.write("      material: "+str(particle_material)+"\n")
-    file.write("      shape: sphere\n")
-    file.write("      args: "+str(particle_radii)+"\n")
-    file.write("      coords: "+str(slider_position[0])+" "+str(slider_position[1])+" "+str(slider_position[2])+"\n")
-    file.write("      altcolour: True\n")
+    particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radii], "coords": slider_position, "altcolour": True})
 
-    file.close()
+    generate_yaml(filename, particle_list, parameters)
+
 
 def record_particle_info(filename, particle_info):
     #
@@ -455,7 +386,7 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
             "Spheres +Slider",
             "R_placed   (m)= "+str(place_radius),
             "R_particle (m)= "+str(particle_radii),
-            "Slider range= "+str(slider_range[0])+","+str(slider_range[1])+","+str(slider_range[2])
+            "Slider range= "+ f"{slider_range[0]:.3f}, {slider_range[1]:.3f}, {slider_range[2]:.3f}"
         )
     )
     return parameter_text
@@ -541,13 +472,13 @@ def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, fil
 # Perform Program #
 #=================#
 if int(len(sys.argv)) != 2:
-    sys.exit("Usage: python <RUN_TYPE>")
+    sys.exit("Usage: python <RUN_TYPE>\nOptions: spheresInCircle, torusInCircle, torusInCircleFixedPhi, spheresInCircleSlider")
 
 match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre_SphereVary"
         #1,2,3,4,5,6,7,8,9,10,11,12
-        parameter_text = simulations_singleFrame_optForce_spheresInCircle([6], filename);
+        parameter_text = simulations_singleFrame_optForce_spheresInCircle([1,2,3,4], filename);
         Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text=parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text=parameter_text)
     case "torusInCircle":
@@ -561,8 +492,8 @@ match(sys.argv[1]):
     case "spheresInCircleSlider":
         filename = "SingleLaguerre_SphereVary"
         #np.pi/2.0, 3.0*np.pi/2.0,
-        parameter_text = simulations_singleFrame_optForce_spheresInCircleSlider(1, [np.pi/4.0, np.pi, 50], filename);
+        parameter_text = simulations_singleFrame_optForce_spheresInCircleSlider(1, [np.pi/6.0, np.pi, 50], filename);
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, parameter_text=parameter_text)
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Alowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', spheresInCircleSlider'")
+        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider'")
