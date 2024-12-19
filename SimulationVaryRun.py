@@ -106,7 +106,7 @@ def generate_yaml(filename, particle_list, parameters_arg):
     file.close()
 
 
-def generate_sphere_yaml(particle_formation, number_of_particles, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9, frames_of_animation=1):
+def generate_sphere_yaml(particle_formation, number_of_particles, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9, parameters={}):
     #
     # Generates a YAML file for a set of identical spheres with given parameters
     # This will overwrite files with the same name
@@ -119,7 +119,6 @@ def generate_sphere_yaml(particle_formation, number_of_particles, particle_mater
     # Writing core system parameters
 
     filename = "SingleLaguerre_SphereVary"
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
     particle_list = []
 
     # Writing specific parameters for particle formation
@@ -143,7 +142,7 @@ def generate_sphere_yaml(particle_formation, number_of_particles, particle_mater
     generate_yaml(filename, particle_list, parameters)
     
 
-def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica", frames_of_animation=1):
+def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica", parameters={}):
     #
     # Generates a YAML file for a set of identical torus sectors with given parameters
     # This will overwrite files with the same name
@@ -158,7 +157,7 @@ def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating
     # Writing core system parameters
 
     filename = "SingleLaguerre_TorusVary"
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
+    
     particle_list = []
 
     # Writing specific parameters for particle formation
@@ -184,7 +183,7 @@ def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating
     generate_yaml(filename, particle_list, parameters)
 
 
-def generate_torus_fixedPhi_yaml(number_of_particles, inner_radii, tube_radii, fixedPhi, particle_material="FusedSilica", frames_of_animation=1):
+def generate_torus_fixedPhi_yaml(number_of_particles, inner_radii, tube_radii, fixedPhi, particle_material="FusedSilica", parameters={}):
     #
     # Generates a YAML file for a set of identical torus sectors with given parameters
     # This will overwrite files with the same name
@@ -199,7 +198,6 @@ def generate_torus_fixedPhi_yaml(number_of_particles, inner_radii, tube_radii, f
     # Writing core system parameters
 
     filename = "SingleLaguerre_TorusVary"
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
     particle_list = []
 
     # Writing specific parameters for particle formation
@@ -223,7 +221,7 @@ def generate_torus_fixedPhi_yaml(number_of_particles, inner_radii, tube_radii, f
     generate_yaml(filename, particle_list, parameters)
 
 
-def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_theta, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9, frames_of_animation=1):
+def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_theta, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9, parameters={}):
     #
     # Generates a YAML file for a set of identical spheres with given parameters, PLUS an additional sphere that has initial positions between
     # two angles, tested over N steps between this angle range
@@ -237,7 +235,6 @@ def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_
     # Create / overwrite YAML file
     # Writing core system parameters
     filename = "SingleLaguerre_SphereVary"
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation}
     particle_list = []
 
     # Writing specific parameters for particle formation
@@ -324,12 +321,14 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
     particle_info = [];
     place_radius = 1.15e-6      #1.15e-6
     particle_radii = 200e-9     #200e-9
+    parameters = {"frames": 100, "frame_max": 100}
+
     #For each scenario to be tested
     for particle_number in particle_numbers:
         print("")
         print("Performing calculation for "+str(particle_number)+" particles")
         #Generate required YAML, perform calculation, then pull force data
-        generate_sphere_yaml("circle", particle_number, characteristic_distance=place_radius, particle_radii=particle_radii, frames_of_animation=100)     # Writes to SingleLaguerre_SphereVary.yml
+        generate_sphere_yaml("circle", particle_number, characteristic_distance=place_radius, particle_radii=particle_radii, parameters=parameters)     # Writes to SingleLaguerre_SphereVary.yml
 
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -361,6 +360,8 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
     particle_info = [];
     place_radius = 1.15e-6      #1.15e-6
     particle_radii = 200e-9     #200e-9
+    parameters = {"frames": 1, "frame_max": 1}
+
     #For each scenario to be tested
     for slider_index in range(slider_range[2]):
         slider_theta = slider_range[0] +slider_index*(slider_range[1]-slider_range[0])/slider_range[2]
@@ -368,7 +369,7 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
         print(str(slider_index)+"/"+str(slider_range[2]))
         print("Performing calculation for "+str(particle_total)+"+1 particles, slider_theta=",slider_theta)
         #Generate required YAML, perform calculation, then pull force data
-        generate_sphere_slider_yaml("circle", particle_total, slider_theta, characteristic_distance=place_radius, particle_radii=particle_radii, frames_of_animation=1)     # Writes to SingleLaguerre_SphereVary.yml
+        generate_sphere_slider_yaml("circle", particle_total, slider_theta, characteristic_distance=place_radius, particle_radii=particle_radii, parameters=parameters)     # Writes to SingleLaguerre_SphereVary.yml
 
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -400,34 +401,18 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
     particle_info = []
     place_radius = 1.15e-6      #1.15e-6
     particle_radii = 200e-9     #200e-9
-    z_plane = 1e-6
     frames_of_animation = 1
 
     parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
     dipole_sizes = np.linspace(*dipole_size_range) # unpack list to fill the 3 arguments
 
-    # Particles are in the same position each time.
-    particle_list = []
-    for particle_index in range(particle_total):
-        theta_jump = (2.0*np.pi)/particle_total
-        particle_theta = theta_jump*particle_index
-        particle_position = [place_radius*np.cos(particle_theta), place_radius*np.sin(particle_theta), z_plane]
-        position_offsets  = [
-            0.0,#random.random()*0.02*characteristic_distance, 
-            0.0,#random.random()*0.02*characteristic_distance, 
-            0.0#random.random()*0.02*characteristic_distance
-        ]
-        coords = np.array(particle_position) + np.array(position_offsets)
-        particle_list.append({"material": "FusedSilica", "shape": "sphere", "args": [particle_radii], "coords": coords, "altcolour": True})
-
     # For each scenario to be tested
     for dipole_size in dipole_sizes:
-        print("")
-        print(f"Performing calculation for dipole size {dipole_size}")
+        print(f"\nPerforming calculation for dipole size {dipole_size}")
 
         # Change parameters to use each dipole_size, then generate YAML
         parameters["dipole_radius"] = dipole_size
-        generate_yaml(filename, particle_list, parameters)
+        generate_sphere_yaml("circle", particle_total, particle_material="FusedSilica", characteristic_distance=place_radius, particle_radii = particle_radii, parameters=parameters)
 
         # Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -461,12 +446,13 @@ def simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename):
     inner_radii = 1.15e-6
     tube_radii  = 200e-9
     separation  = 0.3e-6
+    parameters = {"frames": 1, "frame_max": 1}
     #For each scenario to be tested
     for particle_number in particle_numbers:
         print("")
         print("Performing calculation for "+str(particle_number)+" particles")
         #Generate required YAML, perform calculation, then pull force data
-        generate_torus_yaml(particle_number, inner_radii, tube_radii, separation)     # Writes to <filename>.yml
+        generate_torus_yaml(particle_number, inner_radii, tube_radii, separation, parameters=parameters)     # Writes to <filename>.yml
 
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -527,6 +513,54 @@ def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, fil
     return parameter_text
 
 
+def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename):
+    #
+    # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
+    #
+    # dipole_size_range = [size_min, size_max, num]
+    #
+    
+    particle_info = []
+    inner_radii = 1.15e-6
+    tube_radii  = 200e-9
+    separating_dist  = 0.1e-6
+    frames_of_animation = 1
+
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
+    dipole_sizes = np.linspace(*dipole_size_range) # unpack list to fill the 3 arguments
+    torus_gap_theta    = separating_dist/inner_radii    # Full angle occupied by gap between torus sectors
+    torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
+ 
+    # For each scenario to be tested
+    for dipole_size in dipole_sizes:
+        print(f"\nPerforming calculation for dipole size {dipole_size}")
+
+        # Change parameters to use each dipole_size, then generate YAML
+        parameters["dipole_radius"] = dipole_size
+        generate_torus_yaml(particle_total, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica", parameters=parameters)
+
+        # Run DipolesMulti2024Eigen.py
+        run_command = "python DipolesMulti2024Eigen.py "+filename
+        run_command = run_command.split(" ")
+        print("=== Log ===")
+        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+        # Pull data from xlsx into a local list in python
+        record_particle_info(filename, particle_info)
+
+    # Write combined data to a new xlsx file
+    store_combined_particle_info(filename, particle_info)
+    parameter_text = "\n".join(
+        (
+            "Torus Sectors= ",
+            "R_inner   (m)= "+str(inner_radii),
+            "R_tube    (m)= "+str(tube_radii),
+            f"Phi Sector(m)= {torus_sector_theta:.3f}"
+        )
+    )
+    return parameter_text, dipole_sizes
+
+
 #=================#
 # Perform Program #
 #=================#
@@ -556,9 +590,15 @@ match(sys.argv[1]):
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre_SphereVary"
         particle_total = 12
-        dipole_size_range = [6e-8, 3.7e-8, 25]
+        dipole_size_range = [6e-8, 4e-8, 5]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename)
+        Display.plot_tangential_force_against_latticeResolution(filename+"_combined_data", 0, dipole_sizes, parameter_text)
+    case "torusInCircleDipoleSize":
+        filename = "SingleLaguerre_TorusVary"
+        particle_total = 6
+        dipole_size_range = [6e-8, 4e-8, 5]
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename)
         Display.plot_tangential_force_against_latticeResolution(filename+"_combined_data", 0, dipole_sizes, parameter_text)
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize'")
+        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize")
