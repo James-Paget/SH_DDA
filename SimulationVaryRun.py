@@ -649,7 +649,7 @@ match(sys.argv[1]):
         filename      = "SingleLaguerre_SphereVary"
         wavelength    = 1.0e-6
         beam_radius   = 1.15e-6
-        target_pos    = [beam_radius, 0.0, 1e-6]
+        target_pos    = [2.0*beam_radius, 0.0, 1.0e-6]
         target_radius = 200e-9
         wave_jump = wavelength/8.0
         #NOTE; Make sure the start is a multiple of jump in order for constructuve to be nice
