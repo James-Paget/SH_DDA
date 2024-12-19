@@ -431,8 +431,7 @@ def plot_tangential_force_against_number(filename, particle_target, parameter_te
     print("force_magnitudes = ", tangential_force_magnitudes)
 
     fig, ax = plt.subplots()
-    ax.plot(particle_numbers, total_force_magnitudes, label="total", color="red")
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="tangential", color="blue")
+
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
@@ -499,8 +498,6 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     print("force_magnitudes = ", tangential_force_magnitudes)
 
     fig, ax = plt.subplots()
-    ax.plot(particle_numbers, total_force_magnitudes, label="total", color="red")
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="tangential", color="blue")
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
@@ -521,7 +518,7 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
 
 def plot_tangential_force_against_arbitrary(filename, particle_target, parameter_text=""):
     #
-    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the numebr of particles in the system
+    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the number of particles in the system
     # Applies for spherical and torus particles
     #
     data = pd.read_excel(filename+".xlsx")
@@ -564,8 +561,7 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, parameter
     print("force_magnitudes = ", tangential_force_magnitudes)
 
     fig, ax = plt.subplots()
-    ax.plot(particle_numbers, total_force_magnitudes, label="total", color="red")
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="tangential", color="blue")
+
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
