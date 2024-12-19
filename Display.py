@@ -252,7 +252,7 @@ class DisplayObject (object):
         steps = len(positions)
         num_particles = len(positions[0])
 
-        #If no axes given
+        # If no axes given
         if fig == None or ax == None:
             fig = plt.figure()
             upper = self.max_size
@@ -279,105 +279,6 @@ class DisplayObject (object):
             plots.append(plot)
 
         ani = animation.FuncAnimation(fig, update, frames=steps, interval=100)
-
-        plt.show()
-
-
-
-    #
-    # BELOW CAN BE REPLACED BY 'animate_system3d()'
-    #
-    def animate_particles3d(self, fig, ax, positions, shapes, args, colours):
-        # Animation function
-        def update(t):
-            # Clear old particles
-            for plot in plots:
-                plot.remove()
-            plots.clear()
-
-            for i in range(num_particles):
-                match shapes[i]:
-                    case "sphere":
-                        x, y, z = self.make_sphere_surface(args[i], positions[t, i])
-                    case "torus":
-                        x, y, z = self.make_torus_sector_surface(args[i], positions[t, i])
-                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
-                plots.append(plot)
-
-        # Initialise
-        positions = np.array(positions)
-        steps = len(positions)
-        num_particles = len(positions[0])
-
-        plots = []
-        for i in range(num_particles):
-            # Convert hex colours to tuples
-            hex = colours[i][1:]
-            colour = tuple(int(hex[j:j+2], 16) / 255 for j in (0, 2, 4))
-            match shapes[i]:
-                case "sphere":
-                    x, y, z = self.make_sphere_surface(args[i], positions[0, i])
-                case "torus":
-                    x, y, z = self.make_torus_sector_surface(args[i], positions[0, i])
-            plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
-            plots.append(plot)
-
-        ani = animation.FuncAnimation(fig, update, frames=steps, interval=100)
-
-        plt.show()
-
-
-    def quiver_particles(self, positions, forces, shapes, args, colours, time_index, ignore_z_force=False, fig=None, ax=None):
-        # 3D plot of particle surfaces and forces at time_index.
-        # self used to set plot parameters.
-        # positions and forces list for each time for each particle.
-        # shapes, args, colours specify how to display the particle.
-        # fig, ax default to None, but can be passed in to plot a beam too.
-        
-        # Scale the force arrows to be visible.
-        quiver_scale = 7e4
-
-        # Initialise
-        positions = np.array(positions)
-        num_particles = len(positions[0])
-        upper = self.max_size
-        lower = -upper
-
-        # time_index cannot exceed self.frame_max.
-        if time_index > self.frame_max:
-            time_index = self.frame_max
-            print(f"Display.quiver: Set time_index to self.frame_max, {self.frame_max}.")
-
-        if fig == None or ax == None:
-            fig = plt.figure()
-            zlower = -2e-6
-            zupper = 2e-6
-            ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
-
-            ax.set_aspect('equal','box')
-            ax.set_xlabel("x (m)")
-            ax.set_ylabel("y (m)")
-
-        # Plot particle surfaces
-        for i in range(num_particles):
-            position = positions[time_index, i]
-            # Convert hex colours to tuples
-            hex = colours[i][1:]
-            colour = tuple(int(hex[j:j+2], 16) / 255 for j in (0, 2, 4))
-
-            match shapes[i]:
-                case "sphere":
-                    x, y, z = self.make_sphere_surface(args[i], position)
-                case "torus":
-                    x, y, z = self.make_torus_sector_surface(args[i], position)
-            ax.plot_surface(x, y, z, color=colour, alpha=0.6)
-
-        # Quiver plot
-        pos_x, pos_y, pos_z = np.transpose(positions[time_index, :, :])
-        force_x, force_y, force_z = np.transpose(forces[time_index, :, :]) * quiver_scale
-        if ignore_z_force:
-            force_z = np.zeros(force_z.shape)
-        ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
 
         plt.show()
 
@@ -578,13 +479,71 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, parameter
     plt.title("Tangential force for varying general parameter")
     plt.legend()
     plt.show()
+    
 
-def plot_tangential_force_against_latticeResolution():
+def plot_tangential_force_against_latticeResolution(filename, particle_target, dipole_sizes, parameter_text=""):
     #
     # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the resolution of the lattice
     # Applicable to spherical and torus particles
     #
-    pass
+    data = pd.read_excel(filename+".xlsx")
+    data_num = data.count(axis='columns')
+    total_force_magnitudes = []
+    tangential_force_magnitudes = []
+
+    for scenario_index in range(len(data)):
+        #Look through each scenario setup, get number of particles involved, try extract data from this scenario
+        number_of_particles = int(np.floor(data_num[scenario_index]/(6.0)))
+        force_value = 0.0
+        if (particle_target < number_of_particles):
+            # Total Force Magnitude
+            total_force_mag = np.sqrt(
+                 pow(data.iloc[scenario_index, 3 +6*particle_target], 2) 
+                +pow(data.iloc[scenario_index, 4 +6*particle_target], 2)
+            )
+
+            # Tangential Force Magnitude
+            position_xy_mag = np.sqrt(
+                pow(data.iloc[scenario_index, 0 +6*particle_target],2) +
+                pow(data.iloc[scenario_index, 1 +6*particle_target],2)
+            )
+            position_xy_vector_norm = [
+                data.iloc[scenario_index, 0 +6*particle_target] / position_xy_mag,
+                data.iloc[scenario_index, 1 +6*particle_target] / position_xy_mag
+            ]
+            tangential_xy_vector = [
+                -position_xy_vector_norm[1],
+                 position_xy_vector_norm[0]
+            ]
+            tangential_force_mag = tangential_xy_vector[0]*data.iloc[scenario_index, 3 +6*particle_target] + tangential_xy_vector[1]*data.iloc[scenario_index, 4 +6*particle_target]
+        #Add values to plot
+        total_force_magnitudes.append(total_force_mag)
+        tangential_force_magnitudes.append(tangential_force_mag)
+
+    #Plot data
+    print("dipole_sizes = ", dipole_sizes)
+    print("force_magnitudes = ", total_force_magnitudes)
+    print("force_magnitudes = ", tangential_force_magnitudes)
+
+    fig, ax = plt.subplots()
+
+    #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
+    text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
+
+    ax.plot(dipole_sizes, total_force_magnitudes, label="total", color="red")
+    ax.plot(dipole_sizes, tangential_force_magnitudes, label="tangential", color="blue")
+    ax.text(
+        0.0, text_ypos,
+        parameter_text,
+        transform=ax.transAxes,
+        fontsize=12
+    )
+    plt.xlabel("Dipole size (m)")
+    plt.ylabel("Force (N)")
+    plt.title("Tangential force for varying dipole size")
+    plt.legend()
+    plt.show()
+
 
 def plot_tangential_force_against_separation():
     #

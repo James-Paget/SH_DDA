@@ -106,14 +106,13 @@ def generate_yaml(filename, particle_list, parameters_arg):
     file.close()
 
 
-
 def generate_sphere_yaml(particle_formation, number_of_particles, particle_material="FusedSilica", characteristic_distance=1e-6, particle_radii = 200e-9, frames_of_animation=1):
     #
     # Generates a YAML file for a set of identical spheres with given parameters
     # This will overwrite files with the same name
     #
     # number_of_particles = Number of spheres to generate
-    # characteristic_distance = key distance for each formation, e.g. radi of circle particles are placed on, length of edge for cubic formation, etc
+    # characteristic_distance = key distance for each formation, e.g. radii of circle particles are placed on, length of edge for cubic formation, etc
     #
     
     # Create / overwrite YAML file
@@ -391,6 +390,66 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
     )
     return parameter_text
 
+def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename):
+    #
+    # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
+    #
+    # dipole_size_range = [size_min, size_max, num]
+    #
+    
+    particle_info = []
+    place_radius = 1.15e-6      #1.15e-6
+    particle_radii = 200e-9     #200e-9
+    z_plane = 1e-6
+    frames_of_animation = 1
+
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
+    dipole_sizes = np.linspace(*dipole_size_range) # unpack list to fill the 3 arguments
+
+    # Particles are in the same position each time.
+    particle_list = []
+    for particle_index in range(particle_total):
+        theta_jump = (2.0*np.pi)/particle_total
+        particle_theta = theta_jump*particle_index
+        particle_position = [place_radius*np.cos(particle_theta), place_radius*np.sin(particle_theta), z_plane]
+        position_offsets  = [
+            0.0,#random.random()*0.02*characteristic_distance, 
+            0.0,#random.random()*0.02*characteristic_distance, 
+            0.0#random.random()*0.02*characteristic_distance
+        ]
+        coords = np.array(particle_position) + np.array(position_offsets)
+        particle_list.append({"material": "FusedSilica", "shape": "sphere", "args": [particle_radii], "coords": coords, "altcolour": True})
+
+    # For each scenario to be tested
+    for dipole_size in dipole_sizes:
+        print("")
+        print(f"Performing calculation for dipole size {dipole_size}")
+
+        # Change parameters to use each dipole_size, then generate YAML
+        parameters["dipole_radius"] = dipole_size
+        generate_yaml(filename, particle_list, parameters)
+
+        # Run DipolesMulti2024Eigen.py
+        run_command = "python DipolesMulti2024Eigen.py "+filename
+        run_command = run_command.split(" ")
+        print("=== Log ===")
+        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+        # Pull data from xlsx into a local list in python
+        record_particle_info(filename, particle_info)
+
+    # Write combined data to a new xlsx file
+    store_combined_particle_info(filename, particle_info)
+    parameter_text = "\n".join(
+        (
+            "Spheres",
+            "R_placed   (m)= "+str(place_radius),
+            "R_particle (m)= "+str(particle_radii)
+        )
+    )
+    return parameter_text, dipole_sizes
+
+
 def simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename):
     #
     # Performs a DDA calcualtion for various particles in a circular ring on the Z=0 plane
@@ -431,7 +490,7 @@ def simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename):
 
 def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, filename):
     #
-    # Performs a DDA calcualtion for various particles in a circular ring on the Z=0 plane
+    # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
     # particle_numbers = list of particle numbers to be tested in sphere e.g. [1,2,3,4,8]
     #
@@ -472,28 +531,34 @@ def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, fil
 # Perform Program #
 #=================#
 if int(len(sys.argv)) != 2:
-    sys.exit("Usage: python <RUN_TYPE>\nOptions: spheresInCircle, torusInCircle, torusInCircleFixedPhi, spheresInCircleSlider")
+    sys.exit("Usage: python <RUN_TYPE>")
 
 match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre_SphereVary"
         #1,2,3,4,5,6,7,8,9,10,11,12
         parameter_text = simulations_singleFrame_optForce_spheresInCircle([1,2,3,4], filename);
-        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text=parameter_text)
-        Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text=parameter_text)
+        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
+        Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     case "torusInCircle":
         filename = "SingleLaguerre_TorusVary"
         parameter_text = simulations_singleFrame_optForce_torusInCircle([2,3,4,5,6,7,8,9,10,11,12], filename);
-        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text=parameter_text)
+        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
     case "torusInCircleFixedPhi":
         filename = "SingleLaguerre_TorusVary"
         parameter_text = simulations_singleFrame_optForce_torusInCircleFixedPhi([1,2,3,4,5,6,7,8,9,10,11,12], filename);
-        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text=parameter_text)
+        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
     case "spheresInCircleSlider":
         filename = "SingleLaguerre_SphereVary"
         #np.pi/2.0, 3.0*np.pi/2.0,
         parameter_text = simulations_singleFrame_optForce_spheresInCircleSlider(1, [np.pi/6.0, np.pi, 50], filename);
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, parameter_text=parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, parameter_text)
+    case "spheresInCircleDipoleSize":
+        filename = "SingleLaguerre_SphereVary"
+        particle_total = 12
+        dipole_size_range = [6e-8, 3.7e-8, 25]
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename)
+        Display.plot_tangential_force_against_latticeResolution(filename+"_combined_data", 0, dipole_sizes, parameter_text)
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider'")
+        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize'")
