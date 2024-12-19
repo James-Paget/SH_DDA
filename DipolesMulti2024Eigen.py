@@ -812,7 +812,6 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
-    print("----> HERE");
     for i in range(number_of_timesteps):
         #        print("positions: ",position_vectors)
         
@@ -1044,9 +1043,9 @@ for i in range(optforces.shape[0]):
 
 if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
-    fig, ax = None, None                                   #
-    # fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    # display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
+    #fig, ax = None, None                                   #
+    fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
+    #display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
 
 
     ## ===

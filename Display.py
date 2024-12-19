@@ -516,7 +516,7 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     plt.legend()
     plt.show()
 
-def plot_tangential_force_against_arbitrary(filename, particle_target, parameter_text=""):
+def plot_tangential_force_against_arbitrary(filename, particle_target, x_scale, x_label, parameter_text=""):
     #
     # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the number of particles in the system
     # Applies for spherical and torus particles
@@ -554,7 +554,7 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, parameter
         #Add values to plot
         total_force_magnitudes.append(total_force_mag)
         tangential_force_magnitudes.append(tangential_force_mag)
-        particle_numbers.append(scenario_index)
+        particle_numbers.append(scenario_index*x_scale)
     #Plot data
     print("particle_numbers = ", particle_numbers)
     print("force_magnitudes = ", total_force_magnitudes)
@@ -573,7 +573,7 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, parameter
         transform=ax.transAxes,
         fontsize=12
     )
-    plt.xlabel("Arbitrary Index")
+    plt.xlabel(x_label)
     plt.ylabel("Force (N)")
     plt.title("Tangential force for varying general parameter")
     plt.legend()
