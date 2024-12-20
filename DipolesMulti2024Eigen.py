@@ -1045,7 +1045,7 @@ if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     #fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    #display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
 
 
     ## ===
@@ -1055,23 +1055,7 @@ if display.show_output==True:
     #fig,ax = display.plot_intensity(beam_collection)
     #display.animate_particles(fig,ax,particles,radius,colors)
 
-    ###
-    ### FIX HERE FOR RADIUS, swap optpos for particles (positions)?
-    ###
-   
-    # 3D particles matplotlib animation
-    # fig, ax = display.plot_intensity3d(beam_collection)
-    # display.animate_particles3d(fig, ax, optpos, shapes, args, colors)
 
-    # 3D particles matplotlib quiver
-    ####
-    ## NOTE; Previous plotting functions combined into animate_system3d, hence others can be removed now
-    ####
-    #time_index = 0
-    #ignore_z_force = True
-    # Plot just particles and forces
-    #display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force)
-    #display.quiver_particles(optpos, optforces, shapes, args, colors, time_index, ignore_z_force, fig, ax)
 
 
 

@@ -29,16 +29,15 @@ beams:
 particles:
   default_radius: 1e-07
   default_material: FusedSilica
-  particle_list:
     part_0:
       material: FusedSilica
       shape: sphere
-      args: 2e-07
-      coords: 1.15e-06 0.0 1e-06
+      args: 1e-06
+      coords: 1e-06 0 0
       altcolour: True
     part_1:
       material: FusedSilica
       shape: sphere
-      args: 2e-07
-      coords: -1.14842396496776e-06 6.018634967938589e-08 1e-06
+      args: 1e-06
+      coords: -1e-06 0 0
       altcolour: True
