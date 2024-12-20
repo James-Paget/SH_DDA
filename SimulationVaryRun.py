@@ -9,6 +9,7 @@ import numpy as np
 import xlsxwriter
 import pandas as pd
 import random
+import math
 
 import Display
 
@@ -131,7 +132,7 @@ def generate_sphere_yaml(particle_formation, number_of_particles, particle_mater
                 position_offsets  = [
                     0.0,#random.random()*0.02*characteristic_distance, 
                     0.0,#random.random()*0.02*characteristic_distance, 
-                    0.0#random.random()*0.02*characteristic_distance
+                    0.0 #random.random()*0.02*characteristic_distance
                 ]
                 coords = np.array(particle_position) + np.array(position_offsets)
                 particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radii], "coords": coords, "altcolour": True})
@@ -257,6 +258,23 @@ def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_
     
     slider_position = [characteristic_distance*np.cos(slider_theta), characteristic_distance*np.sin(slider_theta), particle_position[2]]
     particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radii], "coords": slider_position, "altcolour": True})
+
+    generate_yaml(filename, particle_list, parameters)
+
+def generate_sphere_arbitrary_yaml(particles, wavelength=1.0e-6, particle_material="FusedSilica", frames_of_animation=1):
+    #
+    # Generates a YAML file for a set of arbitrary spheres specified
+    #
+    
+    # Create / overwrite YAML file
+    # Writing core system parameters
+    filename = "SingleLaguerre_SphereVary"
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "wavelength": wavelength}
+    particle_list = []
+
+    # Writing specific parameters for particle formation
+    for particle in particles:
+        particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle["radius"]], "coords": particle["position"], "altcolour": True})
 
     generate_yaml(filename, particle_list, parameters)
 
@@ -391,6 +409,138 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
     )
     return parameter_text
 
+def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=None, reducedSet=0):
+    #
+    # Performs a DDA calcualtion for various particles in a circular ring on the Z=0 plane
+    #
+    # reducedSet = whether to consider just the first 2 intersections found, or to consider theb entire set
+    # target_args = sphere args, marked as the target particle -> forces measured on this particle
+    # wave_range = [start_wave_spacing, stop_wave_spacing, jump_wave_spacing]
+    # If wavelength is given, it will plot in terms of fractions of the wavelength, else it will just plot int erms of the spacing
+    #
+    ####
+    ## ************************************************************************************************
+    ## THIS WILL NOT ACCOUNT FOR THE SCATTERING BETWEEN EACH OF THE OTHER PARTICLES
+    ##      IS THERE SOME WAY AROUND THIS? ---> NEGLECTING THESE FORCE WOULD CAUSE UNREALISTIC CONDITIONS
+    ##          COULD SEE HOW LARGE THIS FORCE ARE, HENCE ARGUE IF IMPORTANT OR NOT
+    ## ************************************************************************************************
+    ####
+
+    def calculate_XY_intersection_positions(r1, p1, r2, p2):
+        #
+        # Calculates the positions where two rings collide
+        # The [1st] ring is of radius r1, centred at position p1
+        # The [2nd] ring is for r2 and p2
+        #
+        # NOTE; This is only in the XY palne currently -> will NOT account for Z separation, assumes the spheres are at equal Z heights
+        #
+        intersect_positions = []
+        centre_vec = [p2[0]-p1[0], p2[1]-p1[1]]
+        centre_dist = np.sqrt( pow(centre_vec[0], 2) +pow(centre_vec[1], 2)  )    #Distance between centres
+        # Find 'flat' intersect coords (transformed to (0,0), (0,d) system)
+        x_intersect_flat = ( pow(centre_dist,2) -pow(r2,2) +pow(r1,2) ) / (2.0*centre_dist)
+        y_intersect_flat_p = +np.sqrt( pow(r1,2) -pow(x_intersect_flat,2) )
+        y_intersect_flat_m = -np.sqrt( pow(r1,2) -pow(x_intersect_flat,2) )
+        intersect_positions.append( [x_intersect_flat, y_intersect_flat_p])
+        intersect_positions.append( [x_intersect_flat, y_intersect_flat_m] )
+        # Find 'true' intersect coords (rotated back to real positions)
+        theta = math.atan2(centre_vec[1], centre_vec[0])     #Angle of p2 relative to p1 in XY plane
+        intersect_positions.append( 
+            [
+                 intersect_positions[0][0]*np.cos(theta) + intersect_positions[0][1]*np.sin(theta),
+                -intersect_positions[0][0]*np.sin(theta) + intersect_positions[0][1]*np.cos(theta)
+            ]
+        )
+        intersect_positions.append( 
+            [
+                 intersect_positions[1][0]*np.cos(theta) + intersect_positions[1][1]*np.sin(theta),
+                -intersect_positions[1][0]*np.sin(theta) + intersect_positions[1][1]*np.cos(theta)
+            ]
+        )
+        # Remove previous flat intersections
+        intersect_positions.pop(0)
+        intersect_positions.pop(0)
+        # Return true intersections
+        return intersect_positions
+
+    def calculate_interference_positions(wave_spacing, beam_radius, target_pos):
+        #
+        # Calculates the positions, relative to some target particle, on the circle defined by the beam radius where 
+        # constructive/destructive interference would occur with the target
+        #
+        # wavelength = wavelength of incident light
+        # beam_radius = defines circle where interfereing particles will be allowed to be placed, typically on the beam's 
+        #               high intensity ring, so it will scatter the most light
+        # target_pos = position of the target particle to feel the interference affect chosen
+        #
+        # NOTE; Assumes the beam is centered at the origin
+        #
+        positions = []
+        # Select radii to probe
+        interfere_radii = float_range(wave_spacing, abs(target_pos[0])+beam_radius, wave_spacing)
+        # Calculate intersections at this radii
+        for rad in interfere_radii:
+            intersect_positions = calculate_XY_intersection_positions(beam_radius, [0.0, 0.0], rad, target_pos[:2])
+            for pos in intersect_positions:
+                positions.append(pos)
+        return positions
+    
+    def float_range(start, stop, jump):
+        set = []
+        value = start
+        while value < stop:
+            set.append(value)
+            value += jump
+        return set
+
+    particle_info = [];
+    wave_range = [wave_start, abs(target_pos[0])+beam_radius, wave_jump]     #NOTE; Assumes the target is offset in X axis, NOT Y or Z
+
+    # Sweep through positions to place particles at, at different separations relative to the target
+    for wave_spacing in float_range(wave_range[0], wave_range[1], wave_range[2]):
+        particle_positions = calculate_interference_positions(wave_spacing, beam_radius, target_pos)
+        match reducedSet:
+            case 1:     # First 2 particles
+                particle_positions = particle_positions[:2]
+            case 2:     # First particle only
+                particle_positions = particle_positions[:1]
+            # Case 0 => Keep full set
+        print("")
+        print("Performing calculation for "+str( len(particle_positions) )+"+1 particles, wave_spacing=",wave_spacing)
+        
+        #Generate particle setup
+        particles = []
+        particles.append( {"radius": target_radius, "position": target_pos} )                                               # Add target
+        for particle_pos in particle_positions:
+            particles.append( {"radius": target_radius, "position": [particle_pos[0], particle_pos[1], target_pos[2]]} )    # Add others
+
+        if(wavelength != None):
+            generate_sphere_arbitrary_yaml(particles, frames_of_animation=1, wavelength=wavelength)     # Writes to SingleLaguerre_SphereVary.yml
+        else:
+            generate_sphere_arbitrary_yaml(particles, frames_of_animation=1)
+
+        #Run DipolesMulti2024Eigen.py
+        run_command = "python DipolesMulti2024Eigen.py "+filename
+        run_command = run_command.split(" ")
+        print("=== Log ===")
+        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+        #Pull data from xlsx into a local list in python
+        record_particle_info(filename, particle_info)
+
+    #Write combined data to a new xlsx file
+    store_combined_particle_info(filename, particle_info)
+    parameter_text = "\n".join(
+        (
+            "Spheres Wave Spacing",
+            "R_beam   (m)= "+str(beam_radius),
+            "R_target (m)= "+str(target_radius)
+        )
+    )
+    return parameter_text
+        
+        
+        
 def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
@@ -414,12 +564,13 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
         parameters["dipole_radius"] = dipole_size
         generate_sphere_yaml("circle", particle_total, particle_material="FusedSilica", characteristic_distance=place_radius, particle_radii = particle_radii, parameters=parameters)
 
-        # Run DipolesMulti2024Eigen.py
+        # Run DipolesMulti2024Eigen.py   
+        
         run_command = "python DipolesMulti2024Eigen.py "+filename
         run_command = run_command.split(" ")
         print("=== Log ===")
         result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
-
+        
         # Pull data from xlsx into a local list in python
         record_particle_info(filename, particle_info)
 
@@ -585,8 +736,22 @@ match(sys.argv[1]):
     case "spheresInCircleSlider":
         filename = "SingleLaguerre_SphereVary"
         #np.pi/2.0, 3.0*np.pi/2.0,
-        parameter_text = simulations_singleFrame_optForce_spheresInCircleSlider(1, [np.pi/6.0, np.pi, 50], filename);
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, parameter_text)
+        lower_theta = np.pi/6.0
+        upper_theta = np.pi
+        number_theta = 50
+        jump_theta = (upper_theta-lower_theta)/number_theta
+        parameter_text = simulations_singleFrame_optForce_spheresInCircleSlider(1, [lower_theta, upper_theta, number_theta], filename);
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, jump_theta, "slider theta (radians)", parameter_text=parameter_text)
+    case "spheres_wavelengthTrial":
+        filename      = "SingleLaguerre_SphereVary"
+        wavelength    = 1.0e-6
+        beam_radius   = 1.15e-6
+        target_pos    = [2.0*beam_radius, 0.0, 1.0e-6]
+        target_radius = 200e-9
+        wave_jump = wavelength/8.0
+        #NOTE; Make sure the start is a multiple of jump in order for constructuve to be nice
+        parameter_text = simulations_singleFrame_optForce_wavelengthTrial(4.0*wave_jump, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=wavelength, reducedSet=2);
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, wave_jump/wavelength, "Wave spacing (wavelengths)", parameter_text=parameter_text)
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre_SphereVary"
         particle_total = 12

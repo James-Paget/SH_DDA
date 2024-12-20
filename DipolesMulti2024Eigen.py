@@ -812,7 +812,6 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
-    print("----> HERE");
     for i in range(number_of_timesteps):
         #        print("positions: ",position_vectors)
         
