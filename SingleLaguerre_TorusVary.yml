@@ -2,7 +2,7 @@ options:
   frames: 1
 parameters:
   wavelength: 1e-06
-  dipole_radius: 5e-08
+  dipole_radius: 4e-08
   time_step: 0.0001
 output:
   vmd_output: True
@@ -33,36 +33,36 @@ particles:
     part_0:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 -0.4801205147287337 0.4801205147287337
+      args: 1.15e-06 2e-07 -0.5062074712504728 0.5062074712504728
       coords: 1.15e-06 0.0 1e-06
       altcolour: True
     part_1:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 0.5670770364678641 1.5273180659253316
+      args: 1.15e-06 2e-07 0.540990079946125 1.5534050224470706
       coords: 5.749999999999999e-07 9.959292143521046e-07 1e-06
       altcolour: True
     part_2:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 1.614274587664462 2.5745156171219294
+      args: 1.15e-06 2e-07 1.588187631142723 2.6006025736436684
       coords: -5.750000000000002e-07 9.959292143521043e-07 1e-06
       altcolour: True
     part_3:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 2.66147213886106 3.6217131683185273
+      args: 1.15e-06 2e-07 2.635385182339321 3.6478001248402663
       coords: -1.15e-06 -3.698682094256264e-22 1e-06
       altcolour: True
     part_4:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 3.7086696900576577 4.668910719515125
+      args: 1.15e-06 2e-07 3.6825827335359187 4.694997676036865
       coords: -5.749999999999996e-07 -9.959292143521046e-07 1e-06
       altcolour: True
     part_5:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 4.755867241254256 5.7161082707117234
+      args: 1.15e-06 2e-07 4.7297802847325165 5.742195227233463
       coords: 5.750000000000011e-07 -9.95929214352104e-07 1e-06
       altcolour: True

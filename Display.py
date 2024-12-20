@@ -417,7 +417,7 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     plt.legend()
     plt.show()
 
-def plot_tangential_force_against_arbitrary(filename, particle_target, x_scale, x_label, parameter_text=""):
+def plot_tangential_force_against_arbitrary(filename, particle_target, x_values, x_label, x_units, parameter_text=""):
     #
     # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the number of particles in the system
     # Applies for spherical and torus particles
@@ -426,11 +426,10 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_scale, 
     data_num = data.count(axis='columns')
     total_force_magnitudes = []
     tangential_force_magnitudes = []
-    particle_numbers = []
+
     for scenario_index in range(len(data) ):
         #Look through each scenario setup, get number of particles involved, try extract data from this scenario
         number_of_particles = int(np.floor(data_num[scenario_index]/(6.0)))
-        force_value = 0.0
         if(particle_target < number_of_particles):
             # Total Force Magnitude
             total_force_mag = np.sqrt(
@@ -455,101 +454,27 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_scale, 
         #Add values to plot
         total_force_magnitudes.append(total_force_mag)
         tangential_force_magnitudes.append(tangential_force_mag)
-        particle_numbers.append(scenario_index*x_scale)
+
     #Plot data
-    print("particle_numbers = ", particle_numbers)
+    print(f"{x_label}: {x_values}")
     print("force_magnitudes = ", total_force_magnitudes)
-    print("force_magnitudes = ", tangential_force_magnitudes)
+    print("tangential_force_magnitudes = ", tangential_force_magnitudes)
 
     fig, ax = plt.subplots()
 
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    ax.plot(particle_numbers, total_force_magnitudes, label="total", color="red")
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="tangential", color="blue")
+    ax.plot(x_values, total_force_magnitudes, label="total", color="red")
+    ax.plot(x_values, tangential_force_magnitudes, label="tangential", color="blue")
     ax.text(
         0.0, text_ypos,
         parameter_text,
         transform=ax.transAxes,
         fontsize=12
     )
-    plt.xlabel(x_label)
+    plt.xlabel(f"{x_label} {x_units}") # Brackets included in units so not left over if unitless i.e. ()
     plt.ylabel("Force (N)")
-    plt.title("Tangential force for varying general parameter")
+    plt.title(f"Tangential force against {x_label}")
     plt.legend()
     plt.show()
-    
-
-def plot_tangential_force_against_latticeResolution(filename, particle_target, dipole_sizes, parameter_text=""):
-    #
-    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the resolution of the lattice
-    # Applicable to spherical and torus particles
-    #
-    data = pd.read_excel(filename+".xlsx")
-    data_num = data.count(axis='columns')
-    total_force_magnitudes = []
-    tangential_force_magnitudes = []
-
-    for scenario_index in range(len(data)):
-        #Look through each scenario setup, get number of particles involved, try extract data from this scenario
-        number_of_particles = int(np.floor(data_num[scenario_index]/(6.0)))
-        force_value = 0.0
-        if (particle_target < number_of_particles):
-            # Total Force Magnitude
-            total_force_mag = np.sqrt(
-                 pow(data.iloc[scenario_index, 3 +6*particle_target], 2) 
-                +pow(data.iloc[scenario_index, 4 +6*particle_target], 2)
-            )
-
-            # Tangential Force Magnitude
-            position_xy_mag = np.sqrt(
-                pow(data.iloc[scenario_index, 0 +6*particle_target],2) +
-                pow(data.iloc[scenario_index, 1 +6*particle_target],2)
-            )
-            position_xy_vector_norm = [
-                data.iloc[scenario_index, 0 +6*particle_target] / position_xy_mag,
-                data.iloc[scenario_index, 1 +6*particle_target] / position_xy_mag
-            ]
-            tangential_xy_vector = [
-                -position_xy_vector_norm[1],
-                 position_xy_vector_norm[0]
-            ]
-            tangential_force_mag = tangential_xy_vector[0]*data.iloc[scenario_index, 3 +6*particle_target] + tangential_xy_vector[1]*data.iloc[scenario_index, 4 +6*particle_target]
-        #Add values to plot
-        total_force_magnitudes.append(total_force_mag)
-        tangential_force_magnitudes.append(tangential_force_mag)
-
-    #Plot data
-    print("dipole_sizes = ", dipole_sizes)
-    print("force_magnitudes = ", total_force_magnitudes)
-    print("force_magnitudes = ", tangential_force_magnitudes)
-
-    fig, ax = plt.subplots()
-
-    #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
-    text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
-
-    ax.plot(dipole_sizes, total_force_magnitudes, label="total", color="red")
-    ax.plot(dipole_sizes, tangential_force_magnitudes, label="tangential", color="blue")
-    ax.text(
-        0.0, text_ypos,
-        parameter_text,
-        transform=ax.transAxes,
-        fontsize=12
-    )
-    plt.xlabel("Dipole size (m)")
-    plt.ylabel("Force (N)")
-    plt.title("Tangential force for varying dipole size")
-    plt.legend()
-    plt.show()
-
-
-def plot_tangential_force_against_separation():
-    #
-    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the separation between torus sectors
-    # NOTE; This is only applicable to torus sectors
-    #
-    pass
-
-

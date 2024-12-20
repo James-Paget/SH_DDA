@@ -331,7 +331,7 @@ def store_combined_particle_info(filename, particle_info):
 
 def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename):
     #
-    # Performs a DDA calcualtion for various particles in a circular ring on the Z=0 plane
+    # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
     # particle_numbers = list of particle numbers to be tested in sphere e.g. [1,2,3,4,8]
     #
@@ -369,7 +369,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
 
 def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slider_range, filename):
     #
-    # Performs a DDA calcualtion for various particles in a circular ring on the Z=0 plane
+    # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
     # particle_total = Number of particles other than slider involved in simulation -> These will be placed in a circular formation
     # slider_range = [start, stop, steps] -> angles to palce slider at
@@ -411,7 +411,7 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
 
 def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=None, reducedSet=0):
     #
-    # Performs a DDA calcualtion for various particles in a circular ring on the Z=0 plane
+    # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
     # reducedSet = whether to consider just the first 2 intersections found, or to consider theb entire set
     # target_args = sphere args, marked as the target particle -> forces measured on this particle
@@ -588,7 +588,7 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
 
 def simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename):
     #
-    # Performs a DDA calcualtion for various particles in a circular ring on the Z=0 plane
+    # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
     # particle_numbers = list of particle numbers to be tested in sphere e.g. [1,2,3,4,8]
     #
@@ -712,6 +712,53 @@ def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dip
     return parameter_text, dipole_sizes
 
 
+def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename):
+    #
+    # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
+    #
+    # separation_range = [sep_min, sep_max, num]
+    #
+    
+    particle_info = []
+    inner_radii = 1.15e-6
+    tube_radii  = 200e-9
+    frames_of_animation = 1
+
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
+    separations = np.linspace(*separation_range) # unpack list to fill the 3 arguments
+ 
+    # For each scenario to be tested
+    for separation in separations:
+        print(f"\nPerforming calculation for dipole size {separation}")
+
+        torus_gap_theta    = separation/inner_radii    # Full angle occupied by gap between torus sectors
+        torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
+        
+        # Generate YAML
+        generate_torus_yaml(particle_total, inner_radii, tube_radii, separation, particle_material="FusedSilica", parameters=parameters)
+
+        # Run DipolesMulti2024Eigen.py
+        run_command = "python DipolesMulti2024Eigen.py "+filename
+        run_command = run_command.split(" ")
+        print("=== Log ===")
+        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+        # Pull data from xlsx into a local list in python
+        record_particle_info(filename, particle_info)
+
+    # Write combined data to a new xlsx file
+    store_combined_particle_info(filename, particle_info)
+    parameter_text = "\n".join(
+        (
+            "Torus Sectors= ",
+            "R_inner   (m)= "+str(inner_radii),
+            "R_tube    (m)= "+str(tube_radii),
+            f"Phi Sector(m)= {torus_sector_theta:.3f}"
+        )
+    )
+    return parameter_text, separations
+
+
 #=================#
 # Perform Program #
 #=================#
@@ -722,26 +769,26 @@ match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre_SphereVary"
         #1,2,3,4,5,6,7,8,9,10,11,12
-        parameter_text = simulations_singleFrame_optForce_spheresInCircle([1,2,3,4], filename);
-        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
+        particle_numbers = [1,2,3,4]
+        parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
+        # Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     case "torusInCircle":
         filename = "SingleLaguerre_TorusVary"
-        parameter_text = simulations_singleFrame_optForce_torusInCircle([2,3,4,5,6,7,8,9,10,11,12], filename);
-        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
+        particle_numbers = [2,3,4,5,6,7,8,9,10,11,12]
+        parameter_text = simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
     case "torusInCircleFixedPhi":
         filename = "SingleLaguerre_TorusVary"
-        parameter_text = simulations_singleFrame_optForce_torusInCircleFixedPhi([1,2,3,4,5,6,7,8,9,10,11,12], filename);
-        Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
+        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12]
+        parameter_text = simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, filename)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
     case "spheresInCircleSlider":
         filename = "SingleLaguerre_SphereVary"
-        #np.pi/2.0, 3.0*np.pi/2.0,
-        lower_theta = np.pi/6.0
-        upper_theta = np.pi
-        number_theta = 50
-        jump_theta = (upper_theta-lower_theta)/number_theta
-        parameter_text = simulations_singleFrame_optForce_spheresInCircleSlider(1, [lower_theta, upper_theta, number_theta], filename);
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, jump_theta, "slider theta (radians)", parameter_text=parameter_text)
+        theta_range = [np.pi/6.0, np.pi, 50] #np.pi/2.0, 3.0*np.pi/2.0,
+        parameter_text = simulations_singleFrame_optForce_spheresInCircleSlider(1, theta_range, filename)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*theta_range), "slider theta", "(radians)", parameter_text)
     case "spheres_wavelengthTrial":
         filename      = "SingleLaguerre_SphereVary"
         wavelength    = 1.0e-6
@@ -749,21 +796,30 @@ match(sys.argv[1]):
         target_pos    = [2.0*beam_radius, 0.0, 1.0e-6]
         target_radius = 200e-9
         wave_jump = wavelength/8.0
-        #NOTE; Make sure the start is a multiple of jump in order for constructuve to be nice
-        parameter_text = simulations_singleFrame_optForce_wavelengthTrial(4.0*wave_jump, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=wavelength, reducedSet=2);
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, wave_jump/wavelength, "Wave spacing (wavelengths)", parameter_text=parameter_text)
+        wave_start = 4.0*wave_jump
+        x_values = np.arange(wave_start, abs(target_pos[0])+beam_radius, wave_jump) /wavelength # XXX BASED ON: [wave_start, abs(target_pos[0])+beam_radius, wave_jump]
+        #NOTE; Make sure the start is a multiple of jump in order for constructive to be nice
+        parameter_text = simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=wavelength, reducedSet=2)
+        # OLD_ARB_CALL: Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, wave_jump/wavelength, "Wave spacing (wavelengths)", parameter_text=parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, x_values, "Wave spacing", "(wavelengths)", parameter_text)
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre_SphereVary"
         particle_total = 12
         dipole_size_range = [6e-8, 4e-8, 5]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename)
-        Display.plot_tangential_force_against_latticeResolution(filename+"_combined_data", 0, dipole_sizes, parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "(m)", parameter_text)
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
         dipole_size_range = [6e-8, 4e-8, 5]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename)
-        Display.plot_tangential_force_against_latticeResolution(filename+"_combined_data", 0, dipole_sizes, parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "(m)", parameter_text)
+    case "torusInCircleSeparation":
+        filename = "SingleLaguerre_TorusVary"
+        particle_total = 6
+        separation_range = [1e-8, 4e-8, 50]
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "(m)", parameter_text)
     case _:
         print("Unknown run type: ",sys.argv[1]);
         print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize")
