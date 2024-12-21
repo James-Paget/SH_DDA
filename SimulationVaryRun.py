@@ -342,9 +342,8 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
     parameters = {"frames": 100, "frame_max": 100}
 
     #For each scenario to be tested
-    for particle_number in particle_numbers:
-        print("")
-        print("Performing calculation for "+str(particle_number)+" particles")
+    for i, particle_number in enumerate(particle_numbers):
+        print(f"\n{i}/{len(particle_numbers)}: Performing calculation for {particle_number} particles")
         #Generate required YAML, perform calculation, then pull force data
         generate_sphere_yaml("circle", particle_number, characteristic_distance=place_radius, particle_radii=particle_radii, parameters=parameters)     # Writes to SingleLaguerre_SphereVary.yml
 
@@ -557,8 +556,8 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
     dipole_sizes = np.linspace(*dipole_size_range) # unpack list to fill the 3 arguments
 
     # For each scenario to be tested
-    for dipole_size in dipole_sizes:
-        print(f"\nPerforming calculation for dipole size {dipole_size}")
+    for i, dipole_size in enumerate(dipole_sizes):
+        print(f"\n{i}/{len(dipole_sizes)}: Performing calculation for dipole size {dipole_size}")
 
         # Change parameters to use each dipole_size, then generate YAML
         parameters["dipole_radius"] = dipole_size
@@ -599,9 +598,8 @@ def simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename):
     separation  = 0.3e-6
     parameters = {"frames": 1, "frame_max": 1}
     #For each scenario to be tested
-    for particle_number in particle_numbers:
-        print("")
-        print("Performing calculation for "+str(particle_number)+" particles")
+    for i, particle_number in enumerate(particle_numbers):
+        print(f"\n{i}/{len(particle_numbers)}: Performing calculation for {particle_number} particles")
         #Generate required YAML, perform calculation, then pull force data
         generate_torus_yaml(particle_number, inner_radii, tube_radii, separation, parameters=parameters)     # Writes to <filename>.yml
 
@@ -637,9 +635,8 @@ def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, fil
     tube_radii  = 200e-9
     sector_phi  = (2.0*np.pi)/16.0  #Angular torus width
     #For each scenario to be tested
-    for particle_number in particle_numbers:
-        print("")
-        print("Performing calculation for "+str(particle_number)+" particles")
+    for i, particle_number in enumerate(particle_numbers):
+        print(f"\n{i}/{len(particle_numbers)}: Performing calculation for {particle_number} particles")
         #Generate required YAML, perform calculation, then pull force data
         generate_torus_fixedPhi_yaml(particle_number, inner_radii, tube_radii, sector_phi)     # Writes to <filename>.yml
 
@@ -683,8 +680,8 @@ def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dip
     torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
  
     # For each scenario to be tested
-    for dipole_size in dipole_sizes:
-        print(f"\nPerforming calculation for dipole size {dipole_size}")
+    for i, dipole_size in enumerate(dipole_sizes):
+        print(f"\n{i}/{len(dipole_sizes)}: Performing calculation for dipole size {dipole_size}")
 
         # Change parameters to use each dipole_size, then generate YAML
         parameters["dipole_radius"] = dipole_size
@@ -728,8 +725,8 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
     separations = np.linspace(*separation_range) # unpack list to fill the 3 arguments
  
     # For each scenario to be tested
-    for separation in separations:
-        print(f"\nPerforming calculation for dipole size {separation}")
+    for i, separation in enumerate(separations):
+        print(f"\n{i}/{len(separations)}: Performing calculation for dipole size {separation}")
 
         torus_gap_theta    = separation/inner_radii    # Full angle occupied by gap between torus sectors
         torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
@@ -817,7 +814,7 @@ match(sys.argv[1]):
     case "torusInCircleSeparation":
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
-        separation_range = [1e-8, 4e-8, 50]
+        separation_range = [20e-9, 300e-9, 40]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "(m)", parameter_text)
     case _:
