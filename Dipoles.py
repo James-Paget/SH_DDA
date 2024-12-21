@@ -85,13 +85,10 @@ def py_optical_force_torque_array(array_of_particles, dipole_primitive_num, dipo
     """
     Wrapper function for the new optical force code, including torques (= r X F), and couples (= p X E).
     """
-
     #
     # NOTE; dipole_primitives NOT using float64, just float
     #
     num_particles = len(array_of_particles)
-#    print(array_of_particles.shape)
-#    print(dipole_primitive.shape)
     forces = np.zeros((num_particles,3),dtype=np.float64)
     torques = np.zeros((num_particles,3),dtype=np.float64)
     couples = np.zeros((num_particles,3),dtype=np.float64)

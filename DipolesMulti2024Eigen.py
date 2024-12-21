@@ -494,6 +494,9 @@ def spring_force_array(array_of_positions, dipole_radius):
     displacements_matrix_T = np.transpose(displacements_matrix)
     stiffness = 1.0e-5
     spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
+    ##
+    ## Possible double zeroing?
+    ##
     for i in range(number_of_dipoles):
         for j in range(number_of_dipoles):
             spring_force_matrix[i][j] = np.zeros(3)
@@ -1045,8 +1048,7 @@ if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
-
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=False)
 
     ## ===
     ## Legacy Plotting Functions -> Remove

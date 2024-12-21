@@ -337,7 +337,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
     #
     
     particle_info = [];
-    place_radius = 1.15e-6      #1.15e-6
+    place_radius = 1.152e-6      #1.15e-6
     particle_radii = 200e-9     #200e-9
     parameters = {"frames": 100, "frame_max": 100}
 
@@ -346,7 +346,6 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
         print(f"\n{i}/{len(particle_numbers)}: Performing calculation for {particle_number} particles")
         #Generate required YAML, perform calculation, then pull force data
         generate_sphere_yaml("circle", particle_number, characteristic_distance=place_radius, particle_radii=particle_radii, parameters=parameters)     # Writes to SingleLaguerre_SphereVary.yml
-
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
         run_command = run_command.split(" ")
