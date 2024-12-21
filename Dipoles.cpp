@@ -626,6 +626,8 @@ Eigen::MatrixXcd dipole_moment_array(Eigen::MatrixXd array_of_positions, int num
     // array_of_positions contains all positions of dipoles in NdNp x 3 list.
     // number_of_dipoles is total across all particles.
     // number_of_dipoles_in_primitive is assuming same dipole number in every particle.
+    //      NOTE; number_of_dipoles_in_primitive now replaced by dipole_primitive_num list that records the number of dipoles in each primitive 
+    //            provided, so variable particle sizes allowed now
     //
     int i,j,ii,ti,tj;
     int num_beams;

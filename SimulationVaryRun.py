@@ -341,14 +341,14 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
     #
     
     particle_info = [];
-    place_radius = 1.15e-6      #1.15e-6
+    place_radius = 1.152e-6      #1.15e-6
     particle_radii = 200e-9     #200e-9
     #For each scenario to be tested
     for particle_number in particle_numbers:
         print("")
         print("Performing calculation for "+str(particle_number)+" particles")
         #Generate required YAML, perform calculation, then pull force data
-        generate_sphere_yaml("circle", particle_number, characteristic_distance=place_radius, particle_radii=particle_radii, frames_of_animation=100)     # Writes to SingleLaguerre_SphereVary.yml
+        generate_sphere_yaml("circle", particle_number, characteristic_distance=place_radius, particle_radii=particle_radii, frames_of_animation=1)     # Writes to SingleLaguerre_SphereVary.yml
 
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -624,8 +624,8 @@ if int(len(sys.argv)) != 2:
 match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre_SphereVary"
-        #1,2,3,4,5,6,7,8,9,10,11,12
-        parameter_text = simulations_singleFrame_optForce_spheresInCircle([1,2,3,4], filename);
+        #1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+        parameter_text = simulations_singleFrame_optForce_spheresInCircle([18], filename);
         Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text=parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text=parameter_text)
     case "torusInCircle":
