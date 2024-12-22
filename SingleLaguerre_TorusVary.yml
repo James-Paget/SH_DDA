@@ -10,7 +10,7 @@ output:
   include_force: True
   include_couple: True
 display:
-  show_output: False
+  show_output: True
   frame_interval: 2
   max_size: 2e-06
   resolution: 201

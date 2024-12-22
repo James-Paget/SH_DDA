@@ -491,3 +491,72 @@ def plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=None, best
     plt.ylabel("Object volume (m^3)")
     plt.title("Total volume against dipole size")
     plt.show()
+
+
+def plotMulti_tangential_force_against_arbitrary(data_set, data_axes, particle_target, set_label, set_units, parameter_text=""):
+    #
+    # Plots multiple sets of data together
+    # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the number of particles in the system
+    # Applies for spherical and torus particles
+    #
+    # data_set  = python list of all data
+    # data_axes = axes values tested -> [ [varying parameter], [x_values] ]
+    #
+
+    #Plot data
+    fig, ax = plt.subplots()
+
+    for i in range( len(data_axes[0]) ):
+        # Go through each extra parameter (different coloured plots)
+        total_force_magnitudes      = []
+        tangential_force_magnitudes = []
+        plotColour = fetchCycleColour(len(data_axes[1]), i)
+        data = data_set[i]
+        for j in range( len(data_axes[1]) ):
+            # Go through each swept X value in plot
+            particle_total = int(np.floor(len(data[j])/6.0))
+            if(particle_target < particle_total):
+                # Total Force Magnitude
+                total_force_mag = np.sqrt(
+                    pow(data[j][3 +6*particle_target], 2) 
+                    +pow(data[j][4 +6*particle_target], 2)
+                )
+
+                # Tangential Force Magnitude
+                position_xy_mag = np.sqrt(
+                    pow(data[j][0 +6*particle_target],2) +
+                    pow(data[j][1 +6*particle_target],2)
+                )
+                position_xy_vector_norm = [
+                    data[j][0 +6*particle_target] / position_xy_mag,
+                    data[j][1 +6*particle_target] / position_xy_mag
+                ]
+                tangential_xy_vector = [
+                    -position_xy_vector_norm[1],
+                        position_xy_vector_norm[0]
+                ]
+                tangential_force_mag = tangential_xy_vector[0]*data[j][3 +6*particle_target] + tangential_xy_vector[1]*data[j][4 +6*particle_target]
+                total_force_magnitudes.append(total_force_mag)
+                tangential_force_magnitudes.append(tangential_force_mag)
+        ax.plot(data_axes[1], total_force_magnitudes, label="total, "+str(set_label[0])+str(set_units[0])+"="+str(data_axes[0][i]), color=plotColour, linestyle="dashed")
+        ax.plot(data_axes[1], tangential_force_magnitudes, label="tangential, "+str(set_label[0])+str(set_units[0])+"="+str(data_axes[0][i]), color=plotColour, linestyle="solid")
+    #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
+    text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
+    ax.text(
+        0.0, text_ypos,
+        parameter_text,
+        transform=ax.transAxes,
+        fontsize=12
+    )
+    plt.xlabel(f"{set_label[1]} {set_units[1]}") # Brackets included in units so not left over if unitless i.e. ()
+    plt.ylabel("Force (N)")
+    plt.title(f"Force against {set_label[1]}")
+    plt.legend()
+    plt.show()
+
+
+def fetchCycleColour(set_size, index):
+    #
+    # Generates a varied colour the ith component in a set
+    #
+    return (abs(np.sin(1.0*np.pi*(index+1)/set_size)), 0.0, abs(np.cos(1.0*np.pi*(index+1)/set_size)))
