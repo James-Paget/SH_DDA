@@ -873,7 +873,7 @@ def simulation(number_of_particles, positions, shapes, args):
 #        driver = driving_force_array(position_vectors)
 #        bending = bending_force_array(position_vectors, radius)
 #        gravity = gravity_force_array(position_vectors, radius)
-        total_force_array = optical + buckingham# + gravity#+ spring #+ driver#+ gravity# + spring + bending
+        total_force_array = optical #+ buckingham# + gravity#+ spring #+ driver#+ gravity# + spring + bending
         # Record total forces too if required
         if include_force==True:
             for j in range(n_particles):
