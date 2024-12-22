@@ -10,6 +10,7 @@ import xlsxwriter
 import pandas as pd
 import random
 import math
+import pickle
 
 import Display
 
@@ -143,22 +144,9 @@ def generate_sphere_yaml(particle_formation, number_of_particles, particle_mater
     generate_yaml(filename, particle_list, parameters)
     
 
-def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica", parameters={}):
-    #
-    # Generates a YAML file for a set of identical torus sectors with given parameters
-    # This will overwrite files with the same name
-    #
-    # number_of_particles = Number of torus sectors to generate
-    # inner_radii = radial distance from origin to center of torus tube
-    # tube_radii = radius of torus tube
-    # separting_dist = arc length between each torus
-    #
-    
-    # Create / overwrite YAML file
-    # Writing core system parameters
-
-    filename = "SingleLaguerre_TorusVary"
-    
+def generate_torus_particle_list(number_of_particles, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica"):
+    # generates dicts of torus sections with keys: material, shape, args, coords, altcolour.
+    # This is used to generate the yaml, and to count the number of dipoles that would be generated at an early stage in the calculation.
     particle_list = []
 
     # Writing specific parameters for particle formation
@@ -180,7 +168,25 @@ def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating
 
         coords = np.array(particle_position) + np.array(position_offsets)
         particle_list.append({"material": particle_material, "shape": "torus", "args": [inner_radii, tube_radii, lower_phi, upper_phi], "coords": coords, "altcolour": True})
+    return particle_list
 
+
+def generate_torus_yaml(number_of_particles, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica", parameters={}):
+    #
+    # Generates a YAML file for a set of identical torus sectors with given parameters
+    # This will overwrite files with the same name
+    #
+    # number_of_particles = Number of torus sectors to generate
+    # inner_radii = radial distance from origin to center of torus tube
+    # tube_radii = radius of torus tube
+    # separting_dist = arc length between each torus
+    #
+    
+    # Create / overwrite YAML file
+    # Writing core system parameters
+
+    filename = "SingleLaguerre_TorusVary"
+    particle_list = generate_torus_particle_list(number_of_particles, inner_radii, tube_radii, separating_dist, particle_material)
     generate_yaml(filename, particle_list, parameters)
 
 
@@ -547,13 +553,14 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
     # dipole_size_range = [size_min, size_max, num]
     #
     
+    dipole_sizes = make_array(dipole_size_range)
+
     particle_info = []
     place_radius = 1.15e-6      #1.15e-6
     particle_radii = 200e-9     #200e-9
     frames_of_animation = 1
 
     parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
-    dipole_sizes = np.linspace(*dipole_size_range) # unpack list to fill the 3 arguments
 
     # For each scenario to be tested
     for i, dipole_size in enumerate(dipole_sizes):
@@ -661,21 +668,20 @@ def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, fil
     return parameter_text
 
 
-def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename):
+def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename, separating_dist=0.1e-6):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
     #
     # dipole_size_range = [size_min, size_max, num]
     #
+    dipole_sizes = make_array(dipole_size_range)
     
     particle_info = []
     inner_radii = 1.15e-6
     tube_radii  = 200e-9
-    separating_dist  = 0.1e-6
     frames_of_animation = 1
 
     parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
-    dipole_sizes = np.linspace(*dipole_size_range) # unpack list to fill the 3 arguments
     torus_gap_theta    = separating_dist/inner_radii    # Full angle occupied by gap between torus sectors
     torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
  
@@ -709,7 +715,7 @@ def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dip
     return parameter_text, dipole_sizes
 
 
-def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename):
+def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
     #
@@ -721,7 +727,7 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
     tube_radii  = 200e-9
     frames_of_animation = 1
 
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipole_size, "show_output": False}
     separations = np.linspace(*separation_range) # unpack list to fill the 3 arguments
  
     # For each scenario to be tested
@@ -754,6 +760,196 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
         )
     )
     return parameter_text, separations
+
+
+def calc_sphere_volumes(particle_total, dipole_size_range, radii):
+    # used by "get_sphere_volumes"
+    # this functions returns a list of volumes for each dipole size in the range.
+    volumes = []
+    dipole_sizes = np.linspace(*dipole_size_range) # unpack list to fill the 3 arguments
+    
+    for dipole_size in dipole_sizes:
+        number_of_dipoles = 0
+            
+        for particle_i in range(particle_total):
+            sphere_radius = radii[particle_i]
+            dipole_diameter = 2*dipole_size
+            dd2 = dipole_diameter**2
+            sr2 = sphere_radius**2
+            num = int(sphere_radius//dipole_diameter)
+            
+            number_of_dipoles = 0
+            for i in range(-num,num+1):
+                i2 = i*i
+                for j in range(-num,num+1):
+                    j2 = j*j
+                    for k in range(-num,num+1):
+                        k2 = k*k
+                        rad2 = (i2+j2+k2)*dd2
+                        if rad2 < sr2:
+                            number_of_dipoles += 1
+
+        volume = number_of_dipoles * dipole_size**3
+        print(volume)
+        volumes.append(volume)
+
+    print(volumes)
+    return volumes
+
+
+def make_array(values):
+    # values can be an array, or a range [min, max, num] and will return an array
+    if len(values) == 3 and isinstance(values[2], int):
+        values = np.linspace(*values)
+    return values
+
+
+def calc_torus_volumes(particle_total, dipole_size_range, separating_dist, inner_radii, tube_radii):
+    # used by "get_torus_volumes"
+    # this functions returns a list of volumes for each dipole size in the range.
+
+    volumes = []
+    dipole_sizes = np.linspace(*dipole_size_range) 
+    torus_gap_theta    = separating_dist/inner_radii    # Full angle occupied by gap between torus sectors
+    torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
+    
+    # For each dipole size, calculate the number of dipoles across all torus sections.
+    for dipole_size in dipole_sizes:
+        number_of_dipoles = 0
+
+        for particle_i in range(particle_total):
+            dipole_diameter = 2*dipole_size
+            dd2 = dipole_diameter**2
+            ttr2 = tube_radii**2
+            num_xy = int( (tube_radii+inner_radii)//dipole_diameter)     #Number of dipoles wide in each direction (XY, wide directions)
+            num_z  = int( inner_radii//dipole_diameter)                  #Number of dipoles tall (shorter)
+            phi_lower = ( particle_i*(torus_sector_theta +torus_gap_theta) -torus_sector_theta/2.0 ) %(2.0*np.pi)
+            phi_upper = ( particle_i*(torus_sector_theta +torus_gap_theta) +torus_sector_theta/2.0 ) %(2.0*np.pi)
+
+            for i in range(-num_xy,num_xy+1):
+                i2 = i*i
+                for j in range(-num_xy,num_xy+1):
+                    j2 = j*j
+                    phi = math.atan2(j,i)%(2.0*np.pi)
+
+                    withinBounds = False
+                    if (phi_lower <= phi_upper):
+                        withinBounds = ( (phi_lower < phi) and (phi < phi_upper) )
+                    else:
+                        withinBounds = ( (phi_lower < phi) or (phi < phi_upper) )
+                    
+                    if (withinBounds):
+                        for k in range(-num_z,num_z+1):
+                            k2 = k*k
+                            rad_xy_2 = (i2 + j2)*dd2
+                            if (inner_radii -np.sqrt(rad_xy_2))**2 +k2*dd2 < ttr2:
+                                number_of_dipoles += 1
+
+        volume = number_of_dipoles * dipole_size**3
+        volumes.append(volume)
+
+    return volumes
+
+def store_volumes(shape, args, dipole_size_range, volumes, dict):
+    # used by "get_sphere_volumes" and "get_torus_volumes"
+    # Stores all calculated volumes in volume_store.p which is a dict of a dict of a dict of an array.
+    args_key = " ".join([str(i) for i in args])
+    sizes_key = " ".join([str(i) for i in dipole_size_range])
+
+    # Create nested dictionaries if needed.
+    if not shape in dict.keys():
+        dict[shape] = {}
+    if not args_key in dict[shape].keys():
+        dict[shape][args_key] = {}
+
+    dict[shape][args_key][sizes_key] = volumes
+
+    with open("volume_store.p", "wb") as f:
+        pickle.dump(dict, f)
+
+def get_sphere_volumes(particle_total, radii, dipole_size_range):
+    # Read values from storage or calculate new ones, producing the volumes for specific parameters over a dipole size range.
+
+    # if radii is a float, make it a list
+    if isinstance(radii, float):
+        radii = np.ones(particle_total) * radii
+    elif isinstance(radii, list) and len(radii) == particle_total:
+        pass
+    else:
+        sys.exit(f"get_sphere_volumes: incorrect radii {radii}")
+
+    # Prepare dictionary keys
+    shape = "sphere"
+    radii_key = " ".join([str(i) for i in radii])
+    sizes_key = " ".join([str(i) for i in dipole_size_range])
+    print(radii_key)
+
+    try:
+        with open("volume_store.p", "rb") as f:
+            dict = pickle.load(f)
+    except:
+        dict = {}
+
+    # Return existing store
+    if shape in dict.keys() and radii_key in dict[shape].keys() and sizes_key in dict[shape][radii_key].keys():
+        return dict[shape][radii_key][sizes_key]
+
+    # Calculate new set
+    else:
+        print("\nSpending time to calculate new volumes\n")
+        volumes = calc_sphere_volumes(particle_total, dipole_size_range, radii)
+        store_volumes(shape, radii, dipole_size_range, volumes, dict)
+        return volumes
+
+
+def get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_size_range):
+    # Read values from storage or calculate new ones, producing the volumes for specific parameters over a dipole size range.
+
+    # Prepare dictionary keys
+    radssep = [particle_total, inner_radii, tube_radii, separation]
+    shape = "torus"
+    rrs_key = " ".join([str(i) for i in radssep])
+    sizes_key = " ".join([str(i) for i in dipole_size_range])
+
+    try:
+        with open("volume_store.p", "rb") as f:
+            dict = pickle.load(f)
+    except:
+        dict = {}
+
+    # Return existing store
+    if shape in dict.keys() and rrs_key in dict[shape].keys() and sizes_key in dict[shape][rrs_key].keys():
+        return dict[shape][rrs_key][sizes_key]
+
+    # Calculate new set
+    else:
+        print("\nSpending time to calculate new volumes\n")
+        volumes = calc_torus_volumes(particle_total, dipole_size_range, separation, inner_radii, tube_radii)
+        store_volumes(shape, radssep, dipole_size_range, volumes, dict)
+        return volumes
+    
+
+def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None):
+    # used to filter the results of "get_sphere_volumes" and "get_torus_volumes"
+    # Finds the dipole sizes with volumes closest to the target volume (defaults to the average volume).
+    # Returns these best sizes, volumes, and the maximum error.
+    if target_volume == None:
+        target_volume = np.average(volumes)
+
+    dipole_sizes = np.linspace(*dipole_size_range)
+    num_sizes = dipole_size_range[2]
+
+    if num > num_sizes:
+        sys.exit(f"filter_dipole_sizes: too many points requested, max is {num_sizes}")
+
+    indices = np.argpartition(np.abs(np.array(volumes)-target_volume), num)[:num] # finds the <num> min values, the rest are unsorted use a slice.
+    max_error = abs(volumes[indices[num-1]]-target_volume)/target_volume
+
+    filtered_dipole_sizes = np.array(dipole_sizes)[indices]
+    sort_is = np.argsort(filtered_dipole_sizes)
+    final_is = indices[sort_is]
+    print(f"Filtered dipole sizes to {num} values, with max volume error: {max_error:.02%}.")
+    return np.array(dipole_sizes)[final_is], np.array(volumes)[final_is], max_error
 
 
 #=================#
@@ -808,15 +1004,47 @@ match(sys.argv[1]):
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
-        dipole_size_range = [6e-8, 4e-8, 5]
-        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename)
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "(m)", parameter_text)
+        separation = 1e-7
+        dipole_sizes = [60e-9, 30e-9, 25]
+        # parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
+        # Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
+
+        # Filter dipole sizes.
+        particle_total = 6
+        separation = 1e-7
+        dipole_sizes = [60e-9, 30e-9, 150]
+        inner_radii = 1.15e-6
+        tube_radii = 200e-9
+        filter_num = 10
+        old_dipole_sizes = dipole_sizes
+        volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
+        dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
+    
     case "torusInCircleSeparation":
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
-        separation_range = [20e-9, 300e-9, 40]
-        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename)
+        separation_range = [20e-9, 120e-9, 10]
+        dipole_size = 36e-9
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "(m)", parameter_text)
+    case "testVolumes":
+        # use this mode to make a new volume storage entry or to plot it.
+        particle_total = 6
+        dipole_size_range = [60e-9, 30e-9, 150]
+        separation = 1e-7
+        inner_radii = 1.15e-6
+        tube_radii = 200e-9
+        filter_num = 25
+
+        volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_size_range)
+        # sphere_radius = 200e-9
+        # volumes = get_sphere_volumes(particle_total, sphere_radius, dipole_size_range)
+
+        filtered_dipole_sizes, filtered_volumes, max_volume_error = filter_dipole_sizes(volumes, dipole_size_range, filter_num)
+        Display.plot_volumes_against_dipoleSize(np.linspace(*dipole_size_range), volumes, filtered_dipole_sizes, filtered_volumes)
+
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize")
+        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize', 'testVolumes")

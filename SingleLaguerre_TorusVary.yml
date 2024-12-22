@@ -2,7 +2,7 @@ options:
   frames: 1
 parameters:
   wavelength: 1e-06
-  dipole_radius: 4e-08
+  dipole_radius: 5.798657718120805e-08
   time_step: 0.0001
 output:
   vmd_output: True
@@ -33,36 +33,36 @@ particles:
     part_0:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 -0.5117816072593914 0.5117816072593914
+      args: 1.15e-06 2e-07 -0.4801205147287337 0.4801205147287337
       coords: 1.15e-06 0.0 1e-06
       altcolour: True
     part_1:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 0.5354159439372063 1.5589791584559891
-      coords: 5.750000000000001e-07 9.959292143521043e-07 1e-06
+      args: 1.15e-06 2e-07 0.5670770364678641 1.5273180659253316
+      coords: 5.749999999999999e-07 9.959292143521046e-07 1e-06
       altcolour: True
     part_2:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 1.582613495133804 2.6061767096525865
-      coords: -5.749999999999998e-07 9.959292143521046e-07 1e-06
+      args: 1.15e-06 2e-07 1.614274587664462 2.5745156171219294
+      coords: -5.750000000000002e-07 9.959292143521043e-07 1e-06
       altcolour: True
     part_3:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 2.629811046330402 3.6533742608491844
-      coords: -1.15e-06 1.408343819019456e-22 1e-06
+      args: 1.15e-06 2e-07 2.66147213886106 3.6217131683185273
+      coords: -1.15e-06 -3.698682094256264e-22 1e-06
       altcolour: True
     part_4:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 3.6770085975269993 4.700571812045782
-      coords: -5.750000000000005e-07 -9.959292143521041e-07 1e-06
+      args: 1.15e-06 2e-07 3.7086696900576577 4.668910719515125
+      coords: -5.749999999999996e-07 -9.959292143521046e-07 1e-06
       altcolour: True
     part_5:
       material: FusedSilica
       shape: torus
-      args: 1.15e-06 2e-07 4.724206148723597 5.747769363242379
-      coords: 5.749999999999993e-07 -9.95929214352105e-07 1e-06
+      args: 1.15e-06 2e-07 4.755867241254256 5.7161082707117234
+      coords: 5.750000000000011e-07 -9.95929214352104e-07 1e-06
       altcolour: True
