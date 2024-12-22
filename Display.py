@@ -479,6 +479,20 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
     plt.legend()
     plt.show()
 
+
+def plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=None, best_volumes=None):
+    fig, ax = plt.subplots()
+    ax.plot(dipole_sizes, volumes, color="blue")
+    try:
+        ax.scatter(best_sizes, best_volumes, color="orange")
+    except:
+        pass
+    plt.xlabel("Dipole sizes (m)")
+    plt.ylabel("Object volume (m^3)")
+    plt.title("Total volume against dipole size")
+    plt.show()
+
+
 def plotMulti_tangential_force_against_arbitrary(data_set, data_axes, particle_target, set_label, set_units, parameter_text=""):
     #
     # Plots multiple sets of data together
