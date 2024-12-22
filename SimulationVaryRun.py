@@ -279,29 +279,43 @@ def generate_sphere_arbitrary_yaml(particles, wavelength=1.0e-6, particle_materi
     generate_yaml(filename, particle_list, parameters)
 
 
-def record_particle_info(filename, particle_info):
+def record_particle_info(filename, particle_info, record_parameters=["F"]):
     #
     # Store key details about particle from xlsx into a data structure here
     # This information is stored in particle_info (altered by reference)
     #
+    # record_parameters = Which data points to save alongside position from file given
     # Data is stored as follows;
     #   [ [scenario1], [scenario2],... ]
     # where [scenarioN] = [x1, y1, z1, Fx1, Fy1, Fz1, ..., xi, yi, zi, Fxi, Fyi, Fzi], for the <i> particles involved in the scenario
     #
     info = []
     data = pd.read_excel(filename+".xlsx")
-    particle_number = int(np.floor( ( len(data.iloc[0])-1 )/(3.0*3.0) ))
+    particle_number = int(np.floor( ( len(data.iloc[0])-1 )/(3.0*4.0) ))    # NOTE; 3x4 as vectors are 3 long, and expect 4 vector data types (pos, F, F_T, C)
     for i in range(particle_number):
         # For each particle, fetch its (x,y,z,Fx,Fy,Fz)
         info.append( data.iloc[0, 1 +3*(i)] )    #X
         info.append( data.iloc[0, 2 +3*(i)] )    #Y
         info.append( data.iloc[0, 3 +3*(i)] )    #Z
-        info.append( data.iloc[0, 1 +3*(i+particle_number)] ) #Fx
-        info.append( data.iloc[0, 2 +3*(i+particle_number)] ) #Fy
-        info.append( data.iloc[0, 3 +3*(i+particle_number)] ) #Fz
+        for r_param in record_parameters:
+            match r_param:
+                case "F":   # Optical force
+                    info.append( data.iloc[0, 1 +3*(i+1*particle_number)] ) #Fx
+                    info.append( data.iloc[0, 2 +3*(i+1*particle_number)] ) #Fy
+                    info.append( data.iloc[0, 3 +3*(i+1*particle_number)] ) #Fz
+                case "FT":  # Total force (e.g. Buckingham, etc included)
+                    info.append( data.iloc[0, 1 +3*(i+2*particle_number)] ) #F_Tx
+                    info.append( data.iloc[0, 2 +3*(i+2*particle_number)] ) #F_Ty
+                    info.append( data.iloc[0, 3 +3*(i+2*particle_number)] ) #F_Tz
+                case "C":   # Torque
+                    info.append( data.iloc[0, 1 +3*(i+3*particle_number)] ) #Cx
+                    info.append( data.iloc[0, 2 +3*(i+3*particle_number)] ) #Cy
+                    info.append( data.iloc[0, 3 +3*(i+3*particle_number)] ) #Cz
+                case _:
+                    print("Record parameter not recognised while recording data; ",r_param)
     particle_info.append(info)
 
-def store_combined_particle_info(filename, particle_info):
+def store_combined_particle_info(filename, particle_info, record_parameters=["F"]):
     #
     # Moves particle info stored in python into an xlsx file
     #
@@ -314,13 +328,26 @@ def store_combined_particle_info(filename, particle_info):
     worksheet = workbook.add_worksheet()
 
     # Label the 1st particle section
-    worksheet.write(0,0, "x1")
-    worksheet.write(0,1, "y1")
-    worksheet.write(0,2, "z1")
-    worksheet.write(0,3, "Fx1")
-    worksheet.write(0,4, "Fy1")
-    worksheet.write(0,5, "Fz1")
-    worksheet.write(0,6, "...")
+    worksheet.write(0,0, "x0")
+    worksheet.write(0,1, "y0")
+    worksheet.write(0,2, "z0")
+    for r_param_index in range(len(record_parameters)):
+        match record_parameters[r_param_index]:
+            case "F":   # Optical force
+                worksheet.write(0,3*(r_param_index+1) +0, "Fx0")
+                worksheet.write(0,3*(r_param_index+1) +1, "Fy0")
+                worksheet.write(0,3*(r_param_index+1) +2, "Fz0")
+            case "FT":  # Total force (e.g. Buckingham, etc included)
+                worksheet.write(0,3*(r_param_index+1) +0, "F_Tx0")
+                worksheet.write(0,3*(r_param_index+1) +1, "F_Ty0")
+                worksheet.write(0,3*(r_param_index+1) +2, "F_Tz0")
+            case "C":   # Torque
+                worksheet.write(0,3*(r_param_index+1) +0, "Cx0")
+                worksheet.write(0,3*(r_param_index+1) +1, "Cy0")
+                worksheet.write(0,3*(r_param_index+1) +2, "Cz0")
+            case _:
+                print("Record parameter not recognised while recording data; ",record_parameters[r_param_index])
+    worksheet.write(0,3*(len(record_parameters)+1), "...")
 
     # Fill in data stored from particle_info
     for j in range( len(particle_info) ):
@@ -329,7 +356,7 @@ def store_combined_particle_info(filename, particle_info):
 
     workbook.close()
 
-def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename):
+def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False):
     #
     # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
@@ -337,9 +364,13 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
     #
     
     particle_info = [];
-    place_radius = 1.152e-6      #1.15e-6
-    particle_radii = 200e-9     #200e-9
-    parameters = {"frames": 100, "frame_max": 100}
+    place_radius = 1.152e-6         #1.15e-6
+    particle_radii = 200e-9         #200e-9
+    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
+
+    record_parameters = ["F"]
+    if(include_additionalForces):   # Record total forces instead of just optical forces
+        record_parameters = ["FT"]  #
 
     #For each scenario to be tested
     for i, particle_number in enumerate(particle_numbers):
@@ -353,9 +384,9 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
         result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
 
         #Pull data from xlsx into a local list in python
-        record_particle_info(filename, particle_info)
+        record_particle_info(filename, particle_info, record_parameters=record_parameters)
     #Write combined data to a new xlsx file
-    store_combined_particle_info(filename, particle_info)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
     parameter_text = "\n".join(
         (
             "Spheres",
@@ -418,9 +449,7 @@ def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam
     #
     ####
     ## ************************************************************************************************
-    ## THIS WILL NOT ACCOUNT FOR THE SCATTERING BETWEEN EACH OF THE OTHER PARTICLES
-    ##      IS THERE SOME WAY AROUND THIS? ---> NEGLECTING THESE FORCE WOULD CAUSE UNREALISTIC CONDITIONS
-    ##          COULD SEE HOW LARGE THIS FORCE ARE, HENCE ARGUE IF IMPORTANT OR NOT
+    ## NOTE THIS WILL NOT ACCOUNT FOR THE SCATTERING BETWEEN EACH OF THE OTHER PARTICLES
     ## ************************************************************************************************
     ####
 
@@ -815,8 +844,8 @@ match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre_SphereVary"
         #1,2,3,4,5,6,7,8,9,10,11,12
-        particle_numbers = [1,2,3,4]
-        parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
+        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+        parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=True)
         # Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
@@ -857,7 +886,7 @@ match(sys.argv[1]):
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
-        dipole_size_range = [6e-8, 4e-8, 5]
+        dipole_size_range = [40e-9, 100e-9, 30]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "(m)", parameter_text)
     case "torusInCircleSeparation":
@@ -876,7 +905,7 @@ match(sys.argv[1]):
         #separation = 300e-9
         
         filename = "SingleLaguerre_TorusVary"
-        particle_numbers = [1,2,3,4,5,6,7,8,12,16]
+        particle_numbers = [1,2,3,4,5,6,7]
         dipoleSize_numbers = [40e-9, 50e-9, 60e-9, 70e-9] #np.linspace(...)
         data_axes = [dipoleSize_numbers, particle_numbers]
         separation = 0.0e-9
@@ -884,4 +913,4 @@ match(sys.argv[1]):
         Display.plotMulti_tangential_force_against_arbitrary(data_set, data_axes, 0, ["Dip.Rad", "Particle Number"], ["(m)", ""], parameter_text)
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize")
+        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize, 'torusInCircle_FixedSep_SectorDipole'")

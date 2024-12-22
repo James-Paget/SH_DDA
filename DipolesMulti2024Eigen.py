@@ -808,6 +808,7 @@ def simulation(number_of_particles, positions, shapes, args):
         optpos = np.zeros((frames,n_particles,3))
         if include_force==True:
             optforce = np.zeros((frames,n_particles,3))
+            totforces = np.zeros((frames,n_particles,3))
         else:
             optforce = None
         if include_couple==True:
@@ -849,12 +850,12 @@ def simulation(number_of_particles, positions, shapes, args):
 
         # Finds a characteristic radius for each shape to calcualte Buckingham forces
         effective_radii = np.zeros(number_of_particles, dtype=np.float64)
-        for i in range(number_of_particles):
-            match shapes[i]:
+        for p in range(number_of_particles):
+            match shapes[p]:
                 case "sphere":
-                    effective_radii[i] = args[i][0]
+                    effective_radii[p] = args[p][0]
                 case "torus":
-                    effective_radii[i] = (args[i][0] + args[i][1])
+                    effective_radii[p] = (args[p][0] + args[p][1])
 
         #
         # Call diffusion_matrix with sphere radius not dipole radius
@@ -872,9 +873,13 @@ def simulation(number_of_particles, positions, shapes, args):
 #        driver = driving_force_array(position_vectors)
 #        bending = bending_force_array(position_vectors, radius)
 #        gravity = gravity_force_array(position_vectors, radius)
-        total_force_array = optical #+ buckingham# + gravity#+ spring #+ driver#+ gravity# + spring + bending
-        #        print("buckingham: ",buckingham_force_array(position_vectors,radius))
-        #        print("Springs: ",spring_force_array(position_vectors,radius))
+        total_force_array = optical + buckingham# + gravity#+ spring #+ driver#+ gravity# + spring + bending
+        # Record total forces too if required
+        if include_force==True:
+            for j in range(n_particles):
+                for k in range(3):
+                    totforces[i,j,k] = total_force_array[j][k]
+
         F = np.hstack(total_force_array)
         # print(F)
         cov = 2 * timestep * D
@@ -904,7 +909,7 @@ def simulation(number_of_particles, positions, shapes, args):
 
     xyz_list1 = np.vsplit(np.vstack(temp_array1).T, number_of_particles)
 
-    return xyz_list1,optpos,optforce,optcouple
+    return xyz_list1,optpos,optforce,optcouple,totforces
 
 
 
@@ -993,9 +998,6 @@ ep2 = 1.0
 #mass = (4/3)*rho*np.pi*radius**3
 masses  = particle_collection.get_particle_masses()
 gravity = np.zeros( (n_particles,3) ,dtype=np.float64)
-# ??
-# ?? POSSIBLE ERROR HERE WITH gravity[1] AS OPPOSED TO gravity[2]
-# ??
 gravity[:,1] = -9.81*masses
 #gravity = np.zeros(3,dtype=np.float64)
 #gravity[1] = -9.81*mass
@@ -1034,7 +1036,7 @@ beam = "plane"  # LEGACY REMOVE
 #===========================================================================
 
 initialT = time.time()
-particles,optpos, optforces,optcouples = simulation(n_particles, positions, shapes, args)
+particles,optpos, optforces,optcouples,totforces = simulation(n_particles, positions, shapes, args)
 finalT = time.time()
 print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 
@@ -1048,7 +1050,7 @@ if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=False)
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
 
     ## ===
     ## Legacy Plotting Functions -> Remove
@@ -1086,5 +1088,5 @@ if vmd_output==True:
     #Output.make_vmd_file(filename_vtf,n_particles,frames,timestep,particles,optpos,beam_collection,finalT-initialT,radius,dipole_radius,z_offset,particle_types,vtfcolors)
 
 if excel_output==True:
-    Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,include_couple,optcouples)
+    Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples)
 
