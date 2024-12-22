@@ -754,6 +754,56 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
     )
     return parameter_text, separations
 
+def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particle_numbers, dipoleSize_numbers, separation, filename):
+    #
+    # Performs a DDA calculation for torus particles in a ring
+    # Varies the number of particles with constant separation
+    # This is considered for multiple dipole sizes
+    #
+    # multi_plot_data structured as follows;
+    #       [ [data_set], ... ]
+    #   where data_set = [ [sweep_1], ..., [sweep_N] ]
+    #
+    
+    inner_radii = 1.15e-6
+    tube_radii  = 150e-9
+    frames_of_animation = 1
+
+    # For each scenario to be tested
+    multi_plot_data = []
+    for dipoleSize_num in dipoleSize_numbers:
+        particle_info = []
+        for particle_num in particle_numbers:
+            print("Performing calculation for [particle#="+str(particle_num)+" ,dipoleSize="+str(dipoleSize_num)+"]")
+
+            # Generate particles
+            parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipoleSize_num, "show_output": True}
+            generate_torus_yaml(particle_num, inner_radii, tube_radii, separation, particle_material="FusedSilica", parameters=parameters)
+
+            # Run DipolesMulti2024Eigen.py
+            run_command = "python DipolesMulti2024Eigen.py "+filename
+            run_command = run_command.split(" ")
+            print("=== Log ===")
+            result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+            # Pull data from xlsx into a local list in python
+            record_particle_info(filename, particle_info)
+        multi_plot_data.append(particle_info)
+    #Plot multi data
+    #
+    # NOTE; The multi-plotter now uses raw python files, rather than saving this data for simplicity, hence storeing a combined file is not necessary
+    #
+    #store_combined_particle_info(filename, particle_info)
+    parameter_text = "\n".join(
+        (
+            "Torus Sectors= ",
+            "R_inner   (m)= "+str(inner_radii),
+            "R_tube    (m)= "+str(tube_radii),
+            "Separation(m)= "+str(separation)
+        )
+    )
+    return parameter_text, multi_plot_data
+
 
 #=================#
 # Perform Program #
@@ -816,6 +866,22 @@ match(sys.argv[1]):
         separation_range = [20e-9, 300e-9, 40]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "(m)", parameter_text)
+    case "torusInCircle_FixedSep_SectorDipole":
+        #
+        # Compares force for different sector numbers, for a dipole sizes
+        #
+
+        #particle_numbers = [2,3,4,5,6,7,8, 12, 16]
+        #dipoleSize_numbers = [40e-9, 50e-9, 60e-9, 70e-9] #np.linspace(...)
+        #separation = 300e-9
+        
+        filename = "SingleLaguerre_TorusVary"
+        particle_numbers = [1,2,3,4,5,6,7,8,12,16]
+        dipoleSize_numbers = [40e-9, 50e-9, 60e-9, 70e-9] #np.linspace(...)
+        data_axes = [dipoleSize_numbers, particle_numbers]
+        separation = 0.0e-9
+        parameter_text, data_set = simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particle_numbers, dipoleSize_numbers, separation, filename)
+        Display.plotMulti_tangential_force_against_arbitrary(data_set, data_axes, 0, ["Dip.Rad", "Particle Number"], ["(m)", ""], parameter_text)
     case _:
         print("Unknown run type: ",sys.argv[1]);
         print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize")
