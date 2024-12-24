@@ -783,7 +783,7 @@ def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particl
             print("Performing calculation for [particle#="+str(particle_num)+" ,dipoleSize="+str(dipoleSize_num)+"]")
 
             # Generate particles
-            parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipoleSize_num, "show_output": True}
+            parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipoleSize_num, "show_output": False}
             generate_torus_yaml(particle_num, inner_radii, tube_radii, separation, particle_material="FusedSilica", parameters=parameters)
 
             # Run DipolesMulti2024Eigen.py
@@ -991,13 +991,37 @@ def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None):
     if num > num_sizes:
         sys.exit(f"filter_dipole_sizes: too many points requested, max is {num_sizes}")
 
-    indices = np.argpartition(np.abs(np.array(volumes)-target_volume), num)[:num] # finds the <num> min values, the rest are unsorted use a slice.
+    # finds the <num> min values, the rest are unsorted and are sliced off.
+    indices = np.argpartition(np.abs(np.array(volumes)-target_volume), num)[:num] 
     max_error = abs(volumes[indices[num-1]]-target_volume)/target_volume
 
     filtered_dipole_sizes = np.array(dipole_sizes)[indices]
     sort_is = np.argsort(filtered_dipole_sizes)
-    final_is = indices[sort_is]
+    final_is = list(indices[sort_is])
     print(f"Filtered dipole sizes to {num} values, with max volume error: {max_error:.02%}.")
+
+    # In testing: keep sizes only at a max or min volume, this helps but not significantly.
+    for i in final_is:
+        if i == 0 or i == num_sizes-1:
+            pass
+        else:
+            if not( volumes[i] > volumes[i-1] != volumes[i+1] > volumes[i] ): # not (True if gradients are opposite ie max or min)
+                final_is.remove(i)
+                print(f"Removed {dipole_sizes[i]}")
+
+    # Attempt at removing close together points - fails due to removing point changing the indices.
+    # for idx in range(1,len(final_is)):
+    #     print(final_is)
+    #     print(idx)
+    #     i = final_is[idx]
+    #     j = final_is[idx-1]
+        
+    #     near_threshold = 1e-10
+    #     if abs(dipole_sizes[i] - dipole_sizes[j]) < abs((dipole_size_range[1] - dipole_size_range[0])/(near_threshold * num)):
+    #         final_is.remove(i)
+    #         final_is.remove(j)
+    #         print(f"Removed {dipole_sizes[j]} and {dipole_sizes[i]}")
+
     return np.array(dipole_sizes)[final_is], np.array(volumes)[final_is], max_error
 
 
@@ -1064,7 +1088,7 @@ match(sys.argv[1]):
         dipole_sizes = [60e-9, 30e-9, 150]
         inner_radii = 1.15e-6
         tube_radii = 200e-9
-        filter_num = 10
+        filter_num = 25
         old_dipole_sizes = dipole_sizes
         volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
         dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
@@ -1083,15 +1107,15 @@ match(sys.argv[1]):
         # Compares force for different sector numbers, for a dipole sizes
         #
 
-        #particle_numbers = [2,3,4,5,6,7,8, 12, 16]
+        #particle_numbers = [1,2,3,4,5,6,7,8, 12, 16]
         #dipoleSize_numbers = [40e-9, 50e-9, 60e-9, 70e-9] #np.linspace(...)
         #separation = 300e-9
         
         filename = "SingleLaguerre_TorusVary"
-        particle_numbers = [1,2,3,4,5,6,7,8,12,16]
+        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
         dipoleSize_numbers = [40e-9, 50e-9, 60e-9, 70e-9] #np.linspace(...)
         data_axes = [dipoleSize_numbers, particle_numbers]
-        separation = 0.0e-9
+        separation = 0#1e-7
         parameter_text, data_set = simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particle_numbers, dipoleSize_numbers, separation, filename)
         Display.plotMulti_tangential_force_against_arbitrary(data_set, data_axes, 0, ["Dip.Rad", "Particle Number"], ["(m)", ""], parameter_text)
     case "testVolumes":
