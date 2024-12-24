@@ -480,19 +480,6 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
     plt.show()
 
 
-def plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=None, best_volumes=None):
-    fig, ax = plt.subplots()
-    ax.plot(dipole_sizes, volumes, color="blue")
-    try:
-        ax.scatter(best_sizes, best_volumes, color="orange")
-    except:
-        pass
-    plt.xlabel("Dipole sizes (m)")
-    plt.ylabel("Object volume (m^3)")
-    plt.title("Total volume against dipole size")
-    plt.show()
-
-
 def plotMulti_tangential_force_against_arbitrary(data_set, data_axes, particle_target, set_label, set_units, parameter_text=""):
     #
     # Plots multiple sets of data together
@@ -560,3 +547,17 @@ def fetchCycleColour(set_size, index):
     # Generates a varied colour the ith component in a set
     #
     return (abs(np.sin(1.0*np.pi*(index+1)/set_size)), 0.0, abs(np.cos(1.0*np.pi*(index+1)/set_size)))
+
+
+def plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=None, best_volumes=None):
+    # plots volume of all particles in the object against the dipole size.
+    fig, ax = plt.subplots()
+    ax.plot(dipole_sizes, volumes, color="blue")
+    try:
+        ax.scatter(best_sizes, best_volumes, color="orange")
+    except:
+        pass
+    plt.xlabel("Dipole sizes (m)")
+    plt.ylabel("Object volume (m^3)")
+    plt.title("Total volume against dipole size")
+    plt.show()
