@@ -11,7 +11,7 @@
 # System options
 #============================================================================================
 options:
-  frames: 2
+  frames: 20
 #============================================================================================
 # System parameters
 #============================================================================================
@@ -32,11 +32,11 @@ output:
 #============================================================================================
 display:
   show_output: True
-  frame_interval: 2
+  frame_interval: 1
   max_size: 2e-6 # range will be 2 times this
   resolution: 201 # number of points in each direction of plot
   frame_min: 0 # starting frame for animation
-  frame_max: 1 # will default to number of frames
+  frame_max: 20 # will default to number of frames
   z_offset: 0.0e-6
 #============================================================================================
 # Beam descriptions
@@ -88,21 +88,14 @@ particles:
 
     part_1:
       material: FusedSilica
-      radius: 500e-9
-      shape: torus
-      args: 1e-6 0.15e-6 -1.0 1.6
-      coords: 1.0e-6 0.0 0.0
+      shape: sphere
+      args: 200e-9
+      coords: -1.0e-6 0.0 0.0
       altcolour: True
     part_2:
       material: FusedSilica
       shape: sphere
       args: 200e-9
-      coords: -1.0e-6 0.0 0.0
-      altcolour: True
-    part_3:
-      material: FusedSilica
-      shape: sphere
-      args: 400e-9
       coords: 0.0 -1.0e-6 0.0
       altcolour: True
 
