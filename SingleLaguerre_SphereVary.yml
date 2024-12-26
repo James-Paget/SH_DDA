@@ -34,11 +34,35 @@ particles:
       material: FusedSilica
       shape: sphere
       args: 2e-07
-      coords: 1.15e-06 0.0 1e-06
+      coords: 1.152e-06 0.0 1e-06
       altcolour: True
     part_1:
       material: FusedSilica
       shape: sphere
       args: 2e-07
-      coords: -1.15e-06 1.408343819019456e-22 1e-06
+      coords: 5.760000000000001e-07 9.976612651596731e-07 1e-06
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -5.759999999999998e-07 9.976612651596733e-07 1e-06
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -1.152e-06 1.4107931126177507e-22 1e-06
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -5.760000000000005e-07 -9.97661265159673e-07 1e-06
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 5.759999999999992e-07 -9.976612651596737e-07 1e-06
       altcolour: True

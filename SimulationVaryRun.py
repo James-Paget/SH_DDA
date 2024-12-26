@@ -1035,7 +1035,7 @@ match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre_SphereVary"
         #1,2,3,4,5,6,7,8,9,10,11,12
-        particle_numbers = [1,2,3,4]
+        particle_numbers = [5,6]
         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename)
         # Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)

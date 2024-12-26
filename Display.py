@@ -193,7 +193,7 @@ class DisplayObject (object):
         return x, y, z
     
 
-    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, quiver_scale=3e5):
+    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, quiver_scale=3e5):
         #
         # Plots particles with optional quiver (force forces) and tracer (for positions) plots too
         # NOTE; If a quiver plot is wanted, a list of forces must be provided as well (in the format of optforces)
@@ -218,6 +218,26 @@ class DisplayObject (object):
                         x, y, z = self.make_torus_sector_surface(args[i], positions[t, i])
                 plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
                 plots.append(plot)
+
+            print("positions[t]= ",positions[t])
+            # Add new spring connections to the plot
+            for connection in connection_indices:
+                # Assuming connections stored in pairs
+                print("connection    = ",connection)
+                print("connection[0] = ",connection[0])
+                p1 = positions[t, connection[0]]
+                p2 = positions[t, connection[1]]
+                print("p1= ",p1)
+                print("p2= ",p2)
+                lineplot = ax.plot(
+                    np.array([p1[0],p2[0]]),
+                    np.array([p1[1],p2[1]]), 
+                    np.array([p1[2],p2[2]]),
+                    linewidth=4,
+                    color='blue'
+                )
+                for line in lineplot:
+                    plots.append(line)
             
             # Add new quiver plot elements
             if(include_quiver):

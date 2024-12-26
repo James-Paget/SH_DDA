@@ -199,10 +199,10 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
     return force
 
 
-def spring_force(constant1, r, dipole_radius):
+def spring_force(stiffness_const, r, dipole_radius):
     #print("Dipole Radius:",dipole_radius)
     r_abs = np.linalg.norm(r)
-    force = [constant1 * (r_abs - 3 * dipole_radius) * (r[i] / r_abs) for i in range(3)]
+    force = [stiffness_const * (r_abs - 3 * dipole_radius) * (r[i] / r_abs) for i in range(3)]  # Previous method
     # force = np.zeros(3)
     # force[0] = constant1*(r_abs-2*dipole_radius)*(r[0]/r_abs)
     # force[1] = constant1*(r_abs-2*dipole_radius)*(r[1]/r_abs)
@@ -497,6 +497,8 @@ def generate_connection_indices(array_of_positions, mode, args):
     num_particles = len(array_of_positions)
     connection_indices = []
 
+    print("Generating connection indices with mode= ",mode)
+
     match mode:
         case "num":
             # this finds the pairs based on the num_connections closest particles.
@@ -544,6 +546,11 @@ def generate_connection_indices(array_of_positions, mode, args):
             for i in range(num_particles-1):
                 connection_indices.append((i+1,i))
                 connection_indices.append((i,i+1))
+            if(len(args) > 0):
+                if(args[0] == True):
+                    # Enable looping, connects last particle back to 0th
+                    connection_indices.append((num_particles-1, 0))
+                    connection_indices.append((0, num_particles-1))
 
         case "dist":
             # this links each particle to every other particle within a certain distance.
@@ -571,13 +578,14 @@ def generate_connection_indices(array_of_positions, mode, args):
             print(current_connections)
 
 
-        case "manual": # needed?
+        case "manual":
+            # Manually state which particles will be connected in arguments when more specific connection patterns required
             connection_indices = args
         case _:
-            sys.exit("get_connected_pairs: modes are 'num', 'line'")
+            sys.exit("get_connected_pairs: modes are 'num', 'line', 'loop', 'manual'")
 
         
-    
+    print("Connections established= ",connection_indices)
     return connection_indices
 
     
@@ -608,10 +616,13 @@ def generate_connection_indices(array_of_positions, mode, args):
 #     return spring_force_array
 
 def spring_force_array(array_of_positions, dipole_radius, connection_indices):
+    ##
+    ## SHOULD BE PARTICLE_RADIUS NOT DIPOLE_RADIUS -> FROM OLD NAMING CONVENTION USED BEFORE
+    ##
     number_of_dipoles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
-    stiffness = 1.0e-5
+    stiffness = 5.0e-6  #1.0e-5
     spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
 
     for i,j in connection_indices:
@@ -926,7 +937,7 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
-    connection_indices = generate_connection_indices(position_vectors, "num", [0])
+    connection_indices = generate_connection_indices(position_vectors, "line", [True])
     # connection_indices = generate_connection_indices(position_vectors, "dist", [])
     # print(f"connection indices are\n{connection_indices}")
 
@@ -977,6 +988,9 @@ def simulation(number_of_particles, positions, shapes, args):
         buckingham = buckingham_force_array(position_vectors, effective_radii)
         # spring = spring_force_array(position_vectors, radius)
         # driver = driving_force_array(position_vectors)
+        ####
+        ## Needs to depend on the connections chosen -> Crrently just considers particle connected in a line according to index
+        ####
         bending = bending_force_array(position_vectors, radius)
         # gravity = gravity_force_array(position_vectors, radius)
 
@@ -1017,7 +1031,7 @@ def simulation(number_of_particles, positions, shapes, args):
 
     xyz_list1 = np.vsplit(np.vstack(temp_array1).T, number_of_particles)
 
-    return xyz_list1,optpos,optforce,optcouple
+    return xyz_list1,optpos,optforce,optcouple,connection_indices
 
 
 
@@ -1147,7 +1161,7 @@ beam = "plane"  # LEGACY REMOVE
 #===========================================================================
 
 initialT = time.time()
-particles,optpos, optforces,optcouples = simulation(n_particles, positions, shapes, args)
+particles,optpos, optforces,optcouples,connection_indices = simulation(n_particles, positions, shapes, args)
 finalT = time.time()
 print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 
@@ -1161,7 +1175,7 @@ if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=False)
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=False)
 
     ## ===
     ## Legacy Plotting Functions -> Remove
