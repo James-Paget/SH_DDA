@@ -111,7 +111,7 @@ def func4(a, b, r):
 def Djj(dipole_radius):  # For Diffusion
     #
     # This is valid for a sphere, but not other shapes e.g. a torus
-    # This will need to be changed when considering the dynamics of ither particle shapes
+    # This will need to be changed when considering the dynamics of other particle shapes
     #
     djj = (k_B * temperature) / (6 * np.pi * viscosity * dipole_radius)
     D = np.zeros([3, 3])
@@ -199,10 +199,10 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
     return force
 
 
-def spring_force(constant1, r, dipole_radius):
+def spring_force(stiffness_const, r, dipole_radius):
     #print("Dipole Radius:",dipole_radius)
     r_abs = np.linalg.norm(r)
-    force = [constant1 * (r_abs - 2 * dipole_radius) * (r[i] / r_abs) for i in range(3)]
+    force = [stiffness_const * (r_abs - 5 * dipole_radius) * (r[i] / r_abs) for i in range(3)]  # Previous method
     # force = np.zeros(3)
     # force[0] = constant1*(r_abs-2*dipole_radius)*(r[0]/r_abs)
     # force[1] = constant1*(r_abs-2*dipole_radius)*(r[1]/r_abs)
@@ -488,24 +488,149 @@ def buckingham_force_array(array_of_positions, effective_radii):
     return buckingham_force_array
 
 
-def spring_force_array(array_of_positions, dipole_radius):
+def generate_connection_indices(array_of_positions, mode, args):
+    """
+    Return a list of matrix indices (i,j) of connected particles
+    mode (args): num (num_connections), line (), dist ()
+    """
+
+    num_particles = len(array_of_positions)
+    connection_indices = []
+
+    print("Generating connection indices with mode= ",mode)
+
+    match mode:
+        case "num":
+            # this finds the pairs based on the num_connections closest particles.
+            # args: [num_connections]
+            num_connections = args[0]
+            
+            if num_connections > num_particles-1:
+                num_connections = num_particles-1
+                print(f"generate_connection_indices, mode='num': num_connections larger than max, so set to {num_connections}")
+
+            displacements_matrix = displacement_matrix(array_of_positions)
+            distances_matrix = np.zeros((num_particles, num_particles))
+            current_connections = np.zeros(num_particles)
+
+            for i in range(num_particles):
+                # make scalar distance matrix
+                for j in range(i, num_particles):
+                    distance = np.linalg.norm(displacements_matrix[i][j])
+                    distances_matrix[i][j] = distance
+                    distances_matrix[j][i] = distance
+                
+                # order to test the closest first
+                closest_js = np.argsort(distances_matrix[i])
+
+                for j in closest_js:    
+                    # check if more connections needed and no duplicates (only search search upper triangle).
+                    if current_connections[i] < num_connections and j>i:
+                        # add in pairs
+                        connection_indices.append((i,j))
+                        connection_indices.append((j,i))
+                        current_connections[i] += 1
+                        current_connections[j] += 1
+
+            print(f"Num connections are {current_connections}")
+            for i in range(num_particles):
+                if current_connections[i] != num_connections:
+                    print(f"Warning, particle {i} not properly connected, connections={current_connections[i]}")
+                    
+
+        case "line":
+            # this links them in a line ordered by index.
+            # args: []
+
+            # For each point (i,i) along the diagonal except the last, add the point below and the point to the right.
+            for i in range(num_particles-1):
+                connection_indices.append((i+1,i))
+                connection_indices.append((i,i+1))
+            if(len(args) > 0):
+                if(args[0] == True):
+                    # Enable looping, connects last particle back to 0th
+                    connection_indices.append((num_particles-1, 0))
+                    connection_indices.append((0, num_particles-1))
+
+        case "dist":
+            # this links each particle to every other particle within a certain distance.
+            # args: [] (maybe could pass in the dist)
+            if num_particles < 2:
+                sys.exit("generate_connection_indices: dist num_particles error")
+
+            if len(args) == 0:
+                approx_radius = np.linalg.norm(array_of_positions[0])
+                approx_min_spacing = 2*approx_radius / np.sqrt(num_particles-1) # N=2, dist= 2*rad and dist^2 proportional to area, area per particle proportional to 1/N
+                dist = 1.5 * approx_min_spacing
+            else:
+                dist = args[0]
+
+            current_connections = np.zeros(num_particles) # (only used for print data collection)
+
+            for i in range(num_particles):
+                for j in range(i+1, num_particles):
+                    if np.linalg.norm( array_of_positions[i] - array_of_positions[j] ) < dist:
+                        connection_indices.append((i,j))
+                        connection_indices.append((j,i))
+
+                        current_connections[i] += 1
+                        current_connections[j] += 1
+
+            current_connections = np.array(current_connections)
+            print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
+            print(current_connections)
+
+
+        case "manual":
+            # Manually state which particles will be connected in arguments when more specific connection patterns required
+            connection_indices = args
+        case _:
+            sys.exit("get_connected_pairs: modes are 'num', 'line', 'loop', 'manual'")
+
+        
+    print("Connections established= ",connection_indices)
+    return connection_indices
+
+    
+
+# def spring_force_array(array_of_positions, dipole_radius):
+#     number_of_dipoles = len(array_of_positions)
+#     displacements_matrix = displacement_matrix(array_of_positions)
+#     displacements_matrix_T = np.transpose(displacements_matrix)
+#     stiffness = 1.0e-5
+#     spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
+
+#     for i in range(number_of_dipoles):
+#         for j in range(number_of_dipoles):
+#             spring_force_matrix[i][j] = np.zeros(3)
+#     for i in range(0,number_of_dipoles,2):
+#         j = i + 1
+#         spring_force_matrix[i][j] = spring_force(stiffness, displacements_matrix_T[i][j], dipole_radius)
+#     for i in range(1,number_of_dipoles,2):
+#         j = i - 1
+#         spring_force_matrix[i][j] = spring_force(stiffness, displacements_matrix_T[i][j], dipole_radius)
+
+#     # print(f"Spring matrix is\n{np.array(spring_force_matrix)}")
+
+#     #print("Spring force array shape before:",spring_force_matrix.shape)
+#     spring_force_array = np.sum(spring_force_matrix, axis=1)
+#     #    print("Springs",spring_force_array)
+#     #print("Spring force array shape after:",spring_force_array.shape)
+#     return spring_force_array
+
+def spring_force_array(array_of_positions, dipole_radius, connection_indices):
+    ##
+    ## SHOULD BE PARTICLE_RADIUS NOT DIPOLE_RADIUS -> FROM OLD NAMING CONVENTION USED BEFORE
+    ##
     number_of_dipoles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
-    stiffness = 1.0e-5
-    spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
-    ##
-    ## Possible double zeroing?
-    ##
-    for i in range(number_of_dipoles):
-        for j in range(number_of_dipoles):
-            spring_force_matrix[i][j] = np.zeros(3)
-    for i in range(0,number_of_dipoles,2):
-        j = i + 1
+    stiffness = 2e-6 #5.0e-6 # 1e-5
+    spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
+
+    for i,j in connection_indices:
         spring_force_matrix[i][j] = spring_force(stiffness, displacements_matrix_T[i][j], dipole_radius)
-    for i in range(1,number_of_dipoles,2):
-        j = i - 1
-        spring_force_matrix[i][j] = spring_force(stiffness, displacements_matrix_T[i][j], dipole_radius)
+
     #print("Spring force array shape before:",spring_force_matrix.shape)
     spring_force_array = np.sum(spring_force_matrix, axis=1)
     #    print("Springs",spring_force_array)
@@ -658,7 +783,7 @@ def torus_sector_size(args, dipole_radius):
     # phi_upper = larger angle in XY plane, from positive X axis, to end torus sector at (0,2*PI)
     #
     # ** Could be extended to be tilted
-    # ** Could also move x,y,z calcualtion into if to speed up program -> reduce waste on non-dipole checks
+    # ** Could also move x,y,z calculation into if to speed up program -> reduce waste on non-dipole checks
     #
     torus_centre_radius, torus_tube_radius, phi_lower, phi_upper = args
     dipole_diameter = 2*dipole_radius
@@ -816,6 +941,11 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
+    # connection_indices = generate_connection_indices(position_vectors, "line", [True])
+    # connection_indices = generate_connection_indices(position_vectors, "dist", [])
+    connection_indices = generate_connection_indices(position_vectors, "num", [5]) # num=5 for icos
+    # print(f"connection indices are\n{connection_indices}")
+
     for i in range(number_of_timesteps):
         #        print("positions: ",position_vectors)
         
@@ -857,29 +987,30 @@ def simulation(number_of_particles, positions, shapes, args):
                 case "torus":
                     effective_radii[p] = (args[p][0] + args[p][1])
 
-        #
-        # Call diffusion_matrix with sphere radius not dipole radius
-        #
-
-        ##
-        ## TODO; NEEDS TO BE PER PARTICLE, Not the same for every particle (as is currently done)
-        ##
-        D = diffusion_matrix(position_vectors, args[0][0])
+        radius = effective_radii[0] ## !!! NEED TO FIX LATER
+        D = diffusion_matrix(position_vectors, radius)
         #D = diffusion_matrix(position_vectors, dipole_radius)
-
-
         buckingham = buckingham_force_array(position_vectors, effective_radii)
-#        spring = spring_force_array(position_vectors, radius)
-#        driver = driving_force_array(position_vectors)
-#        bending = bending_force_array(position_vectors, radius)
-#        gravity = gravity_force_array(position_vectors, radius)
-        total_force_array = optical #+ buckingham# + gravity#+ spring #+ driver#+ gravity# + spring + bending
+        # spring = spring_force_array(position_vectors, radius)
+        # driver = driving_force_array(position_vectors)
+        ####
+        ## Needs to depend on the connections chosen -> Crrently just considers particle connected in a line according to index
+        ####
+        bending = bending_force_array(position_vectors, radius)
+        # gravity = gravity_force_array(position_vectors, radius)
+
+        spring = spring_force_array(position_vectors, radius, connection_indices)
+
+        total_force_array = optical + buckingham + spring #+ bending #+ driver#+ gravity# + spring + bending
+        #        print("buckingham: ",buckingham_force_array(position_vectors,radius))
+        #        print("Springs: ",spring_force_array(position_vectors,radius))
+        
         # Record total forces too if required
         if include_force==True:
             for j in range(n_particles):
                 for k in range(3):
                     totforces[i,j,k] = total_force_array[j][k]
-
+        
         F = np.hstack(total_force_array)
         # print(F)
         cov = 2 * timestep * D
@@ -909,7 +1040,7 @@ def simulation(number_of_particles, positions, shapes, args):
 
     xyz_list1 = np.vsplit(np.vstack(temp_array1).T, number_of_particles)
 
-    return xyz_list1,optpos,optforce,optcouple,totforces
+    return xyz_list1,optpos,optforce,optcouple,totforces,connection_indices
 
 
 
@@ -1036,7 +1167,7 @@ beam = "plane"  # LEGACY REMOVE
 #===========================================================================
 
 initialT = time.time()
-particles,optpos, optforces,optcouples,totforces = simulation(n_particles, positions, shapes, args)
+particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(n_particles, positions, shapes, args)
 finalT = time.time()
 print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 
@@ -1050,7 +1181,7 @@ if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=True)
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False)
 
     ## ===
     ## Legacy Plotting Functions -> Remove

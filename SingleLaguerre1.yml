@@ -11,7 +11,7 @@
 # System options
 #============================================================================================
 options:
-  frames: 20
+  frames: 10
 #============================================================================================
 # System parameters
 #============================================================================================
@@ -36,7 +36,7 @@ display:
   max_size: 2e-6 # range will be 2 times this
   resolution: 201 # number of points in each direction of plot
   frame_min: 0 # starting frame for animation
-  frame_max: 20 # will default to number of frames
+  frame_max: 10 # will default to number of frames
   z_offset: 0.0e-6
 #============================================================================================
 # Beam descriptions
@@ -57,62 +57,27 @@ particles:
   default_radius: 100e-9
   default_material: FusedSilica
   particle_list:
-    # part_1:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 0.1 1.6
-    #   coords: 0.77e-6 0.77e-6 0.0
-    #   altcolour: True
-    # part_2:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 -1.5 0.0
-    #   coords: 0.77e-6 -0.77e-6 0.0
-    #   altcolour: True
-    # part_3:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 1.7 3.1
-    #   coords: -0.77e-6 0.77e-6 0.0
-    #   altcolour: True
-    # part_4:
-    #   material: FusedSilica
-    #   radius: 500e-9
-    #   shape: torus
-    #   args: 1e-6 0.15e-6 -3.1 -1.6
-    #   coords: -0.77e-6 -0.77e-6 0.0
-    #   altcolour: True
-
     part_1:
       material: FusedSilica
       shape: sphere
       args: 200e-9
-      coords: -1.0e-6 0.0 0.0
+      coords: 1.0e-6 0.0 0.0
       altcolour: True
     part_2:
       material: FusedSilica
       shape: sphere
       args: 200e-9
+      coords: -1.0e-6 0.0 0.0
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: 0.0 1.0e-6 0.0
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
       coords: 0.0 -1.0e-6 0.0
       altcolour: True
-
-
-    #part_2:
-    #  material: FusedSilica
-    #  #radius: 500e-9
-    #  shape: torus
-    #  args: 1e-6 0.1e-6 0.647 1.447
-    #  coords: 0.5e-6 0.866e-6 0.0
-    #  altcolour: True
-    #part_3:
-    #  material: FusedSilica
-    #  #radius: 500e-9
-    #  shape: torus
-    #  args: 1e-6 0.1e-6 2.742 0.4
-    #  coords: -1.0e-6 0.0 0.0
-    #  altcolour: True
-
-
