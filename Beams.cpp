@@ -269,7 +269,7 @@ void laguerre_gaussian_fields(double x, double y, double z, BEAM *thisbeam, std:
     // x, y, z coordinates of point
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
     // l order of vortex beam, integer
     // p is the Gouy phase, integer
     // z0 is the Rayleigh range or equivalent
@@ -358,7 +358,7 @@ void laguerre_gaussian_field_gradients_fd(double x, double y, double z, BEAM *th
     // x, y, z coordinates of point
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
     // l order of vortex beam, integer
     // p is the Gouy phase, integer
     // z0 is the Rayleigh range or equivalent
@@ -408,7 +408,7 @@ void laguerre_gaussian_field_gradients_fd(double x, double y, double z, BEAM *th
     // x, y, z coordinates of point
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
     // l order of vortex beam, integer
     // p is the Gouy phase, integer
     // z0 is the Rayleigh range or equivalent
@@ -822,7 +822,7 @@ std::complex<double> *gaussian_xpol(double xx, double yy, double zz, BEAM *thisb
     // xx, yy, zz coordinates of point in lab frame
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
     using namespace std::complex_literals;
     using namespace std;
     
@@ -899,7 +899,7 @@ void gaussian_barton5_fields(double x, double y, double z, BEAM *thisbeam, std::
     // xx, yy, zz coordinates of point in lab frame
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
     using namespace std::complex_literals;
     using namespace std;
     
@@ -956,7 +956,7 @@ std::complex<double> *gaussian_xpol_gradient(double xx, double yy, double zz, BE
     // xx, yy, zz coordinates of point in lab frame
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
     using namespace std::complex_literals;
     
     static std::complex<double> gradExyz[9],gradEpxyz[3][3]; // This will be a problem if we go parallel
@@ -1115,7 +1115,7 @@ void gaussian_barton5_field_gradients(double x, double y, double z, BEAM *thisbe
     // xx, yy, zz coordinates of point in lab frame
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
     using namespace std::complex_literals;
     
     std::complex<double> eikz, phi0, pref1;
@@ -1248,7 +1248,7 @@ void gaussian_csp_fields(double x, double y, double z, BEAM *thisbeam, std::comp
     // x, y, z coordinates of point
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
 
     using namespace std::complex_literals;
     
@@ -1299,7 +1299,7 @@ void gaussian_csp_field_gradients(double x, double y, double z, BEAM *thisbeam, 
     // x, y, z coordinates of point
     // E0 field strength
     // k wavevector parallel to beam axis
-    // w0 beam waste parameter
+    // w0 beam waist parameter
 
     using namespace std::complex_literals;
     

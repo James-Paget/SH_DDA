@@ -219,16 +219,16 @@ class DisplayObject (object):
                 plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
                 plots.append(plot)
 
-            print("positions[t]= ",positions[t])
+            # print("positions[t]= ",positions[t])
             # Add new spring connections to the plot
             for connection in connection_indices:
                 # Assuming connections stored in pairs
-                print("connection    = ",connection)
-                print("connection[0] = ",connection[0])
+                # print("connection    = ",connection)
+                # print("connection[0] = ",connection[0])
                 p1 = positions[t, connection[0]]
                 p2 = positions[t, connection[1]]
-                print("p1= ",p1)
-                print("p2= ",p2)
+                # print("p1= ",p1)
+                # print("p2= ",p2)
                 lineplot = ax.plot(
                     np.array([p1[0],p2[0]]),
                     np.array([p1[1],p2[1]]), 

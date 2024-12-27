@@ -36,7 +36,7 @@ def generate_unit_sphere_positions(N, num_steps=1000):
 
     return coords
 
-# generate_unit_sphere_positions(12, num_steps=1000)
+# generate_unit_sphere_positions(40, num_steps=1000)
 
 def print_particles(coords):
     for i, coord in enumerate(coords):
@@ -77,7 +77,7 @@ def get_icosahedron_points(radius=1e-6):
 
 # print_particles(get_tetrahedron_points(1e-6))
 # print_particles(generate_unit_sphere_positions(12, 5000)*1e-6)
-print_particles(get_icosahedron_points())
+# print_particles(get_icosahedron_points())
 
 
 def min_dists():
@@ -107,7 +107,7 @@ def min_dists():
 # import mpl_toolkits.mplot3d
 # import matplotlib.pyplot as pp
 
-# num_pts = 4
+# num_pts = 1000
 # indices = arange(0, num_pts, dtype=float) + 0.5
 
 # phi = arccos(1 - 2*indices/num_pts)

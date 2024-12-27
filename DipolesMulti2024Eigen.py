@@ -202,7 +202,7 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
 def spring_force(stiffness_const, r, dipole_radius):
     #print("Dipole Radius:",dipole_radius)
     r_abs = np.linalg.norm(r)
-    force = [stiffness_const * (r_abs - 3 * dipole_radius) * (r[i] / r_abs) for i in range(3)]  # Previous method
+    force = [stiffness_const * (r_abs - 5 * dipole_radius) * (r[i] / r_abs) for i in range(3)]  # Previous method
     # force = np.zeros(3)
     # force[0] = constant1*(r_abs-2*dipole_radius)*(r[0]/r_abs)
     # force[1] = constant1*(r_abs-2*dipole_radius)*(r[1]/r_abs)
@@ -490,8 +490,8 @@ def buckingham_force_array(array_of_positions, effective_radii):
 
 def generate_connection_indices(array_of_positions, mode, args):
     """
-    return a list of matrix indices (i,j) of connected particles
-    modes: num (num_connections), line ()
+    Return a list of matrix indices (i,j) of connected particles
+    mode (args): num (num_connections), line (), dist ()
     """
 
     num_particles = len(array_of_positions)
@@ -558,9 +558,12 @@ def generate_connection_indices(array_of_positions, mode, args):
             if num_particles < 2:
                 sys.exit("generate_connection_indices: dist num_particles error")
 
-            approx_radius = np.linalg.norm(array_of_positions[0])
-            approx_min_spacing = 2*approx_radius / np.sqrt(num_particles-1) # N=2, dist= 2*rad and dist^2 proportional to area, area per particle proportional to 1/N
-            dist = 1.5 * approx_min_spacing
+            if len(args) == 0:
+                approx_radius = np.linalg.norm(array_of_positions[0])
+                approx_min_spacing = 2*approx_radius / np.sqrt(num_particles-1) # N=2, dist= 2*rad and dist^2 proportional to area, area per particle proportional to 1/N
+                dist = 1.5 * approx_min_spacing
+            else:
+                dist = args[0]
 
             current_connections = np.zeros(num_particles) # (only used for print data collection)
 
@@ -622,7 +625,7 @@ def spring_force_array(array_of_positions, dipole_radius, connection_indices):
     number_of_dipoles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
-    stiffness = 5.0e-6  #1.0e-5
+    stiffness = 2e-6 #5.0e-6 # 1e-5
     spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
 
     for i,j in connection_indices:
@@ -780,7 +783,7 @@ def torus_sector_size(args, dipole_radius):
     # phi_upper = larger angle in XY plane, from positive X axis, to end torus sector at (0,2*PI)
     #
     # ** Could be extended to be tilted
-    # ** Could also move x,y,z calcualtion into if to speed up program -> reduce waste on non-dipole checks
+    # ** Could also move x,y,z calculation into if to speed up program -> reduce waste on non-dipole checks
     #
     torus_centre_radius, torus_tube_radius, phi_lower, phi_upper = args
     dipole_diameter = 2*dipole_radius
@@ -937,8 +940,9 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
-    connection_indices = generate_connection_indices(position_vectors, "line", [True])
+    # connection_indices = generate_connection_indices(position_vectors, "line", [True])
     # connection_indices = generate_connection_indices(position_vectors, "dist", [])
+    connection_indices = generate_connection_indices(position_vectors, "num", [5]) # num=5 for icos
     # print(f"connection indices are\n{connection_indices}")
 
     for i in range(number_of_timesteps):
@@ -995,9 +999,6 @@ def simulation(number_of_particles, positions, shapes, args):
         # gravity = gravity_force_array(position_vectors, radius)
 
         spring = spring_force_array(position_vectors, radius, connection_indices)
-
-        spring = list(spring) # NEW
-        bending = list(bending) # NEW
 
         total_force_array = optical + buckingham + spring #+ bending #+ driver#+ gravity# + spring + bending
         #        print("buckingham: ",buckingham_force_array(position_vectors,radius))
@@ -1175,7 +1176,7 @@ if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=["Z"], forces=optforces, include_quiver=True, include_tracer=False)
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False)
 
     ## ===
     ## Legacy Plotting Functions -> Remove

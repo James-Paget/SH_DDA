@@ -43,8 +43,8 @@ display:
 #============================================================================================
 beams:
   beam_1:
-    beamtype: BEAMTYPE_GAUSS_CSP # parameter
-    E0: 1000000
+    beamtype: BEAMTYPE_BESSEL # parameter BEAMTYPE_LAGUERRE_GAUSSIAN BEAMTYPE_BESSEL
+    E0: 10000000 # 300
     # order: 3
     w0: 0.6 # fraction of wavelength
     jones: POLARISATION_LCP # parameter
