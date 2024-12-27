@@ -92,7 +92,7 @@ def make_vmd_file(filename_vtf,n_particles,frames,timestep,particles,optpos,beam
     MyFileObject.close()  # closes the file again
     return
 
-def make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,include_couple,optcouples):
+def make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples):
     """
     Function to generate excel output file.
     Inputs:
@@ -115,11 +115,16 @@ def make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,inc
         worksheet.write(0,j*3+3,"z{:d}(m)".format(j))
     if include_force==True:
         for j in range (n_particles):
-            worksheet.write(0,(j+n_particles)*3+1,"Fx{:d}(N)".format(j))
-            worksheet.write(0,(j+n_particles)*3+2,"Fy{:d}(N)".format(j))
-            worksheet.write(0,(j+n_particles)*3+3,"Fz{:d}(N)".format(j))
+            # Optical force
+            worksheet.write(0,(j+1*n_particles)*3+1,"Fx{:d}(N)".format(j))
+            worksheet.write(0,(j+1*n_particles)*3+2,"Fy{:d}(N)".format(j))
+            worksheet.write(0,(j+1*n_particles)*3+3,"Fz{:d}(N)".format(j))
+            # Total force
+            worksheet.write(0,(j+2*n_particles)*3+1,"F_Tx{:d}(N)".format(j))
+            worksheet.write(0,(j+2*n_particles)*3+2,"F_Ty{:d}(N)".format(j))
+            worksheet.write(0,(j+2*n_particles)*3+3,"F_Tz{:d}(N)".format(j))
     if include_couple==True:
-        offset = 2*n_particles
+        offset = 3*n_particles
         if include_force==False:
             offset = n_particles
         for j in range (n_particles):
@@ -128,6 +133,7 @@ def make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,inc
             worksheet.write(0,(j+offset)*3+3,"Cz{:d}(Nm)".format(j))
 
     # Iterate over the data and write it out row by row.
+    print("===> totforces = ",totforces);
     for i in range(0, frames, 1):
         worksheet.write(i+1,0,timestep*i)
         for j in range (n_particles):
@@ -136,9 +142,10 @@ def make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,inc
         if include_force==True:
             for j in range (n_particles):
                 for k in range (3):
-                    worksheet.write(i+1,(j+n_particles)*3+k+1,optforces[i][j][k])
+                    worksheet.write(i+1,(j+1*n_particles)*3+k+1,optforces[i][j][k])
+                    worksheet.write(i+1,(j+2*n_particles)*3+k+1,totforces[i][j][k])
         if include_couple==True:
-            offset = 2*n_particles
+            offset = 3*n_particles
             if include_force==False:
                 offset = n_particles
             for j in range (n_particles):

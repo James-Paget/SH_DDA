@@ -1,5 +1,5 @@
 options:
-  frames: 100
+  frames: 1
 parameters:
   wavelength: 1e-06
   dipole_radius: 4e-08
@@ -10,12 +10,12 @@ output:
   include_force: True
   include_couple: True
 display:
-  show_output: True
+  show_output: False
   frame_interval: 2
   max_size: 2e-06
   resolution: 201
   frame_min: 0
-  frame_max: 100
+  frame_max: 1
   z_offset: 0.0
 beams:
   beam_1:
