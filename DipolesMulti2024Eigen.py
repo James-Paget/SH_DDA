@@ -223,7 +223,7 @@ def driving_force(constant1, r):
     return force
 
 
-def bending_force(bond_stiffness, ri, rj, rk):
+def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     rij = rj - ri
     rik = rk - ri
     rij_abs = np.linalg.norm(rij)
@@ -231,15 +231,16 @@ def bending_force(bond_stiffness, ri, rj, rk):
     rijrik = rij_abs * rik_abs
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
-    costhetajik = np.dot(rij, rik) / rijrik
+
+    costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle )
     force = np.zeros([3, 3])
     i = 1
     force[i] = bond_stiffness * (
-        (rik + rij) / rijrik - costhetajik * (rij / rij2 + rik / rik2)
+        (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
     )
-    force[i - 1] = bond_stiffness * (costhetajik * rij / rij2 - rik / rijrik)
-    force[i + 1] = bond_stiffness * (costhetajik * rik / rik2 - rij / rijrik)
-    #    print(force)
+    force[i - 1] = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
+    force[i + 1] = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+
     return force
 
 
@@ -453,7 +454,7 @@ def buckingham_force_array(array_of_positions, dipole_radius):
 
 
 def buckingham_force_array(array_of_positions, effective_radii):
-    number_of_dipoles = len(array_of_positions)
+    number_of_particles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
     #    Hamaker = (np.sqrt(30e-20) - np.sqrt(4e-20))**2
@@ -461,15 +462,11 @@ def buckingham_force_array(array_of_positions, effective_radii):
     ConstantA = 1.0e23
     ConstantB = 2.0e8  # 4.8e8
     buckingham_force_matrix = np.zeros(
-        [number_of_dipoles, number_of_dipoles], dtype=object
+        [number_of_particles, number_of_particles], dtype=object
     )
-    #
-    # ?? Maybe rename 'dipoles' to 'particles' in here, as just used for whole particles now
-    #
 
-
-    for i in range(number_of_dipoles):
-        for j in range(number_of_dipoles):
+    for i in range(number_of_particles):
+        for j in range(number_of_particles):
             if i == j:
                 buckingham_force_matrix[i][j] = [0, 0, 0]
             else:
@@ -481,17 +478,18 @@ def buckingham_force_array(array_of_positions, effective_radii):
                     effective_radii[i],
                     effective_radii[j]
                 )
-    buckingham_force_array = np.zeros((number_of_dipoles,3),dtype=np.float64)
+    buckingham_force_array = np.zeros((number_of_particles,3),dtype=np.float64)
     temp = np.sum(buckingham_force_matrix, axis=1)
-    for i in range(number_of_dipoles):
+    for i in range(number_of_particles):
         buckingham_force_array[i] = temp[i]
     return buckingham_force_array
 
 
-def generate_connection_indices(array_of_positions, mode, args):
+def generate_connection_indices(array_of_positions, mode="manual", args=[]):
     """
     Return a list of matrix indices (i,j) of connected particles
     mode (args): num (num_connections), line (), dist ()
+    Defaults to no connections with mode="manual", args=[]
     """
 
     num_particles = len(array_of_positions)
@@ -580,7 +578,6 @@ def generate_connection_indices(array_of_positions, mode, args):
             print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
             print(current_connections)
 
-
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
             connection_indices = args
@@ -591,8 +588,41 @@ def generate_connection_indices(array_of_positions, mode, args):
     print("Connections established= ",connection_indices)
     return connection_indices
 
-    
+def get_equilibrium_angles(initial_positions, connection_indices):
+    # build list of [i,j,k,eqm_angle]; i is central index, j,k are connected particles.
+    # Calculating equilibrium angles from initial_positions assumes connections are initially in equilibrium.
 
+    if len(connection_indices) == 0:
+        return []
+
+    ijkangles = []
+
+    # sort the indices by the first argument of each pair
+    connection_indices = np.array(connection_indices)
+    sorted_indices = connection_indices[np.argsort(connection_indices[:,0])]
+
+    idx = 0
+    while idx < len(sorted_indices):
+        # i is the central particle's index
+        i = sorted_indices[idx,0]
+
+        # step through sorted_indices until i would change, and form connections list.
+        connections = []
+        while idx < len(sorted_indices) and sorted_indices[idx,0] == i:
+            connections.append(sorted_indices[idx,1])
+            idx += 1
+
+        # find angle for each combination of connections.
+        for j,k in it.combinations(connections, 2):
+            u = initial_positions[j] - initial_positions[i]
+            v = initial_positions[k] - initial_positions[i]
+            angle = np.arccos(np.dot(u,v) / (np.linalg.norm(u) * np.linalg.norm(v)))
+            ijkangles.append([i,j,k,angle])
+
+    return ijkangles
+
+
+""" OLD SPRINGS
 # def spring_force_array(array_of_positions, dipole_radius):
 #     number_of_dipoles = len(array_of_positions)
 #     displacements_matrix = displacement_matrix(array_of_positions)
@@ -617,24 +647,20 @@ def generate_connection_indices(array_of_positions, mode, args):
 #     #    print("Springs",spring_force_array)
 #     #print("Spring force array shape after:",spring_force_array.shape)
 #     return spring_force_array
+"""
 
 def spring_force_array(array_of_positions, dipole_radius, connection_indices):
-    ##
-    ## SHOULD BE PARTICLE_RADIUS NOT DIPOLE_RADIUS -> FROM OLD NAMING CONVENTION USED BEFORE
-    ##
-    number_of_dipoles = len(array_of_positions)
+    number_of_particles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
     stiffness = 2e-6 #5.0e-6 # 1e-5
-    spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
+    spring_force_matrix = np.zeros([number_of_particles, number_of_particles, 3], dtype=object)
 
     for i,j in connection_indices:
         spring_force_matrix[i][j] = spring_force(stiffness, displacements_matrix_T[i][j], dipole_radius)
 
-    #print("Spring force array shape before:",spring_force_matrix.shape)
     spring_force_array = np.sum(spring_force_matrix, axis=1)
     #    print("Springs",spring_force_array)
-    #print("Spring force array shape after:",spring_force_array.shape)
     return spring_force_array
 
 
@@ -650,12 +676,13 @@ def driving_force_array(array_of_positions):
         driving_force_array[j] = driving_force_array[i]
     return driving_force_array
 
-
+""" OLD BENDING
 def bending_force_array(array_of_positions, dipole_radius):
     number_of_dipoles = len(array_of_positions)
     bond_stiffness = BENDING
     bending_force_matrix = np.zeros([number_of_dipoles], dtype=object)
     bending_force_temp = np.zeros([3], dtype=object)
+
     for i in range(1, number_of_dipoles - 1):
         bending_force_temp = bending_force(
             bond_stiffness,
@@ -668,6 +695,29 @@ def bending_force_array(array_of_positions, dipole_radius):
         bending_force_matrix[i] += bending_force_temp[1]
         bending_force_matrix[i + 1] += bending_force_temp[2]
     #    print("Springs",spring_force_array)
+    return bending_force_matrix
+"""
+
+def bending_force_array(array_of_positions, ijkangles):
+    number_of_particles = len(array_of_positions)
+    bond_stiffness = BENDING
+    bending_force_matrix = np.zeros([number_of_particles,3])
+    bending_force_temp = np.zeros([3,3])
+
+    for i,j,k,eqm_angle in ijkangles:
+        bending_force_temp = bending_force(
+                    bond_stiffness,
+                    array_of_positions[i],
+                    array_of_positions[j],
+                    array_of_positions[k],
+                    eqm_angle
+                )
+
+        bending_force_matrix[j] += bending_force_temp[0]
+        bending_force_matrix[i] += bending_force_temp[1]
+        bending_force_matrix[k] += bending_force_temp[2]
+        # print(f"{i}, {j}, {k}: bending_force_temp is {bending_force_temp}")
+
     return bending_force_matrix
     
     
@@ -941,10 +991,15 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
+    # This lets you parse connection indices as well
     # connection_indices = generate_connection_indices(position_vectors, "line", [True])
     # connection_indices = generate_connection_indices(position_vectors, "dist", [])
-    connection_indices = generate_connection_indices(position_vectors, "num", [5]) # num=5 for icos
-    # print(f"connection indices are\n{connection_indices}")
+    connection_indices = generate_connection_indices(position_vectors, "num", [3]) # num=5 for icos
+    # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
+    if n_particles == 12: # probably icosahedron
+        connection_indices = generate_connection_indices(position_vectors, "num", [5])
+
+    ijkangles = get_equilibrium_angles(position_vectors, connection_indices)
 
     for i in range(number_of_timesteps):
         #        print("positions: ",position_vectors)
@@ -988,20 +1043,21 @@ def simulation(number_of_particles, positions, shapes, args):
                     effective_radii[p] = (args[p][0] + args[p][1])
 
         radius = effective_radii[0] ## !!! NEED TO FIX LATER
+        # spring = spring_force_array(position_vectors, radius)
+        # bending = bending_force_array(position_vectors, radius)
+
         D = diffusion_matrix(position_vectors, radius)
         #D = diffusion_matrix(position_vectors, dipole_radius)
         buckingham = buckingham_force_array(position_vectors, effective_radii)
-        # spring = spring_force_array(position_vectors, radius)
+        spring = spring_force_array(position_vectors, radius, connection_indices)
+        bending = bending_force_array(position_vectors, ijkangles)
         # driver = driving_force_array(position_vectors)
         ####
         ## Needs to depend on the connections chosen -> Crrently just considers particle connected in a line according to index
         ####
-        bending = bending_force_array(position_vectors, radius)
         # gravity = gravity_force_array(position_vectors, radius)
 
-        spring = spring_force_array(position_vectors, radius, connection_indices)
-
-        total_force_array = optical + buckingham + spring #+ bending #+ driver#+ gravity# + spring + bending
+        total_force_array = optical + buckingham + spring + bending #+ driver#+ gravity
         #        print("buckingham: ",buckingham_force_array(position_vectors,radius))
         #        print("Springs: ",spring_force_array(position_vectors,radius))
         
@@ -1148,7 +1204,7 @@ polarizability = a#a*np.ones(n_particles)
 inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
 E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
 
-BENDING = 0
+BENDING = 1e-18
 stiffness = 0  # Errors when this is bigger than 1e-3
 
 k_B = 1.38e-23

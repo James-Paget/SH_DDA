@@ -43,9 +43,9 @@ display:
 #============================================================================================
 beams:
   beam_1:
-    beamtype: BEAMTYPE_BESSEL # parameter BEAMTYPE_LAGUERRE_GAUSSIAN BEAMTYPE_BESSEL
-    E0: 10000000 # 300
-    # order: 3
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN # parameter BEAMTYPE_LAGUERRE_GAUSSIAN BEAMTYPE_BESSEL
+    E0: 300 #10000000 # 300
+    order: 3
     w0: 0.6 # fraction of wavelength
     jones: POLARISATION_LCP # parameter
     translation: 0.0e-6 0.0 0.0 #None # translation in meters or None

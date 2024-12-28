@@ -267,6 +267,32 @@ def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_
 
     generate_yaml(filename, particle_list, parameters)
 
+def generate_sphereGrid_yaml(particle_radius, particle_spacing, bounding_sphere_radius, isCircular=True, wavelength=1.0e-6, particle_material="FusedSilica", parameters={}):
+    #
+    # Generates a YAML file for a set of arbitrary spheres specified
+    #
+    
+    # Create / overwrite YAML file
+    # Writing core system parameters
+    filename = "SingleLaguerre_SphereVary"
+    particle_list = []
+
+    # Get coords of particles in a grid
+    x_base_coords = np.arange(-bounding_sphere_radius, bounding_sphere_radius, 2.0*particle_radius+particle_spacing)
+    y_base_coords = np.arange(-bounding_sphere_radius, bounding_sphere_radius, 2.0*particle_radius+particle_spacing)
+    for j in range(len(y_base_coords)):
+        for i in range(len(x_base_coords)):
+            offset = 0.0
+            if(j%2 == 0):
+                offset = particle_radius +particle_spacing/2.0
+            if(isCircular):
+                if(pow(x_base_coords[i] +offset, 2) + pow(y_base_coords[j], 2) <= pow(bounding_sphere_radius, 2)):
+                    particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radius], "coords": np.array([x_base_coords[i] +offset, y_base_coords[j], 0.0]), "altcolour": True})
+            else:
+                particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radius], "coords": np.array([x_base_coords[i] +offset, y_base_coords[j], 0.0]), "altcolour": True})
+
+    generate_yaml(filename, particle_list, parameters)
+
 def generate_sphere_arbitrary_yaml(particles, wavelength=1.0e-6, particle_material="FusedSilica", frames_of_animation=1):
     #
     # Generates a YAML file for a set of arbitrary spheres specified
@@ -372,7 +398,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     particle_info = [];
     place_radius = 1.152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
-    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
+    parameters = {"frames": 1, "frame_max": 1, "show_output": True}
 
     record_parameters = ["F"]
     if(include_additionalForces):   # Record total forces instead of just optical forces
@@ -839,6 +865,27 @@ def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particl
     )
     return parameter_text, multi_plot_data
 
+def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename):
+    #
+    # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
+    #
+    # particle_numbers = list of particle numbers to be tested in sphere e.g. [1,2,3,4,8]
+    #
+    
+    particle_info = [];
+    parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+
+    print("Generating sphereGrid")
+    #Generate required YAML, perform calculation, then pull force data
+    generate_sphereGrid_yaml(particle_radius, particle_spacing, bounding_sphere_radius, parameters=parameters)     # Writes to SingleLaguerre_SphereVary.yml
+    #Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+    
+    return ""
+
 
 def calc_sphere_volumes(particle_total, dipole_size_range, radii):
     # used by "get_sphere_volumes"
@@ -1161,6 +1208,12 @@ match(sys.argv[1]):
 
         filtered_dipole_sizes, filtered_volumes, max_volume_error = filter_dipole_sizes(volumes, dipole_size_range, filter_num)
         Display.plot_volumes_against_dipoleSize(np.linspace(*dipole_size_range), volumes, filtered_dipole_sizes, filtered_volumes)
+    case "connected_sphereGrid":
+        filename = "SingleLaguerre_SphereVary"
+        particle_radius = 100e-9
+        particle_spacing = 60e-9
+        bounding_sphere_radius = 1e-6
+        parameter_text = simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename)
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
