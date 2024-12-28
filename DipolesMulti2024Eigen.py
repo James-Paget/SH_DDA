@@ -650,22 +650,17 @@ def get_equilibrium_angles(initial_positions, connection_indices):
 """
 
 def spring_force_array(array_of_positions, dipole_radius, connection_indices):
-    ##
-    ## SHOULD BE PARTICLE_RADIUS NOT DIPOLE_RADIUS -> FROM OLD NAMING CONVENTION USED BEFORE
-    ##
-    number_of_dipoles = len(array_of_positions)
+    number_of_particles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
     stiffness = 2e-6 #5.0e-6 # 1e-5
-    spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
+    spring_force_matrix = np.zeros([number_of_particles, number_of_particles, 3], dtype=object)
 
     for i,j in connection_indices:
         spring_force_matrix[i][j] = spring_force(stiffness, displacements_matrix_T[i][j], dipole_radius)
 
-    #print("Spring force array shape before:",spring_force_matrix.shape)
     spring_force_array = np.sum(spring_force_matrix, axis=1)
     #    print("Springs",spring_force_array)
-    #print("Spring force array shape after:",spring_force_array.shape)
     return spring_force_array
 
 
@@ -708,9 +703,6 @@ def bending_force_array(array_of_positions, ijkangles):
     bond_stiffness = BENDING
     bending_force_matrix = np.zeros([number_of_particles,3])
     bending_force_temp = np.zeros([3,3])
-
-    # argsort the first arguments. for each 1st index i, loop over the combinations of 2nd index j and k.
-    # Each set of 3 results in a force on all 3. No bending for particle i if number of connections < 2.
 
     for i,j,k,eqm_angle in ijkangles:
         bending_force_temp = bending_force(
@@ -1004,7 +996,6 @@ def simulation(number_of_particles, positions, shapes, args):
     # connection_indices = generate_connection_indices(position_vectors, "dist", [])
     connection_indices = generate_connection_indices(position_vectors, "num", [3]) # num=5 for icos
     # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
-
     if n_particles == 12: # probably icosahedron
         connection_indices = generate_connection_indices(position_vectors, "num", [5])
 
