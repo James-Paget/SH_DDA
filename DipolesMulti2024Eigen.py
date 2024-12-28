@@ -580,7 +580,6 @@ def generate_connection_indices(array_of_positions, mode, args):
             print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
             print(current_connections)
 
-
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
             connection_indices = args
@@ -941,10 +940,12 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
+    # This lets you parse connection indices as well
     # connection_indices = generate_connection_indices(position_vectors, "line", [True])
     # connection_indices = generate_connection_indices(position_vectors, "dist", [])
-    connection_indices = generate_connection_indices(position_vectors, "num", [5]) # num=5 for icos
-    # print(f"connection indices are\n{connection_indices}")
+    # connection_indices = generate_connection_indices(position_vectors, "num", [5]) # num=5 for icos
+    connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
+    print(f"connection indices are\n{connection_indices}")
 
     for i in range(number_of_timesteps):
         #        print("positions: ",position_vectors)
@@ -1180,7 +1181,7 @@ for i in range(optforces.shape[0]):
 if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
-    fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
+    #fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
     display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False)
 
     ## ===
