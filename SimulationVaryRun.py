@@ -43,9 +43,14 @@ def generate_yaml(filename, particle_list, parameters_arg):
         "frame_max": 1,
         "z_offset": 0.0e-6,
 
-        "beamtype": "BEAMTYPE_LAGUERRE_GAUSSIAN",
-        "E0": 300,
-        "order": 3,
+        ##
+        ## GENERALISE THIS FOR WHICHEVER BEAM WANTED -> JUST PARSE IN BEAM PARAMS -> OR UPDATE + DELETE OTHER PARAMS?
+        ##
+        #"beamtype": "BEAMTYPE_LAGUERRE_GAUSSIAN",      # Laguerre Gaussian
+        "beamtype": "BEAMTYPE_BESSEL",              # Bessel
+        "E0": 25e6,                                 # Bessel
+        #"E0": 300,                                     # Laguerre Gaussian
+        #"order": 3,                                    # Laguerre Gaussian
         "w0": 0.6,
         "jones": "POLARISATION_LCP",
         "translation": None,
@@ -79,7 +84,9 @@ def generate_yaml(filename, particle_list, parameters_arg):
 
     file.write("beams:\n")
     file.write("  beam_1:\n")
-    for arg in ["beamtype", "E0", "order", "w0", "jones", "translation", "rotation"]:
+    # for arg in ["beamtype", "E0", "order", "w0", "jones", "translation", "rotation"]:
+    #     file.write(f"    {arg}: {parameters[arg]}\n")
+    for arg in ["beamtype", "E0", "w0", "jones", "translation", "rotation"]:
         file.write(f"    {arg}: {parameters[arg]}\n")
 
     file.write("particles:\n")
@@ -873,7 +880,7 @@ def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spaci
     #
     
     particle_info = [];
-    parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    parameters = {"frames": 20, "frame_max": 20, "show_output": True}
 
     print("Generating sphereGrid")
     #Generate required YAML, perform calculation, then pull force data
@@ -882,7 +889,7 @@ def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spaci
     run_command = "python DipolesMulti2024Eigen.py "+filename
     run_command = run_command.split(" ")
     print("=== Log ===")
-    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+    result = subprocess.run(run_command) #, stdout=subprocess.DEVNULL
     
     return ""
 
@@ -1209,8 +1216,11 @@ match(sys.argv[1]):
         filtered_dipole_sizes, filtered_volumes, max_volume_error = filter_dipole_sizes(volumes, dipole_size_range, filter_num)
         Display.plot_volumes_against_dipoleSize(np.linspace(*dipole_size_range), volumes, filtered_dipole_sizes, filtered_volumes)
     case "connected_sphereGrid":
+        #
+        # Currently just runs the simulation for observation, no data is recorded or stored in .xlsx files here
+        #
         filename = "SingleLaguerre_SphereVary"
-        particle_radius = 100e-9
+        particle_radius  = 100e-9
         particle_spacing = 60e-9
         bounding_sphere_radius = 1e-6
         parameter_text = simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename)

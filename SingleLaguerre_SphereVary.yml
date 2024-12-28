@@ -1,5 +1,5 @@
 options:
-  frames: 1
+  frames: 20
 parameters:
   wavelength: 1e-06
   dipole_radius: 4e-08
@@ -15,13 +15,12 @@ display:
   max_size: 2e-06
   resolution: 201
   frame_min: 0
-  frame_max: 1
+  frame_max: 20
   z_offset: 0.0
 beams:
   beam_1:
-    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
-    E0: 300
-    order: 3
+    beamtype: BEAMTYPE_BESSEL
+    E0: 25000000.0
     w0: 0.6
     jones: POLARISATION_LCP
     translation: None
