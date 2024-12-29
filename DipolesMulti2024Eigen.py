@@ -199,10 +199,9 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
     return force
 
 
-def spring_force(stiffness_const, r, dipole_radius):
-    #print("Dipole Radius:",dipole_radius)
+def spring_force(stiffness_const, natural_length, r):
     r_abs = np.linalg.norm(r)
-    force = [stiffness_const * (r_abs - 5 * dipole_radius) * (r[i] / r_abs) for i in range(3)]  # Previous method
+    force = [stiffness_const * (r_abs - natural_length) * (r[i] / r_abs) for i in range(3)]  # Previous method
     # force = np.zeros(3)
     # force[0] = constant1*(r_abs-2*dipole_radius)*(r[0]/r_abs)
     # force[1] = constant1*(r_abs-2*dipole_radius)*(r[1]/r_abs)
@@ -575,7 +574,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
                         current_connections[j] += 1
 
             current_connections = np.array(current_connections)
-            print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
+            #print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
             print(current_connections)
 
         case "manual":
@@ -584,8 +583,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
         case _:
             sys.exit("get_connected_pairs: modes are 'num', 'line', 'loop', 'manual'")
 
-        
-    print("Connections established= ",connection_indices)
+    #print("Connections established= ",connection_indices)
     return connection_indices
 
 def get_equilibrium_angles(initial_positions, connection_indices):
@@ -649,31 +647,84 @@ def get_equilibrium_angles(initial_positions, connection_indices):
 #     return spring_force_array
 """
 
-def spring_force_array(array_of_positions, dipole_radius, connection_indices):
-    number_of_particles = len(array_of_positions)
-    displacements_matrix = displacement_matrix(array_of_positions)
-    displacements_matrix_T = np.transpose(displacements_matrix)
-    stiffness = 2e-6 #5.0e-6 # 1e-5
-    spring_force_matrix = np.zeros([number_of_particles, number_of_particles, 3], dtype=object)
+def spring_force_array(array_of_positions, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":10e-6}):
+    """
+    . Calculates the spring forces along the connections specified
+    . Pulls spring data from an initial particle arrangement given
 
-    for i,j in connection_indices:
-        spring_force_matrix[i][j] = spring_force(stiffness, displacements_matrix_T[i][j], dipole_radius)
-
-    spring_force_array = np.sum(spring_force_matrix, axis=1)
-    #    print("Springs",spring_force_array)
-    return spring_force_array
-
-
-def driving_force_array(array_of_positions):
+    . initial_shape = [ [position1], [position2], ..., [positionN] ] for a system of N particles
+    .       Where positionN = [x,y,z] of the Nth particle
+    . stiffness_regime = String to specify a pattern for the spring constants, if left blank will default 
+    to a constant value for all springs (set inside the function)
+    """
     number_of_dipoles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
-    driver = 3.0e-7#6
-    driving_force_array = np.zeros(number_of_dipoles, dtype=object)
-    for i in range(0,number_of_dipoles,2):
-        j = i+1
-        driving_force_array[i] = driving_force(driver, displacements_matrix_T[i][j])
-        driving_force_array[j] = driving_force_array[i]
+
+    spring_naturalLength_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
+    spring_stiffness_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
+    spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
+
+    # Populate elements in each matrix
+    for i,j in connection_indices:
+        spring_naturalLength_matrix[i,j] = generate_spring_naturalLength_element(initial_shape[i], initial_shape[j])   # Found from initial position set parsed in
+        spring_stiffness_matrix[i,j] = generate_spring_stiffness_element(stiffness_spec)                    # Found from a given regime specified
+        spring_force_matrix[i][j] = spring_force(spring_stiffness_matrix[i,j], spring_naturalLength_matrix[i,j], displacements_matrix_T[i][j])
+    # Non-matrix stiffness and natural length approach
+    # spring_force_matrix[i][j] = spring_force(stiffness, natural_length, displacements_matrix_T[i][j])
+
+    # Gets total spring force on each
+    spring_force_array = np.sum(spring_force_matrix, axis=1)
+    return spring_force_array
+
+
+def generate_spring_stiffness_element(stiffness_spec):
+    """
+    . Fetch the stiffness of the spring according to the regime specified
+    """
+    stiffness = 0.0
+    match stiffness_spec["type"]:
+        case "...":
+            # Specific pattern of stiffness wanted here
+            ####
+            ## PARSE PARAMETERS WANTED IN ARGS
+            ####
+            stiffness = 0.0
+        case _:
+            # Defualts to all springs having same, constant, value
+            stiffness = stiffness_spec["default_value"]
+    return stiffness
+
+
+def generate_spring_naturalLength_element(initial_shape_p1, initial_shape_p2):
+    """
+    . Fetch the natural length of a given spring element using the initial_shape specified
+    .   This will set the distance between the particles in the initial_shape as the natural length (e.g. wants to return to this shape)
+    """
+    # Set natural length to be the distance between the particles
+    return np.sqrt(np.sum(pow(initial_shape_p2-initial_shape_p1,2)))
+
+
+# def driving_force_array(array_of_positions):
+#     number_of_dipoles = len(array_of_positions)
+#     displacements_matrix = displacement_matrix(array_of_positions)
+#     displacements_matrix_T = np.transpose(displacements_matrix)
+#     driver = 3.0e-7#6
+#     driving_force_array = np.zeros(number_of_dipoles, dtype=object)
+#     for i in range(0,number_of_dipoles,2):
+#         j = i+1
+#         driving_force_array[i] = driving_force(driver, displacements_matrix_T[i][j])
+#         driving_force_array[j] = driving_force_array[i]
+#     return driving_force_array
+
+def driving_force_array(array_of_positions):
+    number_of_dipoles = len(array_of_positions)
+    driving_force_array = np.zeros((number_of_dipoles,3), dtype=object)
+    driver_magnitude = 5.0e-12
+    for p in range(len(array_of_positions)):
+        drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < 0.5e-6
+        if(drive_condition):
+            driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
     return driving_force_array
 
 """ OLD BENDING
@@ -943,7 +994,7 @@ def simulation(number_of_particles, positions, shapes, args):
 
     #    MyFileObject = open('anyfile.txt','w')
     #position_vectors = positions(number_of_particles)
-    position_vectors = positions    #Of each particle centre
+    position_vectors = positions    # Of each particle centre
     print(positions)
     #position_vectors = np.zeros((number_of_particles,3),dtype=np.float64)
     temp = np.zeros(6)
@@ -991,24 +1042,29 @@ def simulation(number_of_particles, positions, shapes, args):
         else:
             optcouple = None
 
-    # This lets you parse connection indices as well
+    # (1) Get Connections
     # connection_indices = generate_connection_indices(position_vectors, "line", [True])
-    # connection_indices = generate_connection_indices(position_vectors, "dist", [])
-    connection_indices = generate_connection_indices(position_vectors, "num", [3]) # num=5 for icos
+    connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +300e-9]) # For sphereGrid linking
+    #connection_indices = generate_connection_indices(position_vectors, "num", [3]) # num=5 for icos
     # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
-    if n_particles == 12: # probably icosahedron
-        connection_indices = generate_connection_indices(position_vectors, "num", [5])
+    #if n_particles == 12: # probably icosahedron
+    #    connection_indices = generate_connection_indices(position_vectors, "num", [5])
+    #print(f"connection indices are\n{connection_indices}")
+    
+    # (2) Get Initial Positions
+    initial_shape = np.array(positions)   ### MAKE SURE [NOT] SAVED BY REFERENCE ###
+    #print(f"Initial shape is\n{initial_shape}")
 
+    # (3) Get Equilibrium Angles
     ijkangles = get_equilibrium_angles(position_vectors, connection_indices)
+    #print(f"Equil. Angles \n{ijkangles}")
 
     for i in range(number_of_timesteps):
-        #        print("positions: ",position_vectors)
-        
         #
         # Pass in list of dipole positions to generate total dipole array;
         # All changes inside optical_force_array().
         #
-        #optical,couples = optical_force_array(position_vectors, E0, dipole_radius, dipole_primitive)
+        # optical,couples = optical_force_array(position_vectors, E0, dipole_radius, dipole_primitive)
 
         optical, torques, couples = Dipoles.py_optical_force_torque_array(position_vectors, np.asarray(dipole_primitive_num), dipole_radius, dipole_primitives, inverse_polarizability, beam_collection)
 
@@ -1032,7 +1088,6 @@ def simulation(number_of_particles, positions, shapes, args):
             print(i,optical)
 
 
-
         # Finds a characteristic radius for each shape to calcualte Buckingham forces
         effective_radii = np.zeros(number_of_particles, dtype=np.float64)
         for p in range(number_of_particles):
@@ -1042,25 +1097,22 @@ def simulation(number_of_particles, positions, shapes, args):
                 case "torus":
                     effective_radii[p] = (args[p][0] + args[p][1])
 
-        radius = effective_radii[0] ## !!! NEED TO FIX LATER
-        # spring = spring_force_array(position_vectors, radius)
-        # bending = bending_force_array(position_vectors, radius)
+        ## !!! NEED TO FIX LATER !!!
+        radius = effective_radii[0]
+        ## !!! NEED TO FIX LATER !!!
 
         D = diffusion_matrix(position_vectors, radius)
-        #D = diffusion_matrix(position_vectors, dipole_radius)
-        buckingham = buckingham_force_array(position_vectors, effective_radii)
-        spring = spring_force_array(position_vectors, radius, connection_indices)
-        bending = bending_force_array(position_vectors, ijkangles)
-        # driver = driving_force_array(position_vectors)
-        ####
-        ## Needs to depend on the connections chosen -> Crrently just considers particle connected in a line according to index
-        ####
+        # D = diffusion_matrix(position_vectors, dipole_radius)
+        # spring = spring_force_array(position_vectors, radius)
         # gravity = gravity_force_array(position_vectors, radius)
+        buckingham = buckingham_force_array(position_vectors, effective_radii)
+        driver = driving_force_array(position_vectors)
+        bending = bending_force_array(position_vectors, ijkangles)
+        # NOTE; Initial shape stored earleir before any timesteps are taken
+        spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
         total_force_array = optical + buckingham + spring + bending #+ driver#+ gravity
-        #        print("buckingham: ",buckingham_force_array(position_vectors,radius))
-        #        print("Springs: ",spring_force_array(position_vectors,radius))
-        
+
         # Record total forces too if required
         if include_force==True:
             for j in range(n_particles):
@@ -1217,7 +1269,6 @@ z_offset = 0.0 # for most other situations
 beam = "plane"  # LEGACY REMOVE
 
 
-
 #===========================================================================
 # Perform the simulation
 #===========================================================================
@@ -1230,23 +1281,14 @@ print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 # =====================================
 # This code for matplotlib animation output and saving
 
-for i in range(optforces.shape[0]):
-    print("optforces "+str(i)+"= ",optforces[i]);
+#for i in range(optforces.shape[0]):
+#    print("optforces "+str(i)+"= ",optforces[i]);
 
 if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False)
-
-    ## ===
-    ## Legacy Plotting Functions -> Remove
-    ## ===
-    # 2D animation
-    #fig,ax = display.plot_intensity(beam_collection)
-    #display.animate_particles(fig,ax,particles,radius,colors)
-
-
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True)
 
 
 
