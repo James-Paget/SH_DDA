@@ -576,7 +576,7 @@ def generate_connection_indices(array_of_positions, mode, args):
                         current_connections[j] += 1
 
             current_connections = np.array(current_connections)
-            print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
+            #print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
             print(current_connections)
 
         case "manual":
@@ -585,8 +585,7 @@ def generate_connection_indices(array_of_positions, mode, args):
         case _:
             sys.exit("get_connected_pairs: modes are 'num', 'line', 'loop', 'manual'")
 
-        
-    print("Connections established= ",connection_indices)
+    #print("Connections established= ",connection_indices)
     return connection_indices
 
     
@@ -616,11 +615,8 @@ def generate_connection_indices(array_of_positions, mode, args):
 #     #print("Spring force array shape after:",spring_force_array.shape)
 #     return spring_force_array
 
-def spring_force_array(array_of_positions, particle_radius, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":10e-6}):
+def spring_force_array(array_of_positions, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":10e-6}):
     """
-    ####
-    ## PARTICLE RADIUS CAN PROB BE REMOVED NOW -> WAS ONLY USED FOR INITIAL_SHAPE
-    ####
     . Calculates the spring forces along the connections specified
     . Pulls spring data from an initial particle arrangement given
 
@@ -633,8 +629,6 @@ def spring_force_array(array_of_positions, particle_radius, connection_indices, 
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
 
-    # natural_length = 2.75*dipole_radius    ### LEGACY ###
-    # stiffness = 10e-6 #5.0e-6 # 1e-5       ### LEGACY ###
     spring_naturalLength_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
     spring_stiffness_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
     spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
@@ -643,9 +637,6 @@ def spring_force_array(array_of_positions, particle_radius, connection_indices, 
     for i,j in connection_indices:
         spring_naturalLength_matrix[i,j] = generate_spring_naturalLength_element(initial_shape[i], initial_shape[j])   # Found from initial position set parsed in
         spring_stiffness_matrix[i,j] = generate_spring_stiffness_element(stiffness_spec)                    # Found from a given regime specified
-        ####
-        ## DOES THIS NEED A TRANSPOSE? -> I DONT THINK SO BUT POSSIBLY
-        ####
         spring_force_matrix[i][j] = spring_force(spring_stiffness_matrix[i,j], spring_naturalLength_matrix[i,j], displacements_matrix_T[i][j])
     # Non-matrix stiffness and natural length approach
     # spring_force_matrix[i][j] = spring_force(stiffness, natural_length, displacements_matrix_T[i][j])
@@ -682,16 +673,26 @@ def generate_spring_naturalLength_element(initial_shape_p1, initial_shape_p2):
     return np.sqrt(np.sum(pow(initial_shape_p2-initial_shape_p1,2)))
 
 
+# def driving_force_array(array_of_positions):
+#     number_of_dipoles = len(array_of_positions)
+#     displacements_matrix = displacement_matrix(array_of_positions)
+#     displacements_matrix_T = np.transpose(displacements_matrix)
+#     driver = 3.0e-7#6
+#     driving_force_array = np.zeros(number_of_dipoles, dtype=object)
+#     for i in range(0,number_of_dipoles,2):
+#         j = i+1
+#         driving_force_array[i] = driving_force(driver, displacements_matrix_T[i][j])
+#         driving_force_array[j] = driving_force_array[i]
+#     return driving_force_array
+
 def driving_force_array(array_of_positions):
     number_of_dipoles = len(array_of_positions)
-    displacements_matrix = displacement_matrix(array_of_positions)
-    displacements_matrix_T = np.transpose(displacements_matrix)
-    driver = 3.0e-7#6
-    driving_force_array = np.zeros(number_of_dipoles, dtype=object)
-    for i in range(0,number_of_dipoles,2):
-        j = i+1
-        driving_force_array[i] = driving_force(driver, displacements_matrix_T[i][j])
-        driving_force_array[j] = driving_force_array[i]
+    driving_force_array = np.zeros((number_of_dipoles,3), dtype=object)
+    driver_magnitude = 5.0e-12
+    for p in range(len(array_of_positions)):
+        drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < 0.5e-6
+        if(drive_condition):
+            driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
     return driving_force_array
 
 
@@ -989,10 +990,10 @@ def simulation(number_of_particles, positions, shapes, args):
     # connection_indices = generate_connection_indices(position_vectors, "line", [True])
     # connection_indices = generate_connection_indices(position_vectors, "dist", [])
     # connection_indices = generate_connection_indices(position_vectors, "num", [5]) # num=5 for icos
-    connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
-    print(f"connection indices are\n{connection_indices}")
-    initial_shape = np.array(positions)   ### MAKE SURE NOT FOLLOWED BY REFERENCE ###
-    print(f"Initial shape is\n{initial_shape}")
+    connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +300e-9]) # For sphereGrid linking
+    #print(f"connection indices are\n{connection_indices}")
+    initial_shape = np.array(positions)   ### MAKE SURE [NOT] SAVED BY REFERENCE ###
+    #print(f"Initial shape is\n{initial_shape}")
 
     for i in range(number_of_timesteps):
         #
@@ -1039,19 +1040,17 @@ def simulation(number_of_particles, positions, shapes, args):
         ## !!! NEED TO FIX LATER !!!
 
         D = diffusion_matrix(position_vectors, radius)
-        #D = diffusion_matrix(position_vectors, dipole_radius)
-        buckingham = buckingham_force_array(position_vectors, effective_radii)
+        # D = diffusion_matrix(position_vectors, dipole_radius)
         # spring = spring_force_array(position_vectors, radius)
-        # driver = driving_force_array(position_vectors)
-        ####
-        ## Needs to depend on the connections chosen -> Currently just considers particle connected in a line according to index
-        ####
-        bending = bending_force_array(position_vectors, radius)
         # gravity = gravity_force_array(position_vectors, radius)
+        buckingham = buckingham_force_array(position_vectors, effective_radii)
+        driver = driving_force_array(position_vectors)
+        bending = bending_force_array(position_vectors, radius)
         # NOTE; Initial shape stored earleir before any timesteps are taken
-        spring = spring_force_array(position_vectors, radius, connection_indices, initial_shape)
+        spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = optical + spring #+ buckingham #+ bending #+ driver#+ gravity# + spring + bending
+        # total_force_array = optical + spring #+ buckingham #+ bending #+ driver#+ gravity# + spring + bending
+        total_force_array = optical + spring #+ driver #+ buckingham
 
         # Record total forces too if required
         if include_force==True:
@@ -1228,7 +1227,7 @@ if display.show_output==True:
     # Plot beam, particles, forces and tracers (forces and tracers optional)
     fig, ax = None, None                                   #
     fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False)
+    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True)
 
     ## ===
     ## Legacy Plotting Functions -> Remove

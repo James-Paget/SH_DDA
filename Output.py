@@ -133,7 +133,6 @@ def make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,inc
             worksheet.write(0,(j+offset)*3+3,"Cz{:d}(Nm)".format(j))
 
     # Iterate over the data and write it out row by row.
-    print("===> totforces = ",totforces);
     for i in range(0, frames, 1):
         worksheet.write(i+1,0,timestep*i)
         for j in range (n_particles):

@@ -15,13 +15,43 @@ import pickle
 import Display
 
 
-def generate_yaml(filename, particle_list, parameters_arg):
+def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_LAGUERRE_GAUSSIAN"):
 
     # All possible parameters_arg keys as strings are: 
     # frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval,
     # max_size, resolution, frame_min, frame_max, z_offset, beamtype, E0, order, w0, jones, translation, rotation, default_radius, default_material
 
     # particle_list contains dictionaries with keys: material, shape, args, coords, altcolour
+
+    def fetch_beam_parameters(beam_type):
+        """
+        . Specifies defualt values for different beams to be included in a YAML
+        . NOTE; These values can be overwritten in generate_yaml()
+        """
+        parameters = {}
+        match beam_type:
+            case "BEAMTYPE_LAGUERRE_GAUSSIAN":
+                parameters = {
+                    "beamtype": "BEAMTYPE_LAGUERRE_GAUSSIAN",
+                    "E0": 300,
+                    "order": 3,
+                    "w0": 0.6,
+                    "jones": "POLARISATION_LCP",
+                    "translation": None,
+                    "rotation": None,
+                }
+            case "BEAMTYPE_BESSEL":
+                parameters = {
+                    "beamtype": "BEAMTYPE_BESSEL",
+                    "E0": 25e6,
+                    "w0": 0.6,
+                    "jones": "POLARISATION_LCP",
+                    "translation": None,
+                    "rotation": None,
+                }
+            case _:
+                print("Beam type not recognised in YAML generation; ",beam_type)
+        return parameters
 
     # Set default parameters
     parameters = {
@@ -43,14 +73,8 @@ def generate_yaml(filename, particle_list, parameters_arg):
         "frame_max": 1,
         "z_offset": 0.0e-6,
 
-        ##
-        ## GENERALISE THIS FOR WHICHEVER BEAM WANTED -> JUST PARSE IN BEAM PARAMS -> OR UPDATE + DELETE OTHER PARAMS?
-        ##
-        #"beamtype": "BEAMTYPE_LAGUERRE_GAUSSIAN",      # Laguerre Gaussian
-        "beamtype": "BEAMTYPE_BESSEL",              # Bessel
-        "E0": 25e6,                                 # Bessel
-        #"E0": 300,                                     # Laguerre Gaussian
-        #"order": 3,                                    # Laguerre Gaussian
+        "beamtype": "BEAMTYPE_LAGUERRE_GAUSSIAN",
+        "E0": 0,
         "w0": 0.6,
         "jones": "POLARISATION_LCP",
         "translation": None,
@@ -59,6 +83,8 @@ def generate_yaml(filename, particle_list, parameters_arg):
         "default_radius": 100e-9,
         "default_material": "FusedSilica",
     }
+    # Update with beam specific parameters -> Fills in any fields specific to beam as default before the next .update is applied
+    parameters.update( fetch_beam_parameters(beam_type) )
 
     # Overwrite parameters with any passed in with parameters_arg
     parameters.update(parameters_arg)
@@ -275,9 +301,6 @@ def generate_sphere_slider_yaml(particle_formation, number_of_particles, slider_
     generate_yaml(filename, particle_list, parameters)
 
 def generate_sphereGrid_yaml(particle_radius, particle_spacing, bounding_sphere_radius, isCircular=True, wavelength=1.0e-6, particle_material="FusedSilica", parameters={}):
-    #
-    # Generates a YAML file for a set of arbitrary spheres specified
-    #
     
     # Create / overwrite YAML file
     # Writing core system parameters
@@ -298,7 +321,26 @@ def generate_sphereGrid_yaml(particle_radius, particle_spacing, bounding_sphere_
             else:
                 particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radius], "coords": np.array([x_base_coords[i] +offset, y_base_coords[j], 0.0]), "altcolour": True})
 
-    generate_yaml(filename, particle_list, parameters)
+    generate_yaml(filename, particle_list, parameters, beam_type="BEAMTYPE_BESSEL")   # BEAMTYPE_LAGUERRE_GAUSSIAN
+
+def generate_sphereShell_yaml(particle_radius, num_pts, shell_radius, wavelength=1.0e-6, particle_material="FusedSilica", parameters={}):
+    
+    # Create / overwrite YAML file
+    # Writing core system parameters
+    filename = "SingleLaguerre_SphereVary"
+    particle_list = []
+
+    # Get coords of particles in a grid
+    # CODE with fibonacci sunflower - works better and faster...
+    # https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
+    indices = np.arange(0, num_pts, dtype=float) + 0.5
+    phi = np.arccos(1 - 2*indices/num_pts)
+    theta = np.pi * (1 + 5**0.5) * indices
+    x, y, z = shell_radius*np.cos(theta)*np.sin(phi), shell_radius*np.sin(theta)*np.sin(phi), shell_radius*np.cos(phi);
+    for i in range(num_pts):
+        particle_list.append({"material": particle_material, "shape": "sphere", "args": [particle_radius], "coords": np.array([x[i], y[i], z[i]]), "altcolour": True})
+    
+    generate_yaml(filename, particle_list, parameters, beam_type="BEAMTYPE_BESSEL")
 
 def generate_sphere_arbitrary_yaml(particles, wavelength=1.0e-6, particle_material="FusedSilica", frames_of_animation=1):
     #
@@ -873,18 +915,27 @@ def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particl
     return parameter_text, multi_plot_data
 
 def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename):
-    #
-    # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
-    #
-    # particle_numbers = list of particle numbers to be tested in sphere e.g. [1,2,3,4,8]
-    #
-    
     particle_info = [];
-    parameters = {"frames": 20, "frame_max": 20, "show_output": True}
+    parameters = {"frames": 10, "frame_max": 10, "show_output": True}
 
     print("Generating sphereGrid")
     #Generate required YAML, perform calculation, then pull force data
     generate_sphereGrid_yaml(particle_radius, particle_spacing, bounding_sphere_radius, parameters=parameters)     # Writes to SingleLaguerre_SphereVary.yml
+    #Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command) #, stdout=subprocess.DEVNULL
+    
+    return ""
+
+def simulations_singleFrame_connected_sphereShell(particle_radius, particle_spacing, shell_radius, filename):
+    particle_info = [];
+    parameters = {"frames": 10, "frame_max": 10, "show_output": True}
+
+    print("Generating sphereShell")
+    #Generate required YAML, perform calculation, then pull force data
+    generate_sphereShell_yaml(particle_radius, particle_spacing, shell_radius, parameters=parameters)     # Writes to SingleLaguerre_SphereVary.yml
     #Run DipolesMulti2024Eigen.py
     run_command = "python DipolesMulti2024Eigen.py "+filename
     run_command = run_command.split(" ")
@@ -1220,10 +1271,19 @@ match(sys.argv[1]):
         # Currently just runs the simulation for observation, no data is recorded or stored in .xlsx files here
         #
         filename = "SingleLaguerre_SphereVary"
-        particle_radius  = 100e-9
-        particle_spacing = 60e-9
-        bounding_sphere_radius = 1e-6
+        particle_radius  = 100e-9#100e-9
+        particle_spacing = 200e-9#60e-9
+        bounding_sphere_radius = 2e-6
         parameter_text = simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename)
+    case "connected_sphereShell":
+        #
+        # Currently just runs the simulation for observation, no data is recorded or stored in .xlsx files here
+        #
+        filename = "SingleLaguerre_SphereVary"
+        particle_radius  = 100e-9#100e-9
+        num_pts = 100
+        shell_radius = 1e-6
+        parameter_text = simulations_singleFrame_connected_sphereShell(particle_radius, num_pts, shell_radius, filename)
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
