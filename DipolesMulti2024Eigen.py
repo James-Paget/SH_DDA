@@ -223,8 +223,23 @@ def driving_force(constant1, r):
 
 
 def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
-    rij = rj - ri
+    def rot_vector_in_plane(r, r_plane, theta):
+        """
+        r = vector to be rotated
+        r_plane = the plane to rotate r within (NOTE must be a unit vector)
+        theta = angle to be rotated by
+        """
+        # Using the Rodrigues' rotation formula
+        comp_a = r*np.cos(theta)
+        comp_b = np.cross(r_plane, r)*np.sin(theta)
+        comp_c = r_plane*np.dot(r_plane, r)*(1-np.cos(theta))
+        return comp_a +comp_b + comp_c
+    # Leave one vector the same
     rik = rk - ri
+    # Shift other vector
+    rij = rj - ri                   # Difference vector
+    r_plane = np.cross(rij/np.sqrt(np.sum(pow(rij,2))), rik/np.sqrt(np.sum(pow(rik,2))))    # Plane normal
+    rij = rot_vector_in_plane(rij, r_plane, eqm_angle)    # Rotate by equilibrium angle in the plane of the points
     rij_abs = np.linalg.norm(rij)
     rik_abs = np.linalg.norm(rik)
     rijrik = rij_abs * rik_abs
@@ -237,7 +252,8 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
         print(f"Bending force received NaN,returning 0. rij, rik = {rij} {rik}")
         return force
 
-    costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle )
+    #costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle ) # OLD VERSION #
+    costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) )
     i = 1
     force[i] = bond_stiffness * (
         (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
@@ -1116,7 +1132,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earleir before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = optical + spring# + buckingham  #+ driver#+ gravity
+        total_force_array = optical + bending + buckingham  # + spring + driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:
