@@ -1044,7 +1044,7 @@ def simulation(number_of_particles, positions, shapes, args):
 
     # (1) Get Connections
     # connection_indices = generate_connection_indices(position_vectors, "line", [True])
-    connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +300e-9]) # For sphereGrid linking
+    connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +500e-9]) # For sphereGrid linking
     #connection_indices = generate_connection_indices(position_vectors, "num", [3]) # num=5 for icos
     # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
     #if n_particles == 12: # probably icosahedron
@@ -1052,7 +1052,10 @@ def simulation(number_of_particles, positions, shapes, args):
     #print(f"connection indices are\n{connection_indices}")
     
     # (2) Get Initial Positions
-    initial_shape = np.array(positions)   ### MAKE SURE [NOT] SAVED BY REFERENCE ###
+    ##
+    ## SHOULD JUST CALCULATE THE STIFFNESS & NATURAL LENGTH MATRIX FROM THIS SHAPE ONCE --> WASTE TO RECALC EACH TIME
+    ##
+    initial_shape = np.array(position_vectors)   ### MAKE SURE [NOT] SAVED BY REFERENCE ###
     #print(f"Initial shape is\n{initial_shape}")
 
     # (3) Get Equilibrium Angles
@@ -1111,7 +1114,7 @@ def simulation(number_of_particles, positions, shapes, args):
         # NOTE; Initial shape stored earleir before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = optical + buckingham + spring + bending #+ driver#+ gravity
+        total_force_array = optical + spring# + buckingham  #+ driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:

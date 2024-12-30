@@ -1272,7 +1272,7 @@ match(sys.argv[1]):
         #
         filename = "SingleLaguerre_SphereVary"
         particle_radius  = 100e-9#100e-9
-        particle_spacing = 200e-9#60e-9
+        particle_spacing = 400e-9#60e-9
         bounding_sphere_radius = 2e-6
         parameter_text = simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename)
     case "connected_sphereShell":
