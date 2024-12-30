@@ -231,8 +231,13 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
 
-    costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle )
     force = np.zeros([3, 3])
+
+    if np.isnan(rij).any() or np.isnan(rik).any():
+        print(f"Bending force received NaN,returning 0. rij, rik = {rij} {rik}")
+        return force
+
+    costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle )
     i = 1
     force[i] = bond_stiffness * (
         (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
@@ -537,7 +542,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
 
         case "line":
             # this links them in a line ordered by index.
-            # args: []
+            # args: [] for a line, or [True] for a ring.
 
             # For each point (i,i) along the diagonal except the last, add the point below and the point to the right.
             for i in range(num_particles-1):
@@ -551,7 +556,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
 
         case "dist":
             # this links each particle to every other particle within a certain distance.
-            # args: [] (maybe could pass in the dist)
+            # args: [] will approximate a dist, or can be passed in: [dist]
             if num_particles < 2:
                 sys.exit("generate_connection_indices: dist num_particles error")
 
@@ -581,7 +586,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
             # Manually state which particles will be connected in arguments when more specific connection patterns required
             connection_indices = args
         case _:
-            sys.exit("get_connected_pairs: modes are 'num', 'line', 'loop', 'manual'")
+            sys.exit(f"get_connected_pairs error: modes are 'num', 'line', 'loop', 'manual'.\nInputted mode, args: {connection_mode}, {connection_args}")
 
     #print("Connections established= ",connection_indices)
     return connection_indices
@@ -980,7 +985,7 @@ def torus_sector_positions(args, dipole_radius, number_of_dipoles_total):
     return pts
 
 
-def simulation(number_of_particles, positions, shapes, args):
+def simulation(number_of_particles, positions, shapes, args, connection_mode, connection_args):
     #
     # shapes = List of shape types used
     # args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
@@ -1043,12 +1048,9 @@ def simulation(number_of_particles, positions, shapes, args):
             optcouple = None
 
     # (1) Get Connections
-    # connection_indices = generate_connection_indices(position_vectors, "line", [True])
-    connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +300e-9]) # For sphereGrid linking
-    #connection_indices = generate_connection_indices(position_vectors, "num", [3]) # num=5 for icos
+    # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +300e-9]) # For sphereGrid linking
     # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
-    #if n_particles == 12: # probably icosahedron
-    #    connection_indices = generate_connection_indices(position_vectors, "num", [5])
+    connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args)
     #print(f"connection indices are\n{connection_indices}")
     
     # (2) Get Initial Positions
@@ -1223,6 +1225,8 @@ args   = particle_collection.get_particle_args()
 density = particle_collection.get_particle_density()
 rho = density[0] # not yet implemented.
 positions = particle_collection.get_particle_positions()
+connection_mode = particle_collection.get_connection_mode()
+connection_args = particle_collection.get_connection_args()
 
 for i in range(n_particles):
     print(i,particle_types[i],ref_ind[i],colors[i],shapes[i],args[i],density[i],positions[i])
@@ -1274,7 +1278,7 @@ beam = "plane"  # LEGACY REMOVE
 #===========================================================================
 
 initialT = time.time()
-particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(n_particles, positions, shapes, args)
+particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(n_particles, positions, shapes, args, connection_mode, connection_args)
 finalT = time.time()
 print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 

@@ -30,12 +30,16 @@ class ParticleCollection (object):
                 "default_shape":'sphere',
                 "default_args":'200e-9',
                 "default_density":'2200', # kg/m^3 typical glass value
+                "default_connection_mode":'manual',
+                "default_connection_args":''
                 }
     default_material = defaults['default_material']
     #default_radius   = float(defaults['default_radius'])
     default_shape    = defaults['default_shape']
     default_args     = defaults['default_args']
     default_density  = float(defaults['default_density'])
+    default_connection_mode    = defaults['default_connection_mode']
+    default_connection_args    = defaults['default_connection_args']
 
     
     def __init__(self,particleinfo):
@@ -55,6 +59,16 @@ class ParticleCollection (object):
             # Read from file
             self.default_material = particleinfo.get('default_material',ParticleCollection.default_material)
             #self.default_radius = float(particleinfo.get('default_radius',ParticleCollection.default_radius))
+
+            # Get connection information
+            self.connection_mode = particleinfo.get('connection_mode',ParticleCollection.default_connection_mode)
+            if self.connection_mode == None: 
+                self.connection_mode = ParticleCollection.default_connection_mode
+            self.connection_args = particleinfo.get('connection_args',ParticleCollection.default_connection_args)
+            if self.connection_args == None: 
+                self.connection_args = ParticleCollection.default_connection_args
+
+            # Get particle list
             self.particle_list = particleinfo.get('particle_list',None)
             if self.particle_list==None or self.particle_list==False:
                 # Set defaults
@@ -184,3 +198,13 @@ class ParticleCollection (object):
                 case _:
                     print("Invalid shape: During mass calc, ",i)
         return masses
+    
+    def get_connection_mode(self):
+        return self.connection_mode
+    
+    def get_connection_args(self):
+        # returns a list of floats
+        if self.connection_args == "":
+            return np.asarray([], dtype=float)
+        else:
+            return np.asarray( [float(arg) for arg in str(self.connection_args).split(" ")],dtype=float)
