@@ -82,12 +82,17 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
 
         "default_radius": 100e-9,
         "default_material": "FusedSilica",
+        "connection_mode": "manual",
+        "connection_args": "",
     }
     # Update with beam specific parameters -> Fills in any fields specific to beam as default before the next .update is applied
     parameters.update( fetch_beam_parameters(beam_type) )
 
     # Overwrite parameters with any passed in with parameters_arg
     parameters.update(parameters_arg)
+
+    # Make connection_args a string
+    parameters['connection_args'] = " ".join([str(x) for x in parameters['connection_args']])
     
     # Write into a YAML file
     print(f"Generated YAML : {filename}")
@@ -116,7 +121,7 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
         file.write(f"    {arg}: {parameters[arg]}\n")
 
     file.write("particles:\n")
-    for arg in ["default_radius", "default_material"]:
+    for arg in ["default_radius", "default_material", "connection_mode", "connection_args"]:
         file.write(f"  {arg}: {parameters[arg]}\n")
 
 
@@ -914,9 +919,9 @@ def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particl
     )
     return parameter_text, multi_plot_data
 
-def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename):
+def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, connection_mode, connection_args, filename):
     particle_info = [];
-    parameters = {"frames": 10, "frame_max": 10, "show_output": True}
+    parameters = {"frames": 10, "frame_max": 10, "show_output": True, "connection_mode":connection_mode, "connection_args":connection_args}
 
     print("Generating sphereGrid")
     #Generate required YAML, perform calculation, then pull force data
@@ -929,9 +934,9 @@ def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spaci
     
     return ""
 
-def simulations_singleFrame_connected_sphereShell(particle_radius, particle_spacing, shell_radius, filename):
+def simulations_singleFrame_connected_sphereShell(particle_radius, particle_spacing, shell_radius, connection_mode, connection_args, filename):
     particle_info = [];
-    parameters = {"frames": 10, "frame_max": 10, "show_output": True}
+    parameters = {"frames": 10, "frame_max": 10, "show_output": True, "connection_mode":connection_mode, "connection_args":connection_args}
 
     print("Generating sphereShell")
     #Generate required YAML, perform calculation, then pull force data
@@ -1274,7 +1279,9 @@ match(sys.argv[1]):
         particle_radius  = 100e-9#100e-9
         particle_spacing = 400e-9#60e-9
         bounding_sphere_radius = 2e-6
-        parameter_text = simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, filename)
+        connection_mode = "dist"
+        connection_args = [2*100e-9 +300e-9] # [2*100e-9 +100e-9]
+        parameter_text = simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, connection_mode, connection_args, filename)
     case "connected_sphereShell":
         #
         # Currently just runs the simulation for observation, no data is recorded or stored in .xlsx files here
@@ -1283,8 +1290,10 @@ match(sys.argv[1]):
         particle_radius  = 100e-9#100e-9
         num_pts = 100
         shell_radius = 1e-6
-        parameter_text = simulations_singleFrame_connected_sphereShell(particle_radius, num_pts, shell_radius, filename)
+        connection_mode = "dist"
+        connection_args = [2*100e-9 +300e-9] # [2*100e-9 +100e-9] # these connection_args copied from connected_sphereGrid
+        parameter_text = simulations_singleFrame_connected_sphereShell(particle_radius, num_pts, shell_radius, connection_mode, connection_args, filename)
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize', 'testVolumes")
+        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize', 'testVolumes', 'connected_sphereGrid', 'connected_sphereShell'")

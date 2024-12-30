@@ -28,6 +28,8 @@ beams:
 particles:
   default_radius: 1e-07
   default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 5e-07
   particle_list:
     part_0:
       material: FusedSilica

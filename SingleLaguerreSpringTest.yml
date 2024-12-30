@@ -56,6 +56,9 @@ beams:
 particles:
   default_radius: 100e-9
   default_material: FusedSilica
+  connection_mode: num
+  connection_args: 3
+
   particle_list:
     # Tetrahedron
     part_1:
