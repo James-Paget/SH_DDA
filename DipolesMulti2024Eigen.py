@@ -238,7 +238,8 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     rik = rk - ri
     # Shift other vector
     rij = rj - ri                   # Difference vector
-    r_plane = np.cross(rij/np.sqrt(np.sum(pow(rij,2))), rik/np.sqrt(np.sum(pow(rik,2))))    # Plane normal
+    # r_plane2 = np.cross(rij/np.sqrt(np.sum(pow(rij,2))), rik/np.sqrt(np.sum(pow(rik,2))))    # Plane normal
+    r_plane = np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) )
     rij = rot_vector_in_plane(rij, r_plane, eqm_angle)    # Rotate by equilibrium angle in the plane of the points
     rij_abs = np.linalg.norm(rij)
     rik_abs = np.linalg.norm(rik)
@@ -253,13 +254,13 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
         return force
 
     #costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle ) # OLD VERSION #
-    costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) )
+    costhetajik_minus_eqm = np.dot(rij, rik) / rijrik
     i = 1
     force[i] = bond_stiffness * (
         (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
     )
-    force[i - 1] = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
-    force[i + 1] = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+    force[i - 1] = -bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
+    force[i + 1] = -bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
 
     return force
 
@@ -1132,7 +1133,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earleir before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = optical + bending + buckingham  # + spring + driver#+ gravity
+        total_force_array = bending#optical + bending + buckingham  # + spring + driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:
