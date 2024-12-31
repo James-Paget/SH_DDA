@@ -739,14 +739,53 @@ def generate_spring_naturalLength_element(initial_shape_p1, initial_shape_p2):
 #         driving_force_array[j] = driving_force_array[i]
 #     return driving_force_array
 
-def driving_force_array(array_of_positions):
+def driving_force_array(array_of_positions, driving_type, args={}):
+    """
+    . Apply custom forces to the system's particles
+    """
     number_of_dipoles = len(array_of_positions)
     driving_force_array = np.zeros((number_of_dipoles,3), dtype=object)
-    driver_magnitude = 5.0e-12
-    for p in range(len(array_of_positions)):
-        drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < 0.5e-6
-        if(drive_condition):
-            driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
+    match driving_type:
+        case "circ_push":
+            #
+            # Applies a force to particles within some circular XY plane radius (any Z height)
+            #
+            # args = {
+            #       driver_magnitude,
+            #       influence_radius
+            #   }
+            # e.g.{5.0e-12, 0.5e-6}
+            #
+            driver_magnitude = args["driver_magnitude"]
+            influence_radius = args["influence_radius"]
+            for p in range(len(array_of_positions)):
+                drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < influence_radius
+                if(drive_condition):
+                    driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
+        case "timed_circ_push":
+            #
+            # Applies a force to particles within some circular XY plane radius (any Z height), but only for frames 
+            # less than some specified cutoff
+            #
+            # args = {
+            #       driver_magnitude,
+            #       influence_radius,
+            #       current_frame,
+            #       cutoff_frame
+            #   }
+            # e.g.{5.0e-12, 0.5e-6, frame, 10}
+            #
+            driver_magnitude = args["driver_magnitude"]
+            influence_radius = args["influence_radius"]
+            current_frame = args["current_frame"]
+            cutoff_frame = args["cutoff_frame"]
+            if(current_frame < cutoff_frame):
+                for p in range(len(array_of_positions)):
+                    drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < influence_radius
+                    if(drive_condition):
+                        driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
+        case _:
+            print("Driving force type not recognised, (0,0,0) force returned; ",driving_type)
     return driving_force_array
 
 """ OLD BENDING
@@ -1128,12 +1167,12 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # spring = spring_force_array(position_vectors, radius)
         # gravity = gravity_force_array(position_vectors, radius)
         buckingham = buckingham_force_array(position_vectors, effective_radii)
-        driver = driving_force_array(position_vectors)
+        driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
         bending = bending_force_array(position_vectors, ijkangles)
         # NOTE; Initial shape stored earleir before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = optical + spring + bending # + bending + buckingham + driver#+ gravity
+        total_force_array = driver + optical + spring + bending # + bending + buckingham + driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:
