@@ -803,6 +803,28 @@ def driving_force_array(array_of_positions, driving_type, args={}):
                     drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < influence_radius
                     if(drive_condition):
                         driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
+        case "osc_circ_push":
+            #
+            # Applies a force to particles within some circular XY plane radius (any Z height) with amplitude 
+            # oscillating between ±driver_magnitude
+            #
+            # args = {
+            #       driver_magnitude,
+            #       influence_radius,
+            #       current_frame,
+            #       frame_period
+            #   }
+            # e.g.{5.0e-12, 0.5e-6, frame, 50}
+            #
+            driver_magnitude = args["driver_magnitude"]
+            influence_radius = args["influence_radius"]
+            current_frame = args["current_frame"]
+            frame_period = args["frame_period"]
+            for p in range(len(array_of_positions)):
+                drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < influence_radius
+                if(drive_condition):
+                    driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*np.sin(current_frame/frame_period * 2*np.pi)])
+        
         case _:
             print("Driving force type not recognised, (0,0,0) force returned; ",driving_type)
     return driving_force_array
@@ -1188,12 +1210,15 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # spring = spring_force_array(position_vectors, radius)
         # gravity = gravity_force_array(position_vectors, radius)
         buckingham = buckingham_force_array(position_vectors, effective_radii)
-        driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
+        
+        driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":3.0e-12, "influence_radius":1.6e-6, "current_frame":i, "frame_period":30})
+        # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
+        # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
         bending = bending_force_array(position_vectors, ijkangles, BENDING)
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical + bending + spring + buckingham #+ bending #+ spring #+ driver#+ gravity
+        total_force_array = optical + bending + spring + buckingham + driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:
