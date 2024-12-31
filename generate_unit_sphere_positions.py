@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import itertools as it
 
 def generate_unit_sphere_positions(N, num_steps=1000):
     # returns N points on the unit sphere which are approximately evenly distributed.
@@ -38,14 +39,14 @@ def generate_unit_sphere_positions(N, num_steps=1000):
 
 # generate_unit_sphere_positions(40, num_steps=1000)
 
-def print_particles(coords):
+def print_particles(coords, radius=200e-9):
     for i, coord in enumerate(coords):
         coords_str = " ".join([str(x) for x in coord])
         print("\n".join([
             f"    part_{i+1}:",
             f"      material: FusedSilica",
             f"      shape: sphere",
-            f"      args: 200e-9",
+            f"      args: {radius}",
             f"      coords: {coords_str}",
             f"      altcolour: True"
         ]))
@@ -73,16 +74,45 @@ def get_icosahedron_points(radius=1e-6):
     phi = round((1 + np.sqrt(5))/2, 5)
     return radius * np.array([ [0,-1,-phi], [-1,-phi,0],  [-phi,0,-1], [0,-1,phi], [-1,phi,0],  [-phi,0,1], [0,1,-phi], [1,-phi,0],  [phi,0,-1], [0,1,phi], [1,phi,0],  [phi,0,1]])
 
-
-
 # print_particles(get_tetrahedron_points(1e-6))
 # print_particles(generate_unit_sphere_positions(12, 5000)*1e-6)
 # print_particles(get_icosahedron_points())
 
 
+def get_sheet_points(num_radius, separation, num_angular=None):
+    # Creates a grid of points on the z=0 plane.
+    # If num_angular=None, makes it a cubic grid
+    # Else, num_angular is the points per radius
+
+    coords = []
+    if num_angular == None:
+        # for a cubic grid
+        values = separation * np.linspace(-num_radius, num_radius, 2*num_radius+1)
+        for x in values:
+            for y in values:
+                if x**2 + y**2 <= (num_radius * separation)**2:
+                    coords.append((x,y,0))
+
+    else:
+        # for a polar grid
+        # !! could be awkward for connections
+        ang_values = np.linspace(0, 2*np.pi, num_angular+1)[:-1] # exclude 2pi
+        r_values = separation * np.linspace(1, num_radius, num_radius)
+        print(ang_values)
+        print(r_values)
+        for r in r_values:
+            for ang in ang_values:
+                coords.append((r*np.cos(ang), r*np.sin(ang),0))
+
+    return coords
+
+print_particles(get_sheet_points(2, 0.7e-6), radius=100e-9)
+# print_particles(get_sheet_points(6, 0.5e-6, 6), radius=100e-9) # Polar version
+
+
+
 def min_dists():
     # plot how the min dist between any two particles decays as N increases.
-    import itertools as it
     nums = np.arange(2,25,1)
     final = []
     for i in nums:

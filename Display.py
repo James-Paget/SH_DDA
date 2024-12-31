@@ -142,8 +142,8 @@ class DisplayObject (object):
 
         # Make figure objects
         fig = plt.figure()
-        zlower = -2e-6
-        zupper = 2e-6
+        zlower = lower
+        zupper = upper
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
 
         Z = np.zeros(X.shape) + self.z_offset
@@ -152,6 +152,7 @@ class DisplayObject (object):
         ax.set_aspect('equal','box')
         ax.set_xlabel("x (m)")
         ax.set_ylabel("y (m)")
+        ax.set_zlabel("z (m)")
         # cbar = fig.colorbar(cs)
         # ax.set_title("z = {:.1e}".format(z[k]))
         return fig,ax
