@@ -221,29 +221,65 @@ def driving_force(constant1, r):
 
     return force
 
+def rot_vector_in_plane(r, r_plane, theta):
+        """
+        r = vector to be rotated
+        r_plane = the plane to rotate r within (NOTE must be a unit vector)
+        theta = angle to be rotated by
+        """
+        # Using the Rodrigues' rotation formula
+        comp_a = r*np.cos(theta)
+        comp_b = np.cross(r_plane, r)*np.sin(theta)
+        comp_c = r_plane*np.dot(r_plane, r)*(1-np.cos(theta))
+        return comp_a +comp_b + comp_c
 
 def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
-    rij = rj - ri
+    # Calculates the bending force on particles j-i-k.
+    # This is for any equilibrium angle so the system is partially rotated so forces restore towards that angle.
+    # The rotation is undone before the forces are returned.
+
+    # rj and rk relative to ri.
     rik = rk - ri
+    rij = rj - ri
+    
     rij_abs = np.linalg.norm(rij)
     rik_abs = np.linalg.norm(rik)
     rijrik = rij_abs * rik_abs
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
 
+    # Normal to plane of rotation.
+    r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
+    theta = np.pi - eqm_angle
+
+    # Rotate rij.
+    rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
+
     force = np.zeros([3, 3])
 
     if np.isnan(rij).any() or np.isnan(rik).any():
         print(f"Bending force received NaN,returning 0. rij, rik = {rij} {rik}")
         return force
+    
+    # Rotate rij so that if it were at eqm_angle, it would be at a stable eqm.
+    costhetajik_minus_eqm = np.dot(rij, rik) / rijrik
+    # Fi = bond_stiffness * ( (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2) ) # Incorrect here as will be the sum of Fk and a rotated Fj.
+    Fj = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
+    Fk = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
 
-    costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle )
+    # Unrotate Fj. Fi used to make net force zero.
     i = 1
-    force[i] = bond_stiffness * (
-        (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
-    )
-    force[i - 1] = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
-    force[i + 1] = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+    force[i - 1] = rot_vector_in_plane(Fj, r_plane, -theta)
+    force[i + 1] = Fk
+    force[i] = -(force[i - 1] + force[i + 1])
+
+    # OLD
+    # i = 1
+    # force[i] = bond_stiffness * (
+    #     (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
+    # )
+    # force[i - 1] = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
+    # force[i + 1] = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
 
     return force
 
@@ -652,7 +688,7 @@ def get_equilibrium_angles(initial_positions, connection_indices):
 #     return spring_force_array
 """
 
-def spring_force_array(array_of_positions, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":10e-6}):
+def spring_force_array(array_of_positions, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":5e-7}):
     """
     . Calculates the spring forces along the connections specified
     . Pulls spring data from an initial particle arrangement given
@@ -722,14 +758,53 @@ def generate_spring_naturalLength_element(initial_shape_p1, initial_shape_p2):
 #         driving_force_array[j] = driving_force_array[i]
 #     return driving_force_array
 
-def driving_force_array(array_of_positions):
+def driving_force_array(array_of_positions, driving_type, args={}):
+    """
+    . Apply custom forces to the system's particles
+    """
     number_of_dipoles = len(array_of_positions)
     driving_force_array = np.zeros((number_of_dipoles,3), dtype=object)
-    driver_magnitude = 5.0e-12
-    for p in range(len(array_of_positions)):
-        drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < 0.5e-6
-        if(drive_condition):
-            driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
+    match driving_type:
+        case "circ_push":
+            #
+            # Applies a force to particles within some circular XY plane radius (any Z height)
+            #
+            # args = {
+            #       driver_magnitude,
+            #       influence_radius
+            #   }
+            # e.g.{5.0e-12, 0.5e-6}
+            #
+            driver_magnitude = args["driver_magnitude"]
+            influence_radius = args["influence_radius"]
+            for p in range(len(array_of_positions)):
+                drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < influence_radius
+                if(drive_condition):
+                    driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
+        case "timed_circ_push":
+            #
+            # Applies a force to particles within some circular XY plane radius (any Z height), but only for frames 
+            # less than some specified cutoff
+            #
+            # args = {
+            #       driver_magnitude,
+            #       influence_radius,
+            #       current_frame,
+            #       cutoff_frame
+            #   }
+            # e.g.{5.0e-12, 0.5e-6, frame, 10}
+            #
+            driver_magnitude = args["driver_magnitude"]
+            influence_radius = args["influence_radius"]
+            current_frame = args["current_frame"]
+            cutoff_frame = args["cutoff_frame"]
+            if(current_frame < cutoff_frame):
+                for p in range(len(array_of_positions)):
+                    drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < influence_radius
+                    if(drive_condition):
+                        driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*1.0])
+        case _:
+            print("Driving force type not recognised, (0,0,0) force returned; ",driving_type)
     return driving_force_array
 
 """ OLD BENDING
@@ -1111,12 +1186,12 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # spring = spring_force_array(position_vectors, radius)
         # gravity = gravity_force_array(position_vectors, radius)
         buckingham = buckingham_force_array(position_vectors, effective_radii)
-        driver = driving_force_array(position_vectors)
+        driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
         bending = bending_force_array(position_vectors, ijkangles)
-        # NOTE; Initial shape stored earleir before any timesteps are taken
+        # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = optical + spring# + buckingham  #+ driver#+ gravity
+        total_force_array = optical + buckingham + bending + spring #+ driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:
@@ -1125,13 +1200,9 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                     totforces[i,j,k] = total_force_array[j][k]
         
         F = np.hstack(total_force_array)
-        # print(F)
         cov = 2 * timestep * D
-        # print(cov)
         R = np.random.multivariate_normal(mean, cov)
-        # print(R)
         SumDijFj = (1 / (k_B * temperature)) * np.dot(D, F)
-        # print(SumDijFj*timestep)
         positions_stacked = np.hstack(position_vectors)
         new_positions = positions_stacked + SumDijFj * timestep + R
         #        new_positions = positions_stacked + temp
@@ -1263,7 +1334,7 @@ polarizability = a#a*np.ones(n_particles)
 inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
 E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
 
-BENDING = 1e-18
+BENDING = 1e-18# 1e-18
 stiffness = 0  # Errors when this is bigger than 1e-3
 
 k_B = 1.38e-23

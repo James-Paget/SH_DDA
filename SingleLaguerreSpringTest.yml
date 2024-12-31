@@ -56,116 +56,13 @@ beams:
 particles:
   default_radius: 100e-9
   default_material: FusedSilica
-  connection_mode: num
-  connection_args: 3
+  # connection_mode: num
+  # connection_args: 5
+  connection_mode: dist
+  connection_args: 0.8e-6
 
   particle_list:
     # Tetrahedron
-    part_1:
-      material: FusedSilica
-      shape: sphere
-      args: 200e-9
-      coords: 0.0e-6 0.0e-6 1.0e-6
-      altcolour: True
-    part_2:
-      material: FusedSilica
-      shape: sphere
-      args: 200e-9
-      coords: 9.426414910921784e-07 0.0 -3.3380685923377075e-07
-      altcolour: True
-    part_3:
-      material: FusedSilica
-      shape: sphere
-      args: 200e-9
-      coords: -4.7132074554608904e-07 8.163514779470691e-07 -3.3380685923377075e-07
-      altcolour: True
-    part_4:
-      material: FusedSilica
-      shape: sphere
-      args: 200e-9
-      coords: -4.713207455460896e-07 -8.163514779470688e-07 -3.3380685923377075e-07
-      altcolour: True
-
-  # icosahedron
-    # part_1:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 0.0 -1e-06 -1.61803e-06
-    #   altcolour: True
-    # part_2:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: -1e-06 -1.61803e-06 0.0
-    #   altcolour: True
-    # part_3:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: -1.61803e-06 0.0 -1e-06
-    #   altcolour: True
-    # part_4:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 0.0 -1e-06 1.61803e-06
-    #   altcolour: True
-    # part_5:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: -1e-06 1.61803e-06 0.0
-    #   altcolour: True
-    # part_6:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: -1.61803e-06 0.0 1e-06
-    #   altcolour: True
-    # part_7:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 0.0 1e-06 -1.61803e-06
-    #   altcolour: True
-    # part_8:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 1e-06 -1.61803e-06 0.0
-    #   altcolour: True
-    # part_9:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 1.61803e-06 0.0 -1e-06
-    #   altcolour: True
-    # part_10:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 0.0 1e-06 1.61803e-06
-    #   altcolour: True
-    # part_11:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 1e-06 1.61803e-06 0.0
-    #   altcolour: True
-    # part_12:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 190e-9
-    #   coords: 1.61803e-06 0.0 1e-06
-    #   altcolour: True
-
-
-
-
-
-
-    # Line of particles in z
     # part_1:
     #   material: FusedSilica
     #   shape: sphere
@@ -176,17 +73,116 @@ particles:
     #   material: FusedSilica
     #   shape: sphere
     #   args: 200e-9
-    #   coords: 0.0e-6 0.0e-6 0.33e-6
+    #   coords: 9.426414910921784e-07 0.0 -3.3380685923377075e-07
     #   altcolour: True
     # part_3:
     #   material: FusedSilica
     #   shape: sphere
     #   args: 200e-9
-    #   coords: 0.0e-6 0.0e-6 -0.33e-6
+    #   coords: -4.7132074554608904e-07 8.163514779470691e-07 -3.3380685923377075e-07
     #   altcolour: True
     # part_4:
     #   material: FusedSilica
     #   shape: sphere
     #   args: 200e-9
-    #   coords: 0.0e-6 0.0e-6 -1.0e-6
+    #   coords: -4.713207455460896e-07 -8.163514779470688e-07 -3.3380685923377075e-07
     #   altcolour: True
+
+    # icosahedron
+    # part_1:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 0.0 -1e-06 -1.61803e-06
+    #   altcolour: True
+    # part_2:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: -1e-06 -1.61803e-06 0.0
+    #   altcolour: True
+    # part_3:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: -1.61803e-06 0.0 -1e-06
+    #   altcolour: True
+    # part_4:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 0.0 -1e-06 1.61803e-06
+    #   altcolour: True
+    # part_5:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: -1e-06 1.61803e-06 0.0
+    #   altcolour: True
+    # part_6:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: -1.61803e-06 0.0 1e-06
+    #   altcolour: True
+    # part_7:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 0.0 1e-06 -1.61803e-06
+    #   altcolour: True
+    # part_8:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 1e-06 -1.61803e-06 0.0
+    #   altcolour: True
+    # part_9:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 1.61803e-06 0.0 -1e-06
+    #   altcolour: True
+    # part_10:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 0.0 1e-06 1.61803e-06
+    #   altcolour: True
+    # part_11:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 1e-06 1.61803e-06 0.0
+    #   altcolour: True
+    # part_12:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 140e-9
+    #   coords: 1.61803e-06 0.0 1e-06
+    #   altcolour: True
+
+
+
+
+
+
+    # Line of particles in z
+    part_1:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: 0.0e-6 0.0e-6 1.0e-6
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: 0.33e-6 0.0e-6 0.33e-6
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: 0.0e-6 0.0e-6 -0.33e-6
+      altcolour: True
