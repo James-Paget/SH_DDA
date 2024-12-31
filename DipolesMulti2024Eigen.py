@@ -1133,7 +1133,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earleir before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = bending#optical + bending + buckingham  # + spring + driver#+ gravity
+        total_force_array = optical + spring + bending # + bending + buckingham + driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:
@@ -1280,7 +1280,7 @@ polarizability = a#a*np.ones(n_particles)
 inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
 E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
 
-BENDING = 1e-18
+BENDING = 1e-18# 1e-18
 stiffness = 0  # Errors when this is bigger than 1e-3
 
 k_B = 1.38e-23

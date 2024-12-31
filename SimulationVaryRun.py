@@ -936,7 +936,7 @@ def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spaci
 
 def simulations_singleFrame_connected_sphereShell(particle_radius, particle_spacing, shell_radius, connection_mode, connection_args, filename):
     particle_info = [];
-    parameters = {"frames": 10, "frame_max": 10, "show_output": True, "connection_mode":connection_mode, "connection_args":connection_args}
+    parameters = {"frames": 50, "frame_max": 50, "show_output": True, "connection_mode":connection_mode, "connection_args":connection_args, "time_step": 0.2e-4}
 
     print("Generating sphereShell")
     #Generate required YAML, perform calculation, then pull force data
@@ -1288,10 +1288,10 @@ match(sys.argv[1]):
         #
         filename = "SingleLaguerre_SphereVary"
         particle_radius  = 100e-9#100e-9
-        num_pts = 100
+        num_pts = 50
         shell_radius = 1e-6
         connection_mode = "dist"
-        connection_args = [2*100e-9 +300e-9] # [2*100e-9 +100e-9] # these connection_args copied from connected_sphereGrid
+        connection_args = [600e-9] # [2*100e-9 +100e-9] # these connection_args copied from connected_sphereGrid
         parameter_text = simulations_singleFrame_connected_sphereShell(particle_radius, num_pts, shell_radius, connection_mode, connection_args, filename)
 
     case _:
