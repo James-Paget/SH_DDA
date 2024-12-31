@@ -209,6 +209,10 @@ class DisplayObject (object):
                 plot.remove()
             plots.clear()
 
+            # Add frame counter
+            textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+            plots.append(textplot)
+
             # Add new particle plot elements
             for i in range(num_particles):
                 match shapes[i]:
