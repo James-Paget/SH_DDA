@@ -221,9 +221,7 @@ def driving_force(constant1, r):
 
     return force
 
-
-def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
-    def rot_vector_in_plane(r, r_plane, theta):
+def rot_vector_in_plane(r, r_plane, theta):
         """
         r = vector to be rotated
         r_plane = the plane to rotate r within (NOTE must be a unit vector)
@@ -234,33 +232,54 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
         comp_b = np.cross(r_plane, r)*np.sin(theta)
         comp_c = r_plane*np.dot(r_plane, r)*(1-np.cos(theta))
         return comp_a +comp_b + comp_c
-    # Leave one vector the same
+
+def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
+    # Calculates the bending force on particles j-i-k.
+    # This is for any equilibrium angle so the system is partially rotated so forces restore towards that angle.
+    # The rotation is undone before the forces are returned.
+
+    # rj and rk relative to ri.
     rik = rk - ri
-    # Shift other vector
-    rij = rj - ri                   # Difference vector
-    # r_plane2 = np.cross(rij/np.sqrt(np.sum(pow(rij,2))), rik/np.sqrt(np.sum(pow(rik,2))))    # Plane normal
-    r_plane = np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) )
-    rij = rot_vector_in_plane(rij, r_plane, eqm_angle)    # Rotate by equilibrium angle in the plane of the points
+    rij = rj - ri
+    
     rij_abs = np.linalg.norm(rij)
     rik_abs = np.linalg.norm(rik)
     rijrik = rij_abs * rik_abs
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
 
+    # Normal to plane of rotation.
+    r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
+    theta = np.pi - eqm_angle
+
+    # Rotate rij.
+    rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
+
     force = np.zeros([3, 3])
 
     if np.isnan(rij).any() or np.isnan(rik).any():
         print(f"Bending force received NaN,returning 0. rij, rik = {rij} {rik}")
         return force
-
-    #costhetajik_minus_eqm = np.cos( np.arccos(np.dot(rij, rik) / rijrik) - eqm_angle ) # OLD VERSION #
+    
+    # Rotate rij so that if it were at eqm_angle, it would be at a stable eqm.
     costhetajik_minus_eqm = np.dot(rij, rik) / rijrik
+    # Fi = bond_stiffness * ( (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2) ) # Incorrect here as will be the sum of Fk and a rotated Fj.
+    Fj = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
+    Fk = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+
+    # Unrotate Fj. Fi used to make net force zero.
     i = 1
-    force[i] = bond_stiffness * (
-        (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
-    )
-    force[i - 1] = -bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
-    force[i + 1] = -bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+    force[i - 1] = rot_vector_in_plane(Fj, r_plane, -theta)
+    force[i + 1] = Fk
+    force[i] = -(force[i - 1] + force[i + 1])
+
+    # OLD
+    # i = 1
+    # force[i] = bond_stiffness * (
+    #     (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
+    # )
+    # force[i - 1] = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
+    # force[i + 1] = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
 
     return force
 
@@ -669,7 +688,7 @@ def get_equilibrium_angles(initial_positions, connection_indices):
 #     return spring_force_array
 """
 
-def spring_force_array(array_of_positions, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":10e-6}):
+def spring_force_array(array_of_positions, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":5e-7}):
     """
     . Calculates the spring forces along the connections specified
     . Pulls spring data from an initial particle arrangement given
@@ -1130,10 +1149,10 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         buckingham = buckingham_force_array(position_vectors, effective_radii)
         driver = driving_force_array(position_vectors)
         bending = bending_force_array(position_vectors, ijkangles)
-        # NOTE; Initial shape stored earleir before any timesteps are taken
+        # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape)
 
-        total_force_array = bending#optical + bending + buckingham  # + spring + driver#+ gravity
+        total_force_array = optical + buckingham + bending + spring #+ driver#+ gravity
 
         # Record total forces too if required
         if include_force==True:
@@ -1142,13 +1161,9 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                     totforces[i,j,k] = total_force_array[j][k]
         
         F = np.hstack(total_force_array)
-        # print(F)
         cov = 2 * timestep * D
-        # print(cov)
         R = np.random.multivariate_normal(mean, cov)
-        # print(R)
         SumDijFj = (1 / (k_B * temperature)) * np.dot(D, F)
-        # print(SumDijFj*timestep)
         positions_stacked = np.hstack(position_vectors)
         new_positions = positions_stacked + SumDijFj * timestep + R
         #        new_positions = positions_stacked + temp

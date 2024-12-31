@@ -59,7 +59,7 @@ particles:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: 1.0000000000000002e-06 -1.4e-06 0.0
+      coords: 1e-06 -1.4e-06 0.0
       altcolour: True
     part_5:
       material: FusedSilica
@@ -95,7 +95,7 @@ particles:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: 1.3000000000000003e-06 -8e-07 0.0
+      coords: 1.2999999999999998e-06 -8e-07 0.0
       altcolour: True
     part_11:
       material: FusedSilica
@@ -125,7 +125,7 @@ particles:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: 1.0000000000000002e-06 -2e-07 0.0
+      coords: 1e-06 -2e-07 0.0
       altcolour: True
     part_16:
       material: FusedSilica
@@ -167,7 +167,7 @@ particles:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: 1.3000000000000003e-06 4e-07 0.0
+      coords: 1.2999999999999998e-06 4e-07 0.0
       altcolour: True
     part_23:
       material: FusedSilica
@@ -179,37 +179,37 @@ particles:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: -1.4e-06 1.0000000000000002e-06 0.0
+      coords: -1.4e-06 1e-06 0.0
       altcolour: True
     part_25:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: -8e-07 1.0000000000000002e-06 0.0
+      coords: -8e-07 1e-06 0.0
       altcolour: True
     part_26:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: -2e-07 1.0000000000000002e-06 0.0
+      coords: -2e-07 1e-06 0.0
       altcolour: True
     part_27:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: 4e-07 1.0000000000000002e-06 0.0
+      coords: 4e-07 1e-06 0.0
       altcolour: True
     part_28:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: 1.0000000000000002e-06 1.0000000000000002e-06 0.0
+      coords: 1e-06 1e-06 0.0
       altcolour: True
     part_29:
       material: FusedSilica
       shape: sphere
       args: 1e-07
-      coords: 1.6e-06 1.0000000000000002e-06 0.0
+      coords: 1.6e-06 1e-06 0.0
       altcolour: True
     part_30:
       material: FusedSilica
