@@ -236,11 +236,12 @@ def rot_vector_in_plane(r, r_plane, theta):
 def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     # Calculates the bending force on particles j-i-k.
     # This is for any equilibrium angle so the system is partially rotated so forces restore towards that angle.
-    # The rotation is undone before the forces are returned.
+    # The rotation is undone before the forces are returned. XXX
+    # Rotation is only done when eqm_angle != 0 or pi (else plane undefined).
 
     # rj and rk relative to ri.
-    rik = rk - ri
     rij = rj - ri
+    rik = rk - ri
     
     rij_abs = np.linalg.norm(rij)
     rik_abs = np.linalg.norm(rik)
@@ -248,38 +249,44 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
 
-    # Normal to plane of rotation.
-    r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
-    theta = np.pi - eqm_angle
+    is_plane_defined = ( np.linalg.norm( np.cross(rij, rik) ) != 0 )
 
-    # Rotate rij.
-    rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
+    if is_plane_defined:
+        # Normal to plane of rotation.
+        r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
+        theta = np.pi - eqm_angle
+        # Rotate rij.
+        # print(theta, r_plane)
+        rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
 
     force = np.zeros([3, 3])
 
     if np.isnan(rij).any() or np.isnan(rik).any():
-        print(f"Bending force received NaN,returning 0. rij, rik = {rij} {rik}")
-        return force
+        print(f"Bending force received NaN,returning 0. rij; rik; r_plance = {rij}; {rik}; {r_plane}")
+        return np.zeros([3, 3])
     
     # Rotate rij so that if it were at eqm_angle, it would be at a stable eqm.
-    costhetajik_minus_eqm = np.dot(rij, rik) / rijrik
-    # Fi = bond_stiffness * ( (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2) ) # Incorrect here as will be the sum of Fk and a rotated Fj.
-    Fj = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
-    Fk = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+    costhetajik = np.dot(rij, rik) / rijrik
+    Fj = bond_stiffness * (costhetajik * rij / rij2 - rik / rijrik)
+    Fk = bond_stiffness * (costhetajik * rik / rik2 - rij / rijrik)
 
-    # Unrotate Fj. Fi used to make net force zero.
+    if is_plane_defined:
+        # Unrotate Fj.
+        Fj = rot_vector_in_plane(Fj, r_plane, -theta)
+
+    # Fi used to make net force zero.
     i = 1
-    force[i - 1] = rot_vector_in_plane(Fj, r_plane, -theta)
+    force[i - 1] = Fj
     force[i + 1] = Fk
-    force[i] = -(force[i - 1] + force[i + 1])
+    force[i] = -(Fj + Fk)
 
     # OLD
     # i = 1
     # force[i] = bond_stiffness * (
-    #     (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
+    #     (rik + rij) / rijrik - costhetajik * (rij / rij2 + rik / rik2)
     # )
-    # force[i - 1] = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
-    # force[i + 1] = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+    # force[i - 1] = bond_stiffness * (costhetajik * rij / rij2 - rik / rijrik)
+    # force[i + 1] = bond_stiffness * (costhetajik * rik / rik2 - rij / rijrik)
 
     return force
 
@@ -1211,7 +1218,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical + bending + spring + buckingham + driver#+ gravity
+        total_force_array = optical + bending + spring + buckingham #+ driver#+ gravity #XXX
 
         # Record total forces too if required
         if include_force==True:

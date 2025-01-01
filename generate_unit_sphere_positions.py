@@ -106,7 +106,8 @@ def get_sheet_points(num_radius, separation, num_angular=None):
 
     return coords
 
-print_particles(get_sheet_points(3, 1e-6), radius=100e-9)
+# print_particles(get_sheet_points(3, 1e-6), radius=100e-9)
+print_particles(get_sheet_points(2, 1e-6), radius=100e-9)
 # print_particles(get_sheet_points(6, 0.5e-6, 6), radius=100e-9) # Polar version
 
 
