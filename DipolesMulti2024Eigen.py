@@ -171,7 +171,7 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
         #
         # NOTE; Temporary while bug fixing
         #
-        #print("Eeek!! r_abs = ", r_abs)
+        print("Eeek!! r_abs = ", r_abs)
         r_abs = r_max  # capping the force
 
     ###
@@ -236,11 +236,12 @@ def rot_vector_in_plane(r, r_plane, theta):
 def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     # Calculates the bending force on particles j-i-k.
     # This is for any equilibrium angle so the system is partially rotated so forces restore towards that angle.
-    # The rotation is undone before the forces are returned.
+    # The rotation is undone before the forces are returned. XXX
+    # Rotation is only done when eqm_angle != 0 or pi (else plane undefined).
 
     # rj and rk relative to ri.
-    rik = rk - ri
     rij = rj - ri
+    rik = rk - ri
     
     rij_abs = np.linalg.norm(rij)
     rik_abs = np.linalg.norm(rik)
@@ -248,38 +249,44 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
 
-    # Normal to plane of rotation.
-    r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
-    theta = np.pi - eqm_angle
+    is_plane_defined = ( np.linalg.norm( np.cross(rij, rik) ) != 0 )
 
-    # Rotate rij.
-    rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
+    if is_plane_defined:
+        # Normal to plane of rotation.
+        r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
+        theta = np.pi - eqm_angle
+        # Rotate rij.
+        # print(theta, r_plane)
+        rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
 
     force = np.zeros([3, 3])
 
     if np.isnan(rij).any() or np.isnan(rik).any():
-        print(f"Bending force received NaN,returning 0. rij, rik = {rij} {rik}")
-        return force
+        print(f"Bending force received NaN,returning 0. rij; rik; r_plance = {rij}; {rik}; {r_plane}")
+        return np.zeros([3, 3])
     
     # Rotate rij so that if it were at eqm_angle, it would be at a stable eqm.
-    costhetajik_minus_eqm = np.dot(rij, rik) / rijrik
-    # Fi = bond_stiffness * ( (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2) ) # Incorrect here as will be the sum of Fk and a rotated Fj.
-    Fj = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
-    Fk = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+    costhetajik = np.dot(rij, rik) / rijrik
+    Fj = bond_stiffness * (costhetajik * rij / rij2 - rik / rijrik)
+    Fk = bond_stiffness * (costhetajik * rik / rik2 - rij / rijrik)
 
-    # Unrotate Fj. Fi used to make net force zero.
+    if is_plane_defined:
+        # Unrotate Fj.
+        Fj = rot_vector_in_plane(Fj, r_plane, -theta)
+
+    # Fi used to make net force zero.
     i = 1
-    force[i - 1] = rot_vector_in_plane(Fj, r_plane, -theta)
+    force[i - 1] = Fj
     force[i + 1] = Fk
-    force[i] = -(force[i - 1] + force[i + 1])
+    force[i] = -(Fj + Fk)
 
     # OLD
     # i = 1
     # force[i] = bond_stiffness * (
-    #     (rik + rij) / rijrik - costhetajik_minus_eqm * (rij / rij2 + rik / rik2)
+    #     (rik + rij) / rijrik - costhetajik * (rij / rij2 + rik / rik2)
     # )
-    # force[i - 1] = bond_stiffness * (costhetajik_minus_eqm * rij / rij2 - rik / rijrik)
-    # force[i + 1] = bond_stiffness * (costhetajik_minus_eqm * rik / rik2 - rij / rijrik)
+    # force[i - 1] = bond_stiffness * (costhetajik * rij / rij2 - rik / rijrik)
+    # force[i + 1] = bond_stiffness * (costhetajik * rik / rik2 - rij / rijrik)
 
     return force
 
@@ -875,7 +882,7 @@ def bending_force_array(array_of_positions, ijkangles, bond_stiffness):
     
 def gravity_force_array(array_of_positions, dipole_radius):
     number_of_beads = len(array_of_positions)
-    bond_stiffness = BENDING
+    # bond_stiffness = BENDING
     gravity_force_matrix = np.zeros([number_of_beads], dtype=object)
     gravity_force_temp = np.zeros([3], dtype=object)
     gravity_force_temp[2] = -1e-12#-9.81*mass
@@ -884,7 +891,7 @@ def gravity_force_array(array_of_positions, dipole_radius):
     return gravity_force_matrix
 
 
-def diffusion_matrix(array_of_positions, dipole_radius):
+def diffusion_matrix(array_of_positions, particle_radii):
     # positions of particle centres
     # dipole_radius is actually considering the spehre radius here
     list_of_displacements = [u - v for u, v in it.combinations(array_of_positions, 2)]
@@ -892,17 +899,17 @@ def diffusion_matrix(array_of_positions, dipole_radius):
     for i in range(len(list_of_displacements)):
         array_of_displacements[i] = list_of_displacements[i]
     array_of_distances = np.array([np.linalg.norm(w) for w in array_of_displacements])
-    number_of_dipoles = len(array_of_positions)
+    number_of_particles = len(array_of_positions)
     number_of_displacements = len(array_of_displacements)
-    D_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
+    D_matrix = np.zeros([number_of_particles, number_of_particles], dtype=object)
     Djk_array = np.zeros(
         number_of_displacements, dtype=object
     )  # initialize array to store D_jk matrices
     Djj_array = np.zeros(
-        number_of_dipoles, dtype=object
+        number_of_particles, dtype=object
     )  # initialize array to store D_jj matrices
-    iu = np.triu_indices(number_of_dipoles, 1)
-    di = np.diag_indices(number_of_dipoles)
+    iu = np.triu_indices(number_of_particles, 1)
+    di = np.diag_indices(number_of_particles)
     for i in range(number_of_displacements):
         Djk_array[i] = Djk(
             array_of_displacements[i][0],
@@ -910,13 +917,13 @@ def diffusion_matrix(array_of_positions, dipole_radius):
             array_of_displacements[i][2],
             array_of_distances[i],
         )
-    for i in range(number_of_dipoles):
-        Djj_array[i] = Djj(dipole_radius)
+    for i in range(number_of_particles):
+        Djj_array[i] = Djj(particle_radii[i])
     D_matrix[iu] = Djk_array
     D_matrix.T[iu] = D_matrix[iu]
     D_matrix[di] = Djj_array
-    temporary_array = np.zeros(number_of_dipoles, dtype=object)
-    for i in range(number_of_dipoles):
+    temporary_array = np.zeros(number_of_particles, dtype=object)
+    for i in range(number_of_particles):
         temporary_array[i] = np.concatenate(D_matrix[i])
     D = np.hstack(temporary_array)
     return D
@@ -1160,6 +1167,15 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
     ijkangles = get_equilibrium_angles(position_vectors, connection_indices)
     #print(f"Equil. Angles \n{ijkangles}")
 
+    # Finds a characteristic radius for each shape
+    effective_radii = np.zeros(number_of_particles, dtype=np.float64)
+    for p in range(number_of_particles):
+        match shapes[p]:
+            case "sphere":
+                effective_radii[p] = args[p][0]
+            case "torus":
+                effective_radii[p] = (args[p][0] + args[p][1])
+
     for i in range(number_of_timesteps):
         #
         # Pass in list of dipole positions to generate total dipole array;
@@ -1188,37 +1204,21 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
             print("Step ",i)
             print(i,optical)
 
-
-        # Finds a characteristic radius for each shape to calcualte Buckingham forces
-        effective_radii = np.zeros(number_of_particles, dtype=np.float64)
-        for p in range(number_of_particles):
-            match shapes[p]:
-                case "sphere":
-                    effective_radii[p] = args[p][0]
-                case "torus":
-                    effective_radii[p] = (args[p][0] + args[p][1])
-
-        ## !!! NEED TO FIX LATER !!!
-        radius = effective_radii[0]
-        ## !!! NEED TO FIX LATER !!!
-
         stiffness = 5e-7
         BENDING = 1e-18
 
-        D = diffusion_matrix(position_vectors, radius)
-        # D = diffusion_matrix(position_vectors, dipole_radius)
-        # spring = spring_force_array(position_vectors, radius)
-        # gravity = gravity_force_array(position_vectors, radius)
+        D = diffusion_matrix(position_vectors, effective_radii)
+        # gravity = gravity_force_array(position_vectors, effective_radii[0])
         buckingham = buckingham_force_array(position_vectors, effective_radii)
         
-        driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":3.0e-12, "influence_radius":1.6e-6, "current_frame":i, "frame_period":30})
+        driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
         bending = bending_force_array(position_vectors, ijkangles, BENDING)
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical + bending + spring + buckingham + driver#+ gravity
+        total_force_array = optical + bending + spring + buckingham #+ driver#+ gravity #XXX
 
         # Record total forces too if required
         if include_force==True:
@@ -1310,7 +1310,7 @@ beam_collection = Beams.create_beam_collection(beaminfo,wavelength)
 # Read particle options and create particle collection
 #===========================================================================
 particle_collection = Particles.ParticleCollection(particleinfo)
-print(particle_collection.num_particles)
+print(f"Number of particles = {particle_collection.num_particles}")
 n_particles = particle_collection.num_particles
 #c = 3e8
 #n1 = 3.9
