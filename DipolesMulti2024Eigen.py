@@ -171,7 +171,7 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
         #
         # NOTE; Temporary while bug fixing
         #
-        #print("Eeek!! r_abs = ", r_abs)
+        print("Eeek!! r_abs = ", r_abs)
         r_abs = r_max  # capping the force
 
     ###
@@ -875,7 +875,7 @@ def bending_force_array(array_of_positions, ijkangles, bond_stiffness):
     
 def gravity_force_array(array_of_positions, dipole_radius):
     number_of_beads = len(array_of_positions)
-    bond_stiffness = BENDING
+    # bond_stiffness = BENDING
     gravity_force_matrix = np.zeros([number_of_beads], dtype=object)
     gravity_force_temp = np.zeros([3], dtype=object)
     gravity_force_temp[2] = -1e-12#-9.81*mass
@@ -884,7 +884,7 @@ def gravity_force_array(array_of_positions, dipole_radius):
     return gravity_force_matrix
 
 
-def diffusion_matrix(array_of_positions, dipole_radius):
+def diffusion_matrix(array_of_positions, particle_radii):
     # positions of particle centres
     # dipole_radius is actually considering the spehre radius here
     list_of_displacements = [u - v for u, v in it.combinations(array_of_positions, 2)]
@@ -892,17 +892,17 @@ def diffusion_matrix(array_of_positions, dipole_radius):
     for i in range(len(list_of_displacements)):
         array_of_displacements[i] = list_of_displacements[i]
     array_of_distances = np.array([np.linalg.norm(w) for w in array_of_displacements])
-    number_of_dipoles = len(array_of_positions)
+    number_of_particles = len(array_of_positions)
     number_of_displacements = len(array_of_displacements)
-    D_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
+    D_matrix = np.zeros([number_of_particles, number_of_particles], dtype=object)
     Djk_array = np.zeros(
         number_of_displacements, dtype=object
     )  # initialize array to store D_jk matrices
     Djj_array = np.zeros(
-        number_of_dipoles, dtype=object
+        number_of_particles, dtype=object
     )  # initialize array to store D_jj matrices
-    iu = np.triu_indices(number_of_dipoles, 1)
-    di = np.diag_indices(number_of_dipoles)
+    iu = np.triu_indices(number_of_particles, 1)
+    di = np.diag_indices(number_of_particles)
     for i in range(number_of_displacements):
         Djk_array[i] = Djk(
             array_of_displacements[i][0],
@@ -910,13 +910,13 @@ def diffusion_matrix(array_of_positions, dipole_radius):
             array_of_displacements[i][2],
             array_of_distances[i],
         )
-    for i in range(number_of_dipoles):
-        Djj_array[i] = Djj(dipole_radius)
+    for i in range(number_of_particles):
+        Djj_array[i] = Djj(particle_radii[i])
     D_matrix[iu] = Djk_array
     D_matrix.T[iu] = D_matrix[iu]
     D_matrix[di] = Djj_array
-    temporary_array = np.zeros(number_of_dipoles, dtype=object)
-    for i in range(number_of_dipoles):
+    temporary_array = np.zeros(number_of_particles, dtype=object)
+    for i in range(number_of_particles):
         temporary_array[i] = np.concatenate(D_matrix[i])
     D = np.hstack(temporary_array)
     return D
@@ -1160,6 +1160,15 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
     ijkangles = get_equilibrium_angles(position_vectors, connection_indices)
     #print(f"Equil. Angles \n{ijkangles}")
 
+    # Finds a characteristic radius for each shape
+    effective_radii = np.zeros(number_of_particles, dtype=np.float64)
+    for p in range(number_of_particles):
+        match shapes[p]:
+            case "sphere":
+                effective_radii[p] = args[p][0]
+            case "torus":
+                effective_radii[p] = (args[p][0] + args[p][1])
+
     for i in range(number_of_timesteps):
         #
         # Pass in list of dipole positions to generate total dipole array;
@@ -1188,30 +1197,14 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
             print("Step ",i)
             print(i,optical)
 
-
-        # Finds a characteristic radius for each shape to calcualte Buckingham forces
-        effective_radii = np.zeros(number_of_particles, dtype=np.float64)
-        for p in range(number_of_particles):
-            match shapes[p]:
-                case "sphere":
-                    effective_radii[p] = args[p][0]
-                case "torus":
-                    effective_radii[p] = (args[p][0] + args[p][1])
-
-        ## !!! NEED TO FIX LATER !!!
-        radius = effective_radii[0]
-        ## !!! NEED TO FIX LATER !!!
-
         stiffness = 5e-7
         BENDING = 1e-18
 
-        D = diffusion_matrix(position_vectors, radius)
-        # D = diffusion_matrix(position_vectors, dipole_radius)
-        # spring = spring_force_array(position_vectors, radius)
-        # gravity = gravity_force_array(position_vectors, radius)
+        D = diffusion_matrix(position_vectors, effective_radii)
+        # gravity = gravity_force_array(position_vectors, effective_radii[0])
         buckingham = buckingham_force_array(position_vectors, effective_radii)
         
-        driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":3.0e-12, "influence_radius":1.6e-6, "current_frame":i, "frame_period":30})
+        driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
         bending = bending_force_array(position_vectors, ijkangles, BENDING)
@@ -1310,7 +1303,7 @@ beam_collection = Beams.create_beam_collection(beaminfo,wavelength)
 # Read particle options and create particle collection
 #===========================================================================
 particle_collection = Particles.ParticleCollection(particleinfo)
-print(particle_collection.num_particles)
+print(f"Number of particles = {particle_collection.num_particles}")
 n_particles = particle_collection.num_particles
 #c = 3e8
 #n1 = 3.9
