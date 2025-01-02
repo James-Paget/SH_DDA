@@ -44,7 +44,7 @@ display:
 beams:
   beam_1:
     beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN # parameter BEAMTYPE_LAGUERRE_GAUSSIAN BEAMTYPE_BESSEL
-    E0: 300 #10000000 # 300
+    E0: 0 #10000000 # 300
     order: 3
     w0: 0.6 # fraction of wavelength
     jones: POLARISATION_LCP # parameter
@@ -59,7 +59,7 @@ particles:
   # connection_mode: num
   # connection_args: 5
   connection_mode: dist
-  connection_args: 1.1e-6 #0.8e-6
+  connection_args: 0.3e-6 #1.1e-6
 
   particle_list:
     # Tetrahedron
@@ -89,24 +89,24 @@ particles:
     #   altcolour: True
     
     # Line of particles in z
-    # part_1:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 200e-9
-    #   coords: 0.0e-6 0.0e-6 1.0e-6
-    #   altcolour: True
-    # part_2:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 200e-9
-    #   coords: 0.33e-6 0.0e-6 0.33e-6
-    #   altcolour: True
-    # part_3:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 200e-9
-    #   coords: 0.0e-6 0.0e-6 -0.33e-6
-    #   altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: 0.0e-6 0.0e-6 0.25e-6
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: 0.0e-6 0.0e-6 0.0e-6
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: 0.0e-6 0.0e-6 -0.25e-6
+      altcolour: True
 
 
 

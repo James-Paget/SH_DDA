@@ -165,18 +165,17 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
 """
 
 def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
-    r_max = 1.1 * (radius_i +radius_j)
+    #r_max = 1.1 * (radius_i +radius_j)     # Original r_max
+    r_max = 1.05 * (radius_i +radius_j)    # Reduced r_max, for closer interactions. NOTE; Should only be used with smaller time-steps (<1e-4)
     r_abs = np.linalg.norm(r)
     if r_abs < r_max:
-        #
-        # NOTE; Temporary while bug fixing
-        #
         print("Eeek!! r_abs = ", r_abs)
         r_abs = r_max  # capping the force
 
-    ###
-    ### NOTE; WILL NEED REWORKING FOR BETTER RADIUS MANAGEMENT
-    ###
+    ##
+    ## NOTE; WILL NEED REWORKING FOR BETTER RADIUS MANAGEMENT
+    ##  -> Does still work with 2 spheres of equal radii
+    ##
     radius_avg = (radius_i+radius_j)/2.0
     force = np.array(
         [
@@ -504,10 +503,12 @@ def buckingham_force_array(array_of_positions, effective_radii):
     number_of_particles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
-    #    Hamaker = (np.sqrt(30e-20) - np.sqrt(4e-20))**2
+    #Hamaker = (np.sqrt(30e-20) - np.sqrt(4e-20))**2
     Hamaker = 0
-    ConstantA = 1.0e23
-    ConstantB = 2.0e8  # 4.8e8
+    #ConstantA = 1.0e23
+    #ConstantB = 2.0e8  # 4.8e8
+    ConstantA = (1e-34) *1.0e23
+    ConstantB = (2e-1) *2.0e8
     buckingham_force_matrix = np.zeros(
         [number_of_particles, number_of_particles], dtype=object
     )
