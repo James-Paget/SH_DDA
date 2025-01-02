@@ -101,7 +101,7 @@ class ParticleCollection (object):
                         self.particle_type.append(particle.get('material',self.default_material))
                         #self.particle_radius.append(float(particle.get('radius',self.default_radius)))
 
-                        self.argsraw = particle.get('args',self.default_args)
+                        self.argsraw = str(particle.get('args',self.default_args))
                         self.args    = self.argsraw.split(" ")
                         match (particle.get('shape',self.default_shape), len(self.args)):
                             case ("sphere", 1):

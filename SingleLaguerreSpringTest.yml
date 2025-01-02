@@ -63,12 +63,12 @@ particles:
 
   particle_list:
     # Tetrahedron
-    # part_1:
-    #   material: FusedSilica
-    #   shape: sphere
-    #   args: 200e-9
-    #   coords: 0.0e-6 0.0e-6 1.0e-6
-    #   altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: sphere
+      args: 500e-9 #200e-9
+      coords: 0.0e-6 0.0e-6 1.0e-6
+      altcolour: True
     # part_2:
     #   material: FusedSilica
     #   shape: sphere
@@ -115,84 +115,84 @@ particles:
 
 
     # circle sheet on cubic lattice (5 diameter)
-    part_1:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: -2e-06 0.0 0
-      altcolour: True
-    part_2:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: -1e-06 -1e-06 0
-      altcolour: True
-    part_3:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: -1e-06 0.0 0
-      altcolour: True
-    part_4:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: -1e-06 1e-06 0
-      altcolour: True
-    part_5:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 0.0 -2e-06 0
-      altcolour: True
-    part_6:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 0.0 -1e-06 0
-      altcolour: True
-    part_7:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 0.0 0.0 0
-      altcolour: True
-    part_8:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 0.0 1e-06 0
-      altcolour: True
-    part_9:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 0.0 2e-06 0
-      altcolour: True
-    part_10:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 1e-06 -1e-06 0
-      altcolour: True
-    part_11:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 1e-06 0.0 0
-      altcolour: True
-    part_12:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 1e-06 1e-06 0
-      altcolour: True
-    part_13:
-      material: FusedSilica
-      shape: sphere
-      args: 15e-08
-      coords: 2e-06 0.0 0
-      altcolour: True
+    # part_1:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: -2e-06 0.0 0
+    #   altcolour: True
+    # part_2:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: -1e-06 -1e-06 0
+    #   altcolour: True
+    # part_3:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: -1e-06 0.0 0
+    #   altcolour: True
+    # part_4:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: -1e-06 1e-06 0
+    #   altcolour: True
+    # part_5:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 0.0 -2e-06 0
+    #   altcolour: True
+    # part_6:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 0.0 -1e-06 0
+    #   altcolour: True
+    # part_7:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 0.0 0.0 0
+    #   altcolour: True
+    # part_8:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 0.0 1e-06 0
+    #   altcolour: True
+    # part_9:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 0.0 2e-06 0
+    #   altcolour: True
+    # part_10:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 1e-06 -1e-06 0
+    #   altcolour: True
+    # part_11:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 1e-06 0.0 0
+    #   altcolour: True
+    # part_12:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 1e-06 1e-06 0
+    #   altcolour: True
+    # part_13:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 15e-08
+    #   coords: 2e-06 0.0 0
+    #   altcolour: True
 
     # small particle sheet 
     # part_1:

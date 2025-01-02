@@ -236,7 +236,7 @@ def rot_vector_in_plane(r, r_plane, theta):
 def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     # Calculates the bending force on particles j-i-k.
     # This is for any equilibrium angle so the system is partially rotated so forces restore towards that angle.
-    # The rotation is undone before the forces are returned. XXX
+    # The rotation is undone before the forces are returned.
     # Rotation is only done when eqm_angle != 0 or pi (else plane undefined).
 
     # rj and rk relative to ri.
@@ -601,7 +601,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
             # this links each particle to every other particle within a certain distance.
             # args: [] will approximate a dist, or can be passed in: [dist]
             if num_particles < 2:
-                sys.exit("generate_connection_indices: dist num_particles error")
+                print("generate_connection_indices: dist num_particles error, setting connections=[]")
 
             if len(args) == 0:
                 approx_radius = np.linalg.norm(array_of_positions[0])
@@ -1200,7 +1200,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                     for k in range(3):
                         optcouple[i,j,k] = couples[j][k] + torques[j][k]
 
-        if i%10 == 0:
+        if i%1 == 0:
             print("Step ",i)
             print(i,optical)
 
@@ -1218,7 +1218,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical + bending + spring + buckingham #+ driver#+ gravity #XXX
+        total_force_array = optical + spring + bending #+ buckingham #+ driver#+ gravity #
 
         # Record total forces too if required
         if include_force==True:

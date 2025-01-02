@@ -37,16 +37,14 @@ def generate_unit_sphere_positions(N, num_steps=1000):
 
     return coords
 
-# generate_unit_sphere_positions(40, num_steps=1000)
-
-def print_particles(coords, radius=200e-9):
+def print_particles(coords, particle_radius=200e-9):
     for i, coord in enumerate(coords):
         coords_str = " ".join([str(x) for x in coord])
         print("\n".join([
             f"    part_{i+1}:",
             f"      material: FusedSilica",
             f"      shape: sphere",
-            f"      args: {radius}",
+            f"      args: {particle_radius}",
             f"      coords: {coords_str}",
             f"      altcolour: True"
         ]))
@@ -74,10 +72,10 @@ def get_icosahedron_points(radius=1e-6):
     phi = round((1 + np.sqrt(5))/2, 5)
     return radius * np.array([ [0,-1,-phi], [-1,-phi,0],  [-phi,0,-1], [0,-1,phi], [-1,phi,0],  [-phi,0,1], [0,1,-phi], [1,-phi,0],  [phi,0,-1], [0,1,phi], [1,phi,0],  [phi,0,1]])
 
-# print_particles(get_tetrahedron_points(1e-6))
-# print_particles(generate_unit_sphere_positions(12, 5000)*1e-6)
-# print_particles(get_icosahedron_points())
-
+def get_dodecahedron_points(radius=1.4e-6):
+    # 20 vertices
+    phi = round((1 + np.sqrt(5))/2, 5)
+    return radius * np.array([ [-1,-1,-1], [-1,-1,1], [-1,1,-1], [-1,1,1], [1,-1,-1], [1,-1,1], [1,1,-1], [1,1,1], [0,-1/phi,-phi], [-1/phi,-phi,0],  [-phi,0,-1/phi], [0,-1/phi,phi], [-1/phi,phi,0],  [-phi,0,1/phi], [0,1/phi,-phi], [1/phi,-phi,0],  [phi,0,-1/phi], [0,1/phi,phi], [1/phi,phi,0],  [phi,0,1/phi]])
 
 def get_sheet_points(num_radius, separation, num_angular=None):
     # Creates a grid of points on the z=0 plane.
@@ -105,12 +103,6 @@ def get_sheet_points(num_radius, separation, num_angular=None):
                 coords.append((r*np.cos(ang), r*np.sin(ang),0))
 
     return coords
-
-# print_particles(get_sheet_points(3, 1e-6), radius=100e-9)
-print_particles(get_sheet_points(2, 1e-6), radius=100e-9)
-# print_particles(get_sheet_points(6, 0.5e-6, 6), radius=100e-9) # Polar version
-
-
 
 def min_dists():
     # plot how the min dist between any two particles decays as N increases.
@@ -148,3 +140,112 @@ def min_dists():
 
 # pp.figure().add_subplot(111, projection='3d').scatter(x, y, z);
 # pp.show()
+
+def get_sunflower_points(N, radius):
+    indices = np.arange(0, N, dtype=float) + 0.5
+    phi = np.arccos(1 - 2*indices/N)
+    theta = np.pi * (1 + 5**0.5) * indices
+    x, y, z = np.cos(theta) * np.sin(phi), np.sin(theta) * np.sin(phi), np.cos(phi)
+    return radius * np.array([(x[i], y[i], z[i]) for i in range(N)])
+
+def object_formation(objects, args, formation="circle"):
+    coords = []
+    match formation:
+        case "circle":
+            # args = [circle_formation_radius]
+            circle_formation_radius = args[0]
+            num_objects = len(objects)
+            for i in range(num_objects):
+                theta = 2*np.pi * i / num_objects
+                for j in range(len(objects[i])):
+                    coords.append([
+                        objects[i][j][0] + circle_formation_radius * np.cos(theta),
+                        objects[i][j][1] + circle_formation_radius * np.sin(theta),
+                        objects[i][j][2], 
+                        ])
+                    
+        case _:
+            print("unknown object_formation")
+            return None
+        
+    return coords
+
+# print_particles(get_tetrahedron_points(1e-6))
+# print_particles(generate_unit_sphere_positions(12, 5000)*1e-6)
+# print_particles(get_icosahedron_points())
+# print_particles(get_dodecahedron_points(),140e-9)
+
+# print_particles(get_sheet_points(3, 1e-6), radius=100e-9)
+# print_particles(get_sheet_points(2, 1e-6), radius=100e-9)
+# print_particles(get_sheet_points(6, 0.5e-6, 6), radius=100e-9) # Polar version
+
+# print_particles(get_sunflower_points(40, 2e-6), 140e-9)
+
+icosah = get_icosahedron_points(0.3e-6)
+# print_particles(object_formation([icosah, icosah], [2e-6]), 1.3e-7)
+print_particles(object_formation([[], icosah], [1e-6]), particle_radius=1.0e-7)
+
+
+def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
+    r_max = 1.1 * (radius_i +radius_j)
+    r_abs = np.linalg.norm(r)
+    if r_abs < r_max:
+
+        print("Eeek!! r_abs = ", r_abs)
+        r_abs = r_max  # capping the force
+
+    radius_avg = (radius_i+radius_j)/2.0
+    force = np.array(
+        [
+            -(
+                constant1 * constant2 * np.exp(-constant2 * r_abs)
+                - (
+                    (32 * Hamaker * (radius_avg ** 6))
+                    / (3 * (r_abs ** 3) * (r_abs ** 2 - 4 * (radius_avg ** 2)) ** 2)
+                )
+            )
+            * (r[i] / r_abs)
+            for i in range(3)
+        ]
+    )
+
+    return force
+
+def test_buckingham():
+    # Hamaker = (np.sqrt(30e-20) - np.sqrt(4e-20))**2
+    Hamaker = 0
+    ConstantA = 1.0e23
+    ConstantB = 2.0e8  # 4.8e8
+
+    Hamakers = [0, (np.sqrt(30e-20) - np.sqrt(4e-20))**2]
+    # Hamakers = [0]
+    # Hamakers = [(np.sqrt(30e-20) - np.sqrt(4e-20))**2]
+    ContantAs = [1.0e23]
+    ContantBs = [2.0e8, 4.8e8]
+
+    for Hamaker in Hamakers:
+        for ConstantA in ContantAs:
+            for ConstantB in ContantBs:
+                num = 100
+                radius = 2e-7
+                xs = np.linspace(2, 3, num) * radius
+                forces = []
+                for x in xs:
+                    r = np.array([x, 0.0, 0.0])
+                    forces.append( buckingham_force(Hamaker, ConstantA, ConstantB, r, radius, radius)[0] )
+
+                if Hamaker == 0:
+                    ls = "--"
+                else:
+                    ls = ":"
+                plt.plot(xs, forces, linestyle=ls, label=f"{ConstantA}, {ConstantB}, {Hamaker}")
+                # plt.plot(np.log10(xs), np.log10(forces), linestyle="--", label=f"{ConstantA}, {ConstantB}, {Hamaker}")
+                # plt.show()
+    
+    plt.title("legend shows ConstantA, Constantb, Hamaker")
+    plt.legend()
+    plt.xlabel("Separation (m)")
+    plt.ylabel("Force (N)")
+    plt.show()
+
+# test_buckingham()
