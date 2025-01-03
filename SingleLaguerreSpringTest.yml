@@ -11,7 +11,7 @@
 # System options
 #============================================================================================
 options:
-  frames: 100
+  frames: 60
 #============================================================================================
 # System parameters
 #============================================================================================
@@ -44,7 +44,7 @@ display:
 beams:
   beam_1:
     beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN # parameter BEAMTYPE_LAGUERRE_GAUSSIAN BEAMTYPE_BESSEL
-    E0: 0 #10000000 # 300
+    E0: 300 #10000000 # 300
     order: 3
     w0: 0.6 # fraction of wavelength
     jones: POLARISATION_LCP # parameter
@@ -63,12 +63,12 @@ particles:
 
   particle_list:
     # Tetrahedron
-    part_1:
-      material: FusedSilica
-      shape: sphere
-      args: 500e-9 #200e-9
-      coords: 0.0e-6 0.0e-6 1.0e-6
-      altcolour: True
+    # part_1:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 200e-9 #500e-9
+    #   coords: 0.0e-6 0.0e-6 1.0e-6
+    #   altcolour: True
     # part_2:
     #   material: FusedSilica
     #   shape: sphere
@@ -87,26 +87,52 @@ particles:
     #   args: 200e-9
     #   coords: -4.713207455460896e-07 -8.163514779470688e-07 -3.3380685923377075e-07
     #   altcolour: True
-    
-    # Line of particles in z
+
+    # tetrahedron with points initialised very close.
     part_1:
       material: FusedSilica
       shape: sphere
-      args: 200e-9
-      coords: 0.0e-6 0.0e-6 0.25e-6
+      args: 200e-9 #500e-9
+      coords: 0.0e-6 0.0e-6 1.0e-7
       altcolour: True
     part_2:
       material: FusedSilica
       shape: sphere
       args: 200e-9
-      coords: 0.0e-6 0.0e-6 0.0e-6
+      coords: 9.426414910921784e-08 0.0 -3.3380685923377075e-08
       altcolour: True
     part_3:
       material: FusedSilica
       shape: sphere
       args: 200e-9
-      coords: 0.0e-6 0.0e-6 -0.25e-6
+      coords: -4.7132074554608904e-08 8.163514779470691e-08 -3.3380685923377075e-08
       altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: sphere
+      args: 200e-9
+      coords: -4.713207455460896e-08 -8.163514779470688e-08 -3.3380685923377075e-08
+      altcolour: True
+    
+    # Line of particles in z
+    # part_1:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 200e-9
+    #   coords: 0.0e-6 0.0e-6 0.25e-6
+    #   altcolour: True
+    # part_2:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 200e-9
+    #   coords: 0.0e-6 0.0e-6 0.0e-6
+    #   altcolour: True
+    # part_3:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 200e-9
+    #   coords: 0.0e-6 0.0e-6 -0.25e-6
+    #   altcolour: True
 
 
 

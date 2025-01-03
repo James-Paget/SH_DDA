@@ -499,24 +499,31 @@ def buckingham_force_array(array_of_positions, dipole_radius):
 """
 
 
-def buckingham_force_array(array_of_positions, effective_radii):
+def buckingham_force_array(array_of_positions, effective_radii, particle_groups):
     number_of_particles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
     #Hamaker = (np.sqrt(30e-20) - np.sqrt(4e-20))**2
     Hamaker = 0
-    #ConstantA = 1.0e23
-    #ConstantB = 2.0e8  # 4.8e8
-    ConstantA = (1e-34) *1.0e23
-    ConstantB = (2e-1) *2.0e8
+    ConstantA = 1.0e23
+    ConstantB = 2.0e8  # 4.8e8
+    # ConstantA = (1e-34) *1.0e23
+    # ConstantB = (2e-1) *2.0e8
     buckingham_force_matrix = np.zeros(
         [number_of_particles, number_of_particles], dtype=object
     )
-
+    
     for i in range(number_of_particles):
+
+        for group_i in range(len(particle_groups)):
+            if i in particle_groups[group_i]:
+                i_group = group_i
+                break
+
         for j in range(number_of_particles):
-            if i == j:
-                buckingham_force_matrix[i][j] = [0, 0, 0]
+            # if i == j:
+            if j in particle_groups[i_group]:
+                buckingham_force_matrix[i][j] = 0 #[0, 0, 0]
             else:
                 buckingham_force_matrix[i][j] = buckingham_force(
                     Hamaker,
@@ -525,13 +532,42 @@ def buckingham_force_array(array_of_positions, effective_radii):
                     displacements_matrix_T[i][j],
                     effective_radii[i],
                     effective_radii[j]
-                )
+                )  
     buckingham_force_array = np.zeros((number_of_particles,3),dtype=np.float64)
     temp = np.sum(buckingham_force_matrix, axis=1)
     for i in range(number_of_particles):
         buckingham_force_array[i] = temp[i]
     return buckingham_force_array
 
+
+def stop_particles_overlapping(array_of_positions, effective_radii, particle_groups):
+    # for each group of particles, changes array_of_positions until not overlapping
+    # no return as changes are made directly to array_of_positions.
+
+    epsilon = 1e-10 # prevent small float errors.
+
+    for group in particle_groups:
+        done = False
+        count = 0
+        while not done:
+            count +=1
+            done = True # need to go through full pass without changes
+
+            for i,j in it.combinations(group,2):
+                ri = array_of_positions[i]
+                rj = array_of_positions[j]
+                rij = rj - ri
+                abs_rij = np.linalg.norm(rij)
+                difference = effective_radii[i] + effective_radii[j] - abs_rij
+                if difference > 0: # if overlapping
+                    done = False
+                    array_of_positions[i] -= (difference + epsilon)/2 *rij/abs_rij
+                    array_of_positions[j] += (difference + epsilon)/2 *rij/abs_rij
+                    # print(f"Now {array_of_positions[i]} and {array_of_positions[j]}")
+            
+            if count > 10:
+                sys.exit("Ending infinite loop")
+            
 
 def generate_connection_indices(array_of_positions, mode="manual", args=[]):
     """
@@ -668,6 +704,56 @@ def get_equilibrium_angles(initial_positions, connection_indices):
 
     return ijkangles
 
+def group_particles_into_objects(number_of_particles, connection_indices):
+    # Returns a list of the particle indices of each object
+
+    if len(connection_indices) == 0: # test trivial unconnected case
+        return [ [i] for i in range(number_of_particles)]
+
+    else:
+        # initialise object with particle 0 and its direct connections in.
+        connection_indices = np.array(connection_indices)
+        start = [0] 
+        for i in connection_indices[connection_indices[:,0]==0][:,1]:
+            start.append(i)
+        object_indices_list = [start]
+
+        for i in range(1, number_of_particles):
+            # get i's connections
+            i_connections = connection_indices[connection_indices[:,0]==i][:,1]
+            
+            # search through object_indices_list if any of its arrays contain a connection, else make new array
+            found = -1
+            arrays_to_merge = []
+            for j in range(len(object_indices_list)):
+
+                if set(object_indices_list[j]) & set(i_connections): # test for shared elements
+                    
+                    # if already found, will need to merge the two objects
+                    if found != -1:
+                        arrays_to_merge.append(object_indices_list[j])
+
+                    else:
+                        # add if not pre existing
+                        if not (i in object_indices_list[j]):
+                            object_indices_list[j].append(i)
+                        for i_connection in i_connections[i_connections>i]:
+                            if not (i_connection in object_indices_list[j]):
+                                object_indices_list[j].append(i_connection)
+
+                        found = j
+
+            # make new object if not found
+            if found == -1:
+                object_indices_list.append([i])
+
+            # merge here
+            for array in arrays_to_merge:
+                object_indices_list[found].extend(array)
+                object_indices_list.remove(array)
+    
+    return object_indices_list
+        
 
 """ OLD SPRINGS
 # def spring_force_array(array_of_positions, dipole_radius):
@@ -1155,7 +1241,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
     # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +300e-9]) # For sphereGrid linking
     # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args)
-    #print(f"connection indices are\n{connection_indices}")
+    # print(f"connection indices are\n{connection_indices}")
     
     # (2) Get Initial Positions
     ##
@@ -1176,6 +1262,10 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                 effective_radii[p] = args[p][0]
             case "torus":
                 effective_radii[p] = (args[p][0] + args[p][1])
+
+    # find which particles are connected in objects
+    particle_groups = group_particles_into_objects(number_of_particles, connection_indices)
+    # print(f"particle_groups is {particle_groups}")
 
     for i in range(number_of_timesteps):
         #
@@ -1210,7 +1300,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
 
         D = diffusion_matrix(position_vectors, effective_radii)
         # gravity = gravity_force_array(position_vectors, effective_radii[0])
-        buckingham = buckingham_force_array(position_vectors, effective_radii)
+        buckingham = buckingham_force_array(position_vectors, effective_radii, particle_groups)
         
         driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
@@ -1219,7 +1309,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical + spring + bending #+ buckingham #+ driver#+ gravity #
+        total_force_array = optical + spring + bending + buckingham #+ driver#+ gravity #
 
         # Record total forces too if required
         if include_force==True:
@@ -1243,6 +1333,10 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         for j in range(len(new_positions_list)):
             new_positions_array[j] = new_positions_list[j]
         position_vectors = new_positions_array
+
+        # particles in the same object are moved apart if overlapping
+        stop_particles_overlapping(position_vectors, effective_radii, particle_groups)
+
         vectors_list.append(
             position_vectors
         )  # returns list of position vector arrays of all particles
