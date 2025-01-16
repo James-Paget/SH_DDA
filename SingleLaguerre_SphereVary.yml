@@ -2,7 +2,7 @@ options:
   frames: 1
 parameters:
   wavelength: 1e-06
-  dipole_radius: 4e-08
+  dipole_radius: 1.5e-07
   time_step: 0.0001
 output:
   vmd_output: True

@@ -75,6 +75,7 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
 
         "beamtype": "BEAMTYPE_LAGUERRE_GAUSSIAN",
         "E0": 0,
+        "order": 3,
         "w0": 0.6,
         "jones": "POLARISATION_LCP",
         "translation": None,
@@ -845,7 +846,7 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
  
     # For each scenario to be tested
     for i, separation in enumerate(separations):
-        print(f"\n{i}/{len(separations)}: Performing calculation for dipole size {separation}")
+        print(f"\n{i}/{len(separations)}: Performing calculation for separation {separation}")
 
         torus_gap_theta    = separation/inner_radii    # Full angle occupied by gap between torus sectors
         torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
@@ -1215,34 +1216,34 @@ match(sys.argv[1]):
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre_SphereVary"
         particle_total = 12
-        dipole_size_range = [6e-8, 4e-8, 5]
+        dipole_size_range = [50e-9, 150e-9, 20]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "(m)", parameter_text)
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
-        separation = 1e-7
-        dipole_sizes = [60e-9, 30e-9, 25]
+        separation = 0.5e-7
+        dipole_sizes = [35e-9, 1e-7, 20]
         # parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
         # Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
 
         # Filter dipole sizes.
-        particle_total = 6
-        separation = 1e-7
-        dipole_sizes = [60e-9, 30e-9, 150]
-        inner_radii = 1.15e-6
-        tube_radii = 200e-9
-        filter_num = 25
-        old_dipole_sizes = dipole_sizes
-        volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
-        dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
+        # particle_total = 6
+        # separation = 1e-7
+        # dipole_sizes = [60e-9, 30e-9, 150]
+        # inner_radii = 1.15e-6
+        # tube_radii = 200e-9
+        # filter_num = 25
+        # old_dipole_sizes = dipole_sizes
+        # volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
+        # dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
     case "torusInCircleSeparation":
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
-        separation_range = [20e-9, 120e-9, 10]
-        dipole_size = 36e-9
+        separation_range = [0.2e-7, 3e-7, 25]
+        dipole_size = 40e-9
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "(m)", parameter_text)
     case "torusInCircle_FixedSep_SectorDipole":
