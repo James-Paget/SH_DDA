@@ -1309,7 +1309,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical + spring + bending + buckingham #+ driver#+ gravity #
+        total_force_array = optical #+ spring + bending + buckingham #+ driver#+ gravity #
 
         # Record total forces too if required
         if include_force==True:
