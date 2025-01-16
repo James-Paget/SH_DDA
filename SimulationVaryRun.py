@@ -113,12 +113,17 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
     for arg in ["show_output", "frame_interval", "max_size", "resolution", "frame_min", "frame_max", "z_offset"]:
         file.write(f"  {arg}: {parameters[arg]}\n")
 
+    ##
+    ## MAKE WORK FOR BOTH BESSEL AND LAGUERRE
+    ##
     file.write("beams:\n")
     file.write("  beam_1:\n")
-    # for arg in ["beamtype", "E0", "order", "w0", "jones", "translation", "rotation"]:
-    #     file.write(f"    {arg}: {parameters[arg]}\n")
-    for arg in ["beamtype", "E0", "w0", "jones", "translation", "rotation"]:
-        file.write(f"    {arg}: {parameters[arg]}\n")
+    if(parameters["beamtype"]=="BEAMTYPE_LAGUERRE_GAUSSIAN"):
+        for arg in ["beamtype", "E0", "order", "w0", "jones", "translation", "rotation"]:
+            file.write(f"    {arg}: {parameters[arg]}\n")
+    else:
+        for arg in ["beamtype", "E0", "w0", "jones", "translation", "rotation"]:
+            file.write(f"    {arg}: {parameters[arg]}\n")
 
     file.write("particles:\n")
     for arg in ["default_radius", "default_material", "connection_mode", "connection_args"]:
@@ -450,9 +455,9 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     #
     
     particle_info = [];
-    place_radius = 1.152e-6         #1.15e-6
+    place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
-    parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
 
     record_parameters = ["F"]
     if(include_additionalForces):   # Record total forces instead of just optical forces
@@ -1174,14 +1179,14 @@ match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre_SphereVary"
         #1,2,3,4,5,6,7,8,9,10,11,12
-        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14]
-        parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=True)
+        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12]
+        parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
         # Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     case "torusInCircle":
         filename = "SingleLaguerre_TorusVary"
-        particle_numbers = [2,3,4,5,6,7,8,9,10,11,12]
+        particle_numbers = [2,3,4,5,6,7,8,9]
         parameter_text = simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
     case "torusInCircleFixedPhi":

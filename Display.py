@@ -443,10 +443,12 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     plt.legend()
     plt.show()
 
-def plot_tangential_force_against_arbitrary(filename, particle_target, x_values, x_label, x_units, parameter_text=""):
+def plot_tangential_force_against_arbitrary(filename, particle_target, x_values, x_label, x_units, parameter_text="", parameters_per_particle=2):
     #
     # Generates a plot of tangential force magnitude of the Nth particle for a system of M particles as a function of the number of particles in the system
     # Applies for spherical and torus particles
+    #
+    # parameters_per_particle = number of parameters (e.g. position, force, force_total, torque, etc) expected to be seen for this file -> NOTE; Assumes ALL parameters a vector quantities
     #
     data = pd.read_excel(filename+".xlsx")
     data_num = data.count(axis='columns')
@@ -455,28 +457,38 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
 
     for scenario_index in range(len(data) ):
         #Look through each scenario setup, get number of particles involved, try extract data from this scenario
-        number_of_particles = int(np.floor(data_num[scenario_index]/(6.0)))
+        elements_per_particle = int(3*parameters_per_particle)
+        number_of_particles = int(np.floor(data_num[scenario_index]/(elements_per_particle)))
         if(particle_target < number_of_particles):
+            
+            posX = data.iloc[scenario_index, 0 +elements_per_particle*particle_target]
+            posY = data.iloc[scenario_index, 1 +elements_per_particle*particle_target]
+            #posZ = data.iloc[scenario_index, 2 +elements_per_particle*particle_target]
+
+            FX = data.iloc[scenario_index, 3 +elements_per_particle*particle_target]
+            FY = data.iloc[scenario_index, 4 +elements_per_particle*particle_target]
+            #FZ = data.iloc[scenario_index, 5 +elements_per_particle*particle_target]
+
             # Total Force Magnitude
             total_force_mag = np.sqrt(
-                 pow(data.iloc[scenario_index, 3 +6*particle_target], 2) 
-                +pow(data.iloc[scenario_index, 4 +6*particle_target], 2)
+                 pow(FX, 2) 
+                +pow(FY, 2)
             )
 
             # Tangential Force Magnitude
             position_xy_mag = np.sqrt(
-                pow(data.iloc[scenario_index, 0 +6*particle_target],2) +
-                pow(data.iloc[scenario_index, 1 +6*particle_target],2)
+                pow(posX,2) +
+                pow(posY,2)
             )
             position_xy_vector_norm = [
-                data.iloc[scenario_index, 0 +6*particle_target] / position_xy_mag,
-                data.iloc[scenario_index, 1 +6*particle_target] / position_xy_mag
+                posX / position_xy_mag,
+                posY / position_xy_mag
             ]
             tangential_xy_vector = [
                 -position_xy_vector_norm[1],
                  position_xy_vector_norm[0]
             ]
-            tangential_force_mag = tangential_xy_vector[0]*data.iloc[scenario_index, 3 +6*particle_target] + tangential_xy_vector[1]*data.iloc[scenario_index, 4 +6*particle_target]
+            tangential_force_mag = tangential_xy_vector[0]*FX + tangential_xy_vector[1]*FY
         #Add values to plot
         total_force_magnitudes.append(total_force_mag)
         tangential_force_magnitudes.append(tangential_force_mag)
@@ -515,6 +527,9 @@ def plotMulti_tangential_force_against_arbitrary(data_set, data_axes, particle_t
     # data_set  = python list of all data
     # data_axes = axes values tested -> [ [varying parameter], [x_values] ]
     #
+    ##
+    ## DEPRECATED
+    ##
 
     #Plot data
     fig, ax = plt.subplots()
