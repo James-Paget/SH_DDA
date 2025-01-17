@@ -465,42 +465,9 @@ def optical_force_array(array_of_particles, E0, dipole_radius, dipole_primitive)
     #print(final_optical_forces)
     return final_optical_forces,couples
 
-"""
-#
-# LEGACY -> BEFORE SHAPE,ARGS CHANGE
-#
-def buckingham_force_array(array_of_positions, dipole_radius):
-    number_of_dipoles = len(array_of_positions)
-    displacements_matrix = displacement_matrix(array_of_positions)
-    displacements_matrix_T = np.transpose(displacements_matrix)
-    #    Hamaker = (np.sqrt(30e-20) - np.sqrt(4e-20))**2
-    Hamaker = 0
-    ConstantA = 1.0e23
-    ConstantB = 2.0e8  # 4.8e8
-    buckingham_force_matrix = np.zeros(
-        [number_of_dipoles, number_of_dipoles], dtype=object
-    )
-    for i in range(number_of_dipoles):
-        for j in range(number_of_dipoles):
-            if i == j:
-                buckingham_force_matrix[i][j] = [0, 0, 0]
-            else:
-                buckingham_force_matrix[i][j] = buckingham_force(
-                    Hamaker,
-                    ConstantA,
-                    ConstantB,
-                    displacements_matrix_T[i][j],
-                    dipole_radius,
-                )
-    buckingham_force_array = np.zeros((number_of_dipoles,3),dtype=np.float64)
-    temp = np.sum(buckingham_force_matrix, axis=1)
-    for i in range(number_of_dipoles):
-        buckingham_force_array[i] = temp[i]
-    return buckingham_force_array
-"""
 
 
-def buckingham_force_array(array_of_positions, effective_radii, particle_groups):
+def buckingham_force_array(array_of_positions, effective_radii, particle_neighbours):
     number_of_particles = len(array_of_positions)
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
@@ -515,15 +482,9 @@ def buckingham_force_array(array_of_positions, effective_radii, particle_groups)
     )
     
     for i in range(number_of_particles):
-
-        for group_i in range(len(particle_groups)):
-            if i in particle_groups[group_i]:
-                i_group = group_i
-                break
-
         for j in range(number_of_particles):
             # if i == j:
-            if j in particle_groups[i_group]:
+            if j in particle_neighbours[i]: # particle_neighbours includes itself
                 buckingham_force_matrix[i][j] = 0 #[0, 0, 0]
             else:
                 buckingham_force_matrix[i][j] = buckingham_force(
@@ -542,6 +503,8 @@ def buckingham_force_array(array_of_positions, effective_radii, particle_groups)
 
 
 def stop_particles_overlapping(array_of_positions, effective_radii, particle_groups):
+    # DEPRECATED as interobject buckingham forces changed
+
     # for each group of particles, changes array_of_positions until not overlapping
     # no return as changes are made directly to array_of_positions.
 
@@ -706,6 +669,7 @@ def get_equilibrium_angles(initial_positions, connection_indices):
     return ijkangles
 
 def group_particles_into_objects(number_of_particles, connection_indices):
+    # DEPRECATED -> BUCKINGHAM FORCE BETWEEN DISTANT PARTS OF THE SAME OBJECT
     # Returns a list of the particle indices of each object
 
     if len(connection_indices) == 0: # test trivial unconnected case
@@ -754,6 +718,32 @@ def group_particles_into_objects(number_of_particles, connection_indices):
                 object_indices_list.remove(array)
     
     return object_indices_list
+
+def get_nearest_neighbours(number_of_particles, connection_indices, max_connections_dist=2):
+    # Particles that are within "max_connections_dist" connections of each other are considered nearby.
+    # Returns [ [particles nearby to 0th particle], [particles nearby to 1st particle], ... ]
+
+    if len(connection_indices) == 0: # test trivial unconnected case
+        return [ [i] for i in range(number_of_particles)]
+
+    nearby_list = []
+    connection_indices = np.array(connection_indices)
+    # Search for each particle
+    for particle_i in range(number_of_particles):
+        i_list = [particle_i]
+        checked_i = 0 # index to start searching i_list from
+        # Up to max searches, get neighbours of unchecked particles, add them to the list if not already there
+        for _ in range(max_connections_dist):
+            for i_list_idx in range(checked_i, len(i_list)):
+                idx_connections = connection_indices[connection_indices[:,0]==i_list[i_list_idx]][:,1] # get connections starting with idx then pull out what it's connected to with [:,1]
+                for i in idx_connections:
+                    if i not in i_list:
+                        i_list.append(i)
+                checked_i += 1 # start looping through i_list later as more i_list_idx's are checked
+        nearby_list.append(i_list)
+
+    return nearby_list
+
         
 
 """ OLD SPRINGS
@@ -1265,8 +1255,9 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                 effective_radii[p] = (args[p][0] + args[p][1])
 
     # find which particles are connected in objects
-    particle_groups = group_particles_into_objects(number_of_particles, connection_indices)
+    # particle_groups = group_particles_into_objects(number_of_particles, connection_indices)
     # print(f"particle_groups is {particle_groups}")
+    particle_neighbours = get_nearest_neighbours(number_of_particles, connection_indices, max_connections_dist=2)
 
     for i in range(number_of_timesteps):
         #
@@ -1301,7 +1292,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
 
         D = diffusion_matrix(position_vectors, effective_radii)
         # gravity = gravity_force_array(position_vectors, effective_radii[0])
-        buckingham = buckingham_force_array(position_vectors, effective_radii, particle_groups)
+        buckingham = buckingham_force_array(position_vectors, effective_radii, particle_neighbours)
         
         driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
@@ -1335,8 +1326,8 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
             new_positions_array[j] = new_positions_list[j]
         position_vectors = new_positions_array
 
-        # particles in the same object are moved apart if overlapping
-        stop_particles_overlapping(position_vectors, effective_radii, particle_groups)
+        # particles in the same object are moved apart if overlapping DEPRECATED when interobject buckingham forces changed.
+        # stop_particles_overlapping(position_vectors, effective_radii, particle_groups)
 
         vectors_list.append(
             position_vectors
