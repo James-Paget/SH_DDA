@@ -24,6 +24,7 @@ import Output
 import Particles
 import ReadYAML
 import Display
+import Generate_yaml
 import ctypes
 import datetime
 import os.path
@@ -221,16 +222,16 @@ def driving_force(constant1, r):
     return force
 
 def rot_vector_in_plane(r, r_plane, theta):
-        """
-        r = vector to be rotated
-        r_plane = the plane to rotate r within (NOTE must be a unit vector)
-        theta = angle to be rotated by
-        """
-        # Using the Rodrigues' rotation formula
-        comp_a = r*np.cos(theta)
-        comp_b = np.cross(r_plane, r)*np.sin(theta)
-        comp_c = r_plane*np.dot(r_plane, r)*(1-np.cos(theta))
-        return comp_a +comp_b + comp_c
+    """
+    r = vector to be rotated
+    r_plane = the plane to rotate r within (NOTE must be a unit vector)
+    theta = angle to be rotated by
+    """
+    # Using the Rodrigues' rotation formula
+    comp_a = r*np.cos(theta)
+    comp_b = np.cross(r_plane, r)*np.sin(theta)
+    comp_c = r_plane*np.dot(r_plane, r)*(1-np.cos(theta))
+    return comp_a +comp_b + comp_c
 
 def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     # Calculates the bending force on particles j-i-k.
@@ -1291,7 +1292,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                     for k in range(3):
                         optcouple[i,j,k] = couples[j][k] + torques[j][k]
 
-        if i%1 == 0:
+        if i%10 == 0:
             print("Step ",i)
             print(i,optical)
 
@@ -1357,13 +1358,23 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
 if int(len(sys.argv)) != 2:
     sys.exit("Usage: python {} <FILESTEM>".format(sys.argv[0]))
 
-filestem = sys.argv[1]
-filename_vtf = filestem+".vtf"
-filename_xl = filestem+".xlsx"
-filename_yaml = filestem+".yml"
 #===========================================================================
 # Read the yaml file into a system parameter dictionary
 #===========================================================================
+
+# Check if arg is in the generate presets, else it must be a YAML file name
+if sys.argv[1] in Generate_yaml.get_preset_options():
+    # Generate YAML from preset
+    filestem = "Preset"
+    Generate_yaml.generate_yaml(sys.argv[1], filestem)
+    
+else:
+    filestem = sys.argv[1]
+
+filename_vtf = filestem+".vtf"
+filename_xl = filestem+".xlsx"
+filename_yaml = filestem+".yml"
+
 sys_params = ReadYAML.load_yaml(filename_yaml)
 print(sys_params)
 #===========================================================================

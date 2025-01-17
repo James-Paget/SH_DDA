@@ -1125,6 +1125,7 @@ def get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipol
 
 def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None):
     # used to filter the results of "get_sphere_volumes" and "get_torus_volumes"
+    # * This is so that the simulated objects have more similar volumes.
     # Finds the dipole sizes with volumes closest to the target volume (defaults to the average volume).
     # Returns these best sizes, volumes, and the maximum error.
     if target_volume == None:
@@ -1154,19 +1155,6 @@ def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None):
                 final_is.remove(i)
                 print(f"Removed {dipole_sizes[i]}")
 
-    # Attempt at removing close together points - fails due to removing point changing the indices.
-    # for idx in range(1,len(final_is)):
-    #     print(final_is)
-    #     print(idx)
-    #     i = final_is[idx]
-    #     j = final_is[idx-1]
-        
-    #     near_threshold = 1e-10
-    #     if abs(dipole_sizes[i] - dipole_sizes[j]) < abs((dipole_size_range[1] - dipole_size_range[0])/(near_threshold * num)):
-    #         final_is.remove(i)
-    #         final_is.remove(j)
-    #         print(f"Removed {dipole_sizes[j]} and {dipole_sizes[i]}")
-
     return np.array(dipole_sizes)[final_is], np.array(volumes)[final_is], max_error
 
 
@@ -1182,7 +1170,6 @@ match(sys.argv[1]):
         #1,2,3,4,5,6,7,8,9,10,11,12
         particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12]
         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
-        # Display.plot_tangential_force_against_number(filename+"_combined_data", 0, parameter_text)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     case "torusInCircle":
@@ -1208,10 +1195,9 @@ match(sys.argv[1]):
         target_radius = 200e-9
         wave_jump = wavelength/8.0
         wave_start = 4.0*wave_jump
-        x_values = np.arange(wave_start, abs(target_pos[0])+beam_radius, wave_jump) /wavelength # XXX BASED ON: [wave_start, abs(target_pos[0])+beam_radius, wave_jump]
+        x_values = np.arange(wave_start, abs(target_pos[0])+beam_radius, wave_jump) /wavelength 
         #NOTE; Make sure the start is a multiple of jump in order for constructive to be nice
         parameter_text = simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=wavelength, reducedSet=2)
-        # OLD_ARB_CALL: Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, wave_jump/wavelength, "Wave spacing (wavelengths)", parameter_text=parameter_text)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, x_values, "Wave spacing", "(wavelengths)", parameter_text)
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre_SphereVary"
@@ -1223,20 +1209,20 @@ match(sys.argv[1]):
         filename = "SingleLaguerre_TorusVary"
         particle_total = 6
         separation = 0.5e-7
-        dipole_sizes = [35e-9, 1e-7, 20]
-        # parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
-        # Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
+        dipole_sizes = [35e-9, 200e-9, 20]
 
-        # Filter dipole sizes.
-        # particle_total = 6
-        # separation = 1e-7
-        # dipole_sizes = [60e-9, 30e-9, 150]
-        # inner_radii = 1.15e-6
-        # tube_radii = 200e-9
-        # filter_num = 25
-        # old_dipole_sizes = dipole_sizes
-        # volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
-        # dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
+        # Option to filter dipole sizes so that the objects have a similar volume.
+        filter_dipoleSizes_by_volume = False
+        if filter_dipoleSizes_by_volume:
+            particle_total = 6
+            separation = 1e-7
+            dipole_sizes = [60e-9, 30e-9, 150]
+            inner_radii = 1.15e-6
+            tube_radii = 200e-9
+            filter_num = 25
+            old_dipole_sizes = dipole_sizes
+            volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
+            dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
     case "torusInCircleSeparation":

@@ -142,6 +142,7 @@ def min_dists():
 # pp.show()
 
 def get_sunflower_points(N, radius):
+    # https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
     indices = np.arange(0, N, dtype=float) + 0.5
     phi = np.arccos(1 - 2*indices/N)
     theta = np.pi * (1 + 5**0.5) * indices
