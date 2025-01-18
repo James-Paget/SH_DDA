@@ -256,13 +256,12 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
         r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
         theta = np.pi - eqm_angle
         # Rotate rij.
-        # print(theta, r_plane)
         rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
 
     force = np.zeros([3, 3])
 
     if np.isnan(rij).any() or np.isnan(rik).any():
-        print(f"Bending force received NaN,returning 0. rij; rik; r_plance = {rij}; {rik}; {r_plane}")
+        print(f"Bending force received NaN,returning 0. rij; rik; r_plane = {rij}; {rik}; {r_plane}")
         return np.zeros([3, 3])
     
     # Rotate rij so that if it were at eqm_angle, it would be at a stable eqm.
@@ -502,23 +501,23 @@ def buckingham_force_array(array_of_positions, effective_radii, particle_neighbo
     return buckingham_force_array
 
 
-def stop_particles_overlapping(array_of_positions, effective_radii, particle_groups):
-    # DEPRECATED as interobject buckingham forces changed
-
-    # for each group of particles, changes array_of_positions until not overlapping
+def stop_particles_overlapping(array_of_positions, effective_radii, particle_neighbours):
+    # for each particle, stop it overlapping with ones it's within N connections of (based on particle_neighbours).
     # no return as changes are made directly to array_of_positions.
 
     epsilon = 1e-10 # prevent small float errors.
+    done = False
+    count = 0
 
-    for group in particle_groups:
-        done = False
-        count = 0
-        while not done:
-            count +=1
-            done = True # need to go through full pass without changes
+    while not done:
+        count += 1
+        done = True
+        for i in range(len(particle_neighbours)):
+            ri = array_of_positions[i]
+            for j in particle_neighbours[i]:
+                if i == j: # skip itself
+                    continue
 
-            for i,j in it.combinations(group,2):
-                ri = array_of_positions[i]
                 rj = array_of_positions[j]
                 rij = rj - ri
                 abs_rij = np.linalg.norm(rij)
@@ -528,9 +527,11 @@ def stop_particles_overlapping(array_of_positions, effective_radii, particle_gro
                     array_of_positions[i] -= (difference + epsilon)/2 *rij/abs_rij
                     array_of_positions[j] += (difference + epsilon)/2 *rij/abs_rij
                     # print(f"Now {array_of_positions[i]} and {array_of_positions[j]}")
-            
-            if count > 10:
-                sys.exit("Ending infinite loop")
+
+        if count > 10:
+            print("stop_particles_overlapping: could not resolve overlaps, continuing.")
+            break
+
             
 
 def generate_connection_indices(array_of_positions, mode="manual", args=[]):
@@ -663,14 +664,14 @@ def get_equilibrium_angles(initial_positions, connection_indices):
         for j,k in it.combinations(connections, 2):
             u = initial_positions[j] - initial_positions[i]
             v = initial_positions[k] - initial_positions[i]
-            angle = np.arccos(np.dot(u,v) / (np.linalg.norm(u) * np.linalg.norm(v)))
+            angle = np.arccos(np.clip(np.dot(u,v) / (np.linalg.norm(u) * np.linalg.norm(v)), -1.0,1.0))
             ijkangles.append([i,j,k,angle])
 
     return ijkangles
 
 def group_particles_into_objects(number_of_particles, connection_indices):
-    # DEPRECATED -> BUCKINGHAM FORCE BETWEEN DISTANT PARTS OF THE SAME OBJECT
     # Returns a list of the particle indices of each object
+    # CURRENTLY UNUSED.
 
     if len(connection_indices) == 0: # test trivial unconnected case
         return [ [i] for i in range(number_of_particles)]
@@ -1326,8 +1327,8 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
             new_positions_array[j] = new_positions_list[j]
         position_vectors = new_positions_array
 
-        # particles in the same object are moved apart if overlapping DEPRECATED when interobject buckingham forces changed.
-        # stop_particles_overlapping(position_vectors, effective_radii, particle_groups)
+        # particles not experiencing mutual Buckingham force are moved apart if overlapping
+        stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
 
         vectors_list.append(
             position_vectors

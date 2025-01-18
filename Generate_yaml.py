@@ -17,11 +17,15 @@ def get_preset_options():
         "TETRAHEDRON_BESSEL",
         "TETRAHEDRON_ROTATED",
         "1", "ICOSAHEDRON",
-        "2" , "LINE",
+        "2", "LINE",
         "3", "NSPHERE",
         "4", "TORUS",
         "5", "CONNECTED_RING",
         "6", "UNCONNECTED_RING",
+        "7", "SHEET_TRIANGLE",
+        "8", "SHEET_SQUARE",
+        "9", "SHEET_HEXAGON",
+        "10", "FILAMENT",
     ]
 
 def generate_yaml(preset, filename="Preset"):
@@ -78,6 +82,26 @@ def generate_yaml(preset, filename="Preset"):
             use_laguerre3_beam(filename)
             use_unconnected_ring(filename, num_particles=6, ring_radius=1e-6, particle_radius=0.2e-6, rotation_axis=[0,0,1], rotation_theta=0)
 
+        case "7" | "SHEET_TRIANGLE":
+            use_default_options(filename, frames=50, show_output=True)
+            use_laguerre3_beam(filename)
+            use_sheet_triangle(filename, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, rotation_axis=[0,0,1], rotation_theta=0)
+        
+        case "8" | "SHEET_SQUARE":
+            use_default_options(filename, frames=50, show_output=True)
+            use_laguerre3_beam(filename)
+            use_sheet_square(filename, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, rotation_axis=[0,0,1], rotation_theta=0)
+
+        case "9" | "SHEET_HEXAGON":
+            use_default_options(filename, frames=50, show_output=True)
+            use_laguerre3_beam(filename)
+            use_sheet_hexagon(filename, num_length=3, num_width=3, separation=0.7e-6, particle_radius=0.12e-6, rotation_axis=[0,0,1], rotation_theta=0)
+
+        case "10" | "FILAMENT":
+            use_default_options(filename, frames=50, show_output=True)
+            use_laguerre3_beam(filename)
+            use_filament(filename, length=4e-6, radius=0.8e-6, separation=0.5e-6, particle_radius=0.1e-6, rotation_axis=[0,0,1], rotation_theta=0)
+
 
         case _:
             sys.exit(f"Generate_yaml error: preset '{preset}' not found")
@@ -116,23 +140,7 @@ def use_NSphere(filename, num_particles, sphere_radius, particle_radius, connect
     use_default_particles(filename, "sphere", args_list, coords_list, connection_mode, connection_args)
 
 def use_torus(filename, num_particles, inner_radius, tube_radius, separation):
-    coords_list = []
-    args_list = []
-
-    # Writing specific parameters for particle formation
-    torus_gap_theta    = separation/inner_radius    # Full angle occupied by gap between torus sectors
-    torus_sector_theta = (2.0*np.pi -num_particles*torus_gap_theta) / (num_particles) #Full angle occupied by torus sector
-    for particle_index in range(num_particles):
-        lower_phi = ( particle_index*(torus_sector_theta +torus_gap_theta) -torus_sector_theta/2.0 )
-        upper_phi = ( particle_index*(torus_sector_theta +torus_gap_theta) +torus_sector_theta/2.0 )
-        particle_position = [
-            inner_radius*np.cos( particle_index*(torus_sector_theta +torus_gap_theta) ), 
-            inner_radius*np.sin( particle_index*(torus_sector_theta +torus_gap_theta) ), 
-            1.0e-6
-        ]
-        coords_list.append(particle_position)
-        args_list.append([inner_radius, tube_radius, lower_phi, upper_phi])
-
+    coords_list, args_list = get_torus_points_args(num_particles, separation, inner_radius, tube_radius)
     use_default_particles(filename, "torus", args_list, coords_list, connection_mode="num", connection_args=0)
 
 def use_connected_ring(filename, num_particles, ring_radius, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
@@ -148,6 +156,34 @@ def use_unconnected_ring(filename, num_particles, ring_radius, particle_radius, 
     if rotation_theta != 0:
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
     use_default_particles(filename, "sphere", args_list, coords_list, "num", 0)
+
+def use_sheet_triangle(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
+    args_list = [[particle_radius]] * num_length * num_width
+    coords_list = get_sheet_points(num_length, num_width, separation, mode="triangle")
+    if rotation_theta != 0:
+        coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
+
+def use_sheet_square(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
+    args_list = [[particle_radius]] * num_length * num_width
+    coords_list = get_sheet_points(num_length, num_width, separation, mode="square")
+    if rotation_theta != 0:
+        coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
+
+def use_sheet_hexagon(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
+    coords_list = get_sheet_points(num_length, num_width, separation, mode="hexagon")
+    args_list = [[particle_radius]] * len(coords_list)
+    if rotation_theta != 0:
+        coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
+
+def use_filament(filename, length, radius, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
+    coords_list = get_filament_points(length, radius, separation)
+    args_list = [[particle_radius]] * len(coords_list)
+    if rotation_theta != 0:
+        coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
 
 
 def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args):
@@ -319,3 +355,117 @@ def get_sunflower_points(N, radius):
     theta = np.pi * (1 + 5**0.5) * indices
     x, y, z = np.cos(theta) * np.sin(phi), np.sin(theta) * np.sin(phi), np.cos(phi)
     return radius * np.array([(x[i], y[i], z[i]) for i in range(N)])
+
+def get_torus_points_args(num_particles, separation, inner_radius, tube_radius):
+    coords_list = []
+    args_list = []
+    # Writing specific parameters for particle formation
+    torus_gap_theta    = separation/inner_radius    # Full angle occupied by gap between torus sectors
+    torus_sector_theta = (2.0*np.pi -num_particles*torus_gap_theta) / (num_particles) #Full angle occupied by torus sector
+    for particle_index in range(num_particles):
+        lower_phi = ( particle_index*(torus_sector_theta +torus_gap_theta) -torus_sector_theta/2.0 )
+        upper_phi = ( particle_index*(torus_sector_theta +torus_gap_theta) +torus_sector_theta/2.0 )
+        particle_position = [
+            inner_radius*np.cos( particle_index*(torus_sector_theta +torus_gap_theta) ), 
+            inner_radius*np.sin( particle_index*(torus_sector_theta +torus_gap_theta) ), 
+            1.0e-6
+        ]
+        coords_list.append(particle_position)
+        args_list.append([inner_radius, tube_radius, lower_phi, upper_phi])
+
+    return coords_list, args_list
+
+def get_sheet_points(num_length, num_width, separation, mode="triangle"):
+    # Makes a sheet in the z=0 plane. width in x-axis, length in y-axis.
+    # modes are "triangle", "square", "hexagon"
+
+    # For triangle and square, each point gives a shape so the nums are numbers of points.
+    # For hexagon, the nums are number of hexagons to prevent unformed hexagons.
+
+    coords_list = []
+    match mode:
+        case "triangle" | "square":
+            # use the same method for all sheets of this type, where each row is offset. So shape_angle is the angle between lattice vectors.
+            # shape_angle can be set to anything else as well, although may not produce good connections.
+            if mode == "triangle":
+                shape_angle = np.pi/3
+            elif mode == "square":
+                shape_angle = np.pi/2
+            
+            centralise_shift = separation * np.array([(num_width-1)/2, (num_length-1)/2, 0]) # centre the sheet at the origin.
+            row = np.zeros((num_width,3)) - centralise_shift
+            row[:,0] += np.arange(0.0, separation*num_width, separation) # += so centralise_shift stays.
+            offset = np.zeros(3)
+
+            for i in range(num_length):
+                coords_list.extend(row + offset)
+
+                # offset each row by a cumulative offset
+                if i%2:
+                    angle = np.pi - shape_angle
+                else:
+                    angle = shape_angle
+                offset += separation * np.array([np.cos(angle), np.sin(angle), 0])
+
+        case "hexagon":
+            # make a grid of triangles then place hexagons around that. These triangles are separated by an extra factor of sqrt3 compared to the hexagon sides.
+            tri_grid = []     
+            sqrt3 = np.sqrt(3)       
+            
+            # start with unit distances, then multiply by separation later.
+            row = np.zeros((num_width,3))
+            row[:,0] += np.arange(0.0, num_width, 1)*sqrt3
+            offset = np.zeros(3)
+
+            for i in range(num_length):
+                tri_grid.append(row + offset) # tri_grid is not as flat as in the triangle mode.
+
+                # offset each row by a cumulative offset
+                if i%2:
+                    angle = 2*np.pi/3
+                else:
+                    angle = np.pi/3
+                offset += np.array([np.cos(angle), np.sin(angle), 0])*sqrt3
+
+            # Make points around a hexagon, then add a subset of them to each tri_grid point depending on its placement.
+            hex_points = np.array([(np.cos(i/6*2*np.pi - np.pi/6), np.sin(i/6*2*np.pi - np.pi/6), 0) for i in range(6)])
+            for row_i in range(num_length):
+                for j in range(num_width):
+                    tri_coord = tri_grid[row_i][j]
+                    # Right vertices
+                    coords_list.append(tri_coord + hex_points[0]) 
+                    coords_list.append(tri_coord + hex_points[1])
+                    if row_i == num_length-1: # Top vertex
+                        coords_list.append(tri_coord + hex_points[2])
+                    if j == 0: # Left vertices
+                        coords_list.append(tri_coord + hex_points[3])
+                        coords_list.append(tri_coord + hex_points[4])
+                    if row_i == 0: # Bottom vertex
+                        coords_list.append(tri_coord + hex_points[5])
+
+            coords_list = np.array(coords_list)
+            centralise_shift = separation * np.array([(np.max(coords_list[:,0]) + np.min(coords_list[:,0]))/2, (np.max(coords_list[:,1]) + np.min(coords_list[:,1]))/2, 0]) # centre the sheet at the origin.
+            coords_list = coords_list * separation - centralise_shift
+
+        case _:
+            sys.exit(f"Generate_yaml: get_sheet_points: unknown mode, {mode}")
+
+    return coords_list
+
+def get_filament_points(length, radius, separation):
+    # Filment running along the y-axis.
+    # Separation is the particle separation.
+    coords_list = []
+    circle_list = []
+    ros2 = (radius/separation)**2
+    num_rad = int(radius//separation)
+    num_len = int(length//separation)
+    for x in range(-num_rad, num_rad+1):
+        for z in range(-num_rad, num_rad+1):
+            if x**2 + z**2 <= ros2:
+                circle_list.append([x*separation,-length/2,z*separation])
+
+    circle_list = np.array(circle_list)
+    for l in range(num_len):
+        coords_list.extend(circle_list + [0,l*separation,0])
+    return coords_list
