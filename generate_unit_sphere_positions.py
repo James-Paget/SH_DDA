@@ -182,9 +182,9 @@ def object_formation(objects, args, formation="circle"):
 
 # print_particles(get_sunflower_points(40, 2e-6), 140e-9)
 
-icosah = get_icosahedron_points(0.3e-6)
+# icosah = get_icosahedron_points(0.3e-6)
 # print_particles(object_formation([icosah, icosah], [2e-6]), 1.3e-7)
-print_particles(object_formation([[], icosah], [1e-6]), particle_radius=1.0e-7)
+# print_particles(object_formation([[], icosah], [1e-6]), particle_radius=1.0e-7)
 
 
 def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
@@ -250,3 +250,88 @@ def test_buckingham():
     plt.show()
 
 # test_buckingham()
+
+
+
+def get_NEWsheet_points(num_length, num_width, separation, mode="triangle"):
+    # Makes a sheet in the z=0 plane. width in x-axis, length in y-axis.
+    # modes are "triangle", "square", TODO "hexagon"
+
+    # For triangle and square, each point gives a shape so the nums are numbers of points.
+    # For hexagon, the nums are number of hexagons to prevent unformed hexagons.
+
+    coords_list = []
+    match mode:
+        case "triangle" | "square":
+            # use the same method for all sheets of this type, where each row is offset. So shape_angle is the angle between lattice vectors.
+            # shape_angle can be set to anything else as well, although may not produce good connections.
+            if mode == "triangle":
+                shape_angle = np.pi/3
+            elif mode == "square":
+                shape_angle = np.pi/2
+            
+            centralise_shift = separation * np.array([(num_width-1)/2, (num_length-1)/2, 0]) # centre the sheet at the origin.
+            row = np.zeros((num_width,3)) - centralise_shift
+            row[:,0] += np.arange(0.0, separation*num_width, separation) # += so centralise_shift stays.
+            offset = np.zeros(3)
+
+            for i in range(num_length):
+                coords_list.extend(row + offset)
+
+                # offset each row by a cumulative offset
+                if i%2:
+                    angle = np.pi - shape_angle
+                else:
+                    angle = shape_angle
+                offset += separation * np.array([np.cos(angle), np.sin(angle), 0])
+
+        case "hexagon":
+            # make a grid of triangles then place hexagons around that. These triangles are separated by an extra factor of sqrt3 compared to the hexagon sides.
+            tri_grid = []     
+            sqrt3 = np.sqrt(3)       
+            
+            # start with unit distances, then multiply by separation later.
+            row = np.zeros((num_width,3))
+            row[:,0] += np.arange(0.0, num_width, 1)*sqrt3
+            offset = np.zeros(3)
+
+            for i in range(num_length):
+                tri_grid.append(row + offset) # tri_grid is not as flat as in the triangle mode.
+
+                # offset each row by a cumulative offset
+                if i%2:
+                    angle = 2*np.pi/3
+                else:
+                    angle = np.pi/3
+                print(angle)
+                offset += np.array([np.cos(angle), np.sin(angle), 0])*sqrt3
+
+            hex_points = np.array([(np.cos(i/6*2*np.pi - np.pi/6), np.sin(i/6*2*np.pi - np.pi/6), 0) for i in range(6)])
+            for row_i in range(num_length):
+                for j in range(num_width):
+                    tri_coord = tri_grid[row_i][j]
+                    # Right vertices
+                    coords_list.append(tri_coord + hex_points[0]) 
+                    coords_list.append(tri_coord + hex_points[1])
+                    if row_i == num_length-1: # Top vertex
+                        coords_list.append(tri_coord + hex_points[2])
+                    if j == 0: # Left vertices
+                        coords_list.append(tri_coord + hex_points[3])
+                        coords_list.append(tri_coord + hex_points[4])
+                    if row_i == 0: # Bottom vertex
+                        coords_list.append(tri_coord + hex_points[5])
+
+            coords_list = np.array(coords_list)
+            centralise_shift = separation * np.array([(np.max(coords_list[:,0]) + np.min(coords_list[:,0]))/2, (np.max(coords_list[:,1]) + np.min(coords_list[:,1]))/2, 0]) # centre the sheet at the origin.
+
+            print(centralise_shift)
+            coords_list = coords_list * separation - centralise_shift
+        case _:
+            # sys.exit(f"Generate_yaml: get_sheet_points: unknown mode, {mode}")
+            pass
+    return coords_list
+
+coords= np.array(get_NEWsheet_points(4,4,1e-6, "hexagon"))
+plt.scatter(coords[:,0], coords[:,1]+ np.random.rand(len(coords[:,1]))*0)
+# plt.scatter(tri_grid[:,0], tri_grid[:,1])
+plt.show()
