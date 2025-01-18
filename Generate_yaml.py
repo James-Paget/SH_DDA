@@ -83,7 +83,7 @@ def generate_yaml(preset, filename="Preset"):
             use_unconnected_ring(filename, num_particles=6, ring_radius=1e-6, particle_radius=0.2e-6, rotation_axis=[0,0,1], rotation_theta=0)
 
         case "7" | "SHEET_TRIANGLE":
-            use_default_options(filename, frames=50, show_output=True)
+            use_default_options(filename, frames=25, show_output=True)
             use_laguerre3_beam(filename)
             use_sheet_triangle(filename, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, rotation_axis=[0,0,1], rotation_theta=0)
         

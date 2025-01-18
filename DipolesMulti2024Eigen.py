@@ -910,6 +910,37 @@ def driving_force_array(array_of_positions, driving_type, args={}):
                 drive_condition = np.sqrt( pow(array_of_positions[p,0],2) + pow(array_of_positions[p,1],2) ) < influence_radius
                 if(drive_condition):
                     driving_force_array[p] = np.array([0.0, 0.0, driver_magnitude*np.sin(current_frame/frame_period * 2*np.pi)])
+
+        case "stretch":
+            #
+            # Applies a force to particles with the highest/lowest values on the specified axis.
+            #
+            # args = {
+            #       driver_magnitude,
+            #       axes,
+            #       influence_distance
+            #       initial_positions,
+            #   }
+            # e.g.{5.0e-12, "x", 0.5e-7, [[0,0,0],..]}
+            #
+            driver_magnitude = args["driver_magnitude"]
+            axes = args["axes"]
+            influence_distance = args["influence_distance"] # distance into the object after the min/max is found that is influenced.
+            initial_positions = args["initial_positions"]
+
+            axis_description = {"x":[0,np.array([1,0,0])], "y":[1,np.array([0,1,0])], "z":[2,np.array([0,0,1])]} # holds index and normal for each axis
+            for axis in axes:
+                ax_index, ax_normal = axis_description[axis]
+                min_threshold = np.min(initial_positions[:,ax_index]) + influence_distance
+                max_threshold = np.max(initial_positions[:,ax_index]) - influence_distance
+
+                for p in range(len(array_of_positions)):
+                    if initial_positions[p,ax_index] < min_threshold:
+                        driving_force_array[p] += -ax_normal * driver_magnitude 
+                    
+                    if initial_positions[p,ax_index] > max_threshold:
+                        driving_force_array[p] += ax_normal * driver_magnitude 
+            
         
         case _:
             print("Driving force type not recognised, (0,0,0) force returned; ",driving_type)
@@ -1288,21 +1319,22 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
             print("Step ",i)
             print(i,optical)
 
-        stiffness = 5e-7
-        BENDING = 1e-18
+        stiffness = 1e-7 # 5e-7
+        BENDING = 0.5e-18
 
         D = diffusion_matrix(position_vectors, effective_radii)
         # gravity = gravity_force_array(position_vectors, effective_radii[0])
         buckingham = buckingham_force_array(position_vectors, effective_radii, particle_neighbours)
-        
-        driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
+
+        driver = driving_force_array(position_vectors, "stretch", args={"driver_magnitude":3.0e-12, "axes":["y"], "influence_distance":1e-10, "initial_positions":initial_shape})      # USED with python DipolesMulti2024Eigen.py 7  
+        # driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
         bending = bending_force_array(position_vectors, ijkangles, BENDING)
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical #+ spring + bending + buckingham #+ driver#+ gravity #
+        total_force_array = optical + spring + bending + buckingham + driver#+ gravity #
 
         # Record total forces too if required
         if include_force==True:
