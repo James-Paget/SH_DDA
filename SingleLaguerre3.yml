@@ -11,7 +11,7 @@
 # System options
 #============================================================================================
 options:
-  frames: 10
+  frames: 1
 #============================================================================================
 # System parameters
 #============================================================================================
@@ -36,7 +36,7 @@ display:
   max_size: 2e-6 # range will be 2 times this
   resolution: 201 # number of points in each direction of plot
   frame_min: 0 # starting frame for animation
-  frame_max: 10 # will default to number of frames
+  frame_max: 1 # will default to number of frames
   z_offset: 0.0e-6
 #============================================================================================
 # Beam descriptions
@@ -60,6 +60,12 @@ particles:
     part_0:
       material: FusedSilica
       shape: cylinder
-      args: 0.25e-06 2.0e-06 0.75 0.75
+      args: 300e-9 1500e-9 0.75 0.75
       coords: 0.0 0.0 1e-06
       altcolour: True
+    # part_1:
+    #   material: FusedSilica
+    #   shape: sphere
+    #   args: 200e-9
+    #   coords: -0.5e-6 -0.5e-6 1e-06
+    #   altcolour: True
