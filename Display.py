@@ -160,7 +160,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, center):
         radius = args[0]
-        samples = 4#20
+        samples = 20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + center[0]
@@ -238,7 +238,7 @@ class DisplayObject (object):
 
         x_rotated = xyz_rotated[0].reshape(x.shape) + center[0]
         y_rotated = xyz_rotated[1].reshape(y.shape) + center[1]
-        z_rotated = xyz_rotated[2].reshape(y.shape) + center[2]
+        z_rotated = xyz_rotated[2].reshape(z.shape) + center[2]
 
         return x_rotated, y_rotated, z_rotated
     

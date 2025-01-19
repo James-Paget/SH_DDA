@@ -1227,30 +1227,60 @@ def cylinder_size(args, dipole_radius):
 
     for i in range(-num,num+1):
         #i2 = i*i
+        x = i*dipole_diameter
         for j in range(-num,num+1):
-            j2 = j*j            
+            j2 = j*j
+            y = j*dipole_diameter        
             for k in range(-num,num+1):
                 k2 = k*k
+                z = k*dipole_diameter
 
-                # Rotate point to an unrotated frame
-                unrot_frame_pos = [i*dipole_diameter, j*dipole_diameter, k*dipole_diameter] # Original point
-                unrot_frame_pos = [
-                    cos(-theta_Z)*unrot_frame_pos[0] -sin(-theta_Z)*unrot_frame_pos[1],
-                    sin(-theta_Z)*unrot_frame_pos[0] -cos(-theta_Z)*unrot_frame_pos[1],
-                    unrot_frame_pos[2]
-                ]   # Rotation in the Z axis
-                pitch_vec = [-sin(-theta_Z), cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
-                unrot_frame_pos = [
-                    ( (pitch_vec[0]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch))              )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[0])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[2]),
-                    ( (pitch_vec[0]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[1])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[2]),
-                    ( (pitch_vec[0]*pitch_vec[2])*(1.0-cos(-theta_pitch)) -(cos(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[2])
-                ]   # Rotation in the perpendicular to the front facing vector (pitching up/down)
-                # Check unrotated frame point is within cylinder
-                within_radial = (j2 + k2) <= r2
-                within_width  = abs(unrot_frame_pos[0]) <= width/2.0
+                # Apply rotations backwards to an unrotated frame
+                Z_rotation_matrix = np.array(
+                    [
+                        [np.cos(-theta_Z), -np.sin(-theta_Z), 0.0],
+                        [np.sin(-theta_Z),  np.cos(-theta_Z), 0.0],
+                        [0.0, 0.0, 1.0]
+                    ]
+                )
+                pitch_vec = [-np.sin(-theta_Z), np.cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
+                pitch_rotation_matrix = np.array(
+                    [
+                        [( (pitch_vec[0]*pitch_vec[0])*(1.0-np.cos(-theta_pitch)) +(np.cos(-theta_pitch))              ), ( (pitch_vec[1]*pitch_vec[0])*(1.0-np.cos(-theta_pitch)) -(np.sin(-theta_pitch)*pitch_vec[2]) ), ( (pitch_vec[2]*pitch_vec[0])*(1.0-np.cos(-theta_pitch)) +(np.sin(-theta_pitch)*pitch_vec[1]) )],
+                        [( (pitch_vec[0]*pitch_vec[1])*(1.0-np.cos(-theta_pitch)) +(np.sin(-theta_pitch)*pitch_vec[2]) ), ( (pitch_vec[1]*pitch_vec[1])*(1.0-np.cos(-theta_pitch)) +(np.cos(-theta_pitch)             ) ), ( (pitch_vec[2]*pitch_vec[1])*(1.0-np.cos(-theta_pitch)) -(np.sin(-theta_pitch)*pitch_vec[0]) )],
+                        [( (pitch_vec[0]*pitch_vec[2])*(1.0-np.cos(-theta_pitch)) -(np.sin(-theta_pitch)*pitch_vec[1]) ), ( (pitch_vec[1]*pitch_vec[2])*(1.0-np.cos(-theta_pitch)) +(np.sin(-theta_pitch)*pitch_vec[0]) ), ( (pitch_vec[2]*pitch_vec[2])*(1.0-np.cos(-theta_pitch)) +(np.cos(-theta_pitch)             ) )]
+                    ]
+                )
+                xyz_rotated = np.dot( Z_rotation_matrix, np.array([x,y,z]) )    # Apply Z rotation
+                xyz_rotated = np.dot( pitch_rotation_matrix, xyz_rotated )      # Apply pitch rotation
 
+                within_radial = (xyz_rotated[1]**2 + xyz_rotated[2]**2) <= r2
+                within_width  = abs(xyz_rotated[0]) <= width/2.0
                 if(within_radial and within_width):
                     number_of_dipoles += 1
+
+
+
+
+                # Rotate point to an unrotated frame
+                # unrot_frame_pos = [i*dipole_diameter, j*dipole_diameter, k*dipole_diameter] # Original point
+                # unrot_frame_pos = [
+                #     cos(-theta_Z)*unrot_frame_pos[0] -sin(-theta_Z)*unrot_frame_pos[1],
+                #     sin(-theta_Z)*unrot_frame_pos[0] -cos(-theta_Z)*unrot_frame_pos[1],
+                #     unrot_frame_pos[2]
+                # ]   # Rotation in the Z axis
+                # pitch_vec = [-sin(-theta_Z), cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
+                # unrot_frame_pos = [
+                #     ( (pitch_vec[0]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch))              )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[0])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[2]),
+                #     ( (pitch_vec[0]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[1])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[2]),
+                #     ( (pitch_vec[0]*pitch_vec[2])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[2])
+                # ]   # Rotation in the perpendicular to the front facing vector (pitching up/down)
+                # Check unrotated frame point is within cylinder
+                # within_radial = (y**2 + z**2) <= r2
+                # within_width  = abs(unrot_frame_pos[0]) <= width/2.0
+
+                # if(within_radial and within_width):
+                #     number_of_dipoles += 1
 
     return number_of_dipoles
 
@@ -1292,23 +1322,27 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
                 k2 = k*k
                 z = k*dipole_diameter
 
-                # Rotate point to an unrotated frame
-                unrot_frame_pos = [i*dipole_diameter, j*dipole_diameter, k*dipole_diameter] # Original point
-                unrot_frame_pos = [
-                    cos(-theta_Z)*unrot_frame_pos[0] -sin(-theta_Z)*unrot_frame_pos[1],
-                    sin(-theta_Z)*unrot_frame_pos[0] -cos(-theta_Z)*unrot_frame_pos[1],
-                    unrot_frame_pos[2]
-                ]   # Rotation in the Z axis
-                pitch_vec = [-sin(-theta_Z), cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
-                unrot_frame_pos = [
-                    ( (pitch_vec[0]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch))              )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[0])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[2]),
-                    ( (pitch_vec[0]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[1])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[2]),
-                    ( (pitch_vec[0]*pitch_vec[2])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[2])
-                ]   # Rotation in the perpendicular to the front facing vector (pitching up/down)
-                # Check unrotated frame point is within cylinder
-                within_radial = (j2 + k2) <= r2
-                within_width  = abs(unrot_frame_pos[0]) <= width/2.0
+                # Apply rotations backwards to an unrotated frame
+                Z_rotation_matrix = np.array(
+                    [
+                        [np.cos(-theta_Z), -np.sin(-theta_Z), 0.0],
+                        [np.sin(-theta_Z),  np.cos(-theta_Z), 0.0],
+                        [0.0, 0.0, 1.0]
+                    ]
+                )
+                pitch_vec = [-np.sin(-theta_Z), np.cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
+                pitch_rotation_matrix = np.array(
+                    [
+                        [( (pitch_vec[0]*pitch_vec[0])*(1.0-np.cos(-theta_pitch)) +(np.cos(-theta_pitch))              ), ( (pitch_vec[1]*pitch_vec[0])*(1.0-np.cos(-theta_pitch)) -(np.sin(-theta_pitch)*pitch_vec[2]) ), ( (pitch_vec[2]*pitch_vec[0])*(1.0-np.cos(-theta_pitch)) +(np.sin(-theta_pitch)*pitch_vec[1]) )],
+                        [( (pitch_vec[0]*pitch_vec[1])*(1.0-np.cos(-theta_pitch)) +(np.sin(-theta_pitch)*pitch_vec[2]) ), ( (pitch_vec[1]*pitch_vec[1])*(1.0-np.cos(-theta_pitch)) +(np.cos(-theta_pitch)             ) ), ( (pitch_vec[2]*pitch_vec[1])*(1.0-np.cos(-theta_pitch)) -(np.sin(-theta_pitch)*pitch_vec[0]) )],
+                        [( (pitch_vec[0]*pitch_vec[2])*(1.0-np.cos(-theta_pitch)) -(np.sin(-theta_pitch)*pitch_vec[1]) ), ( (pitch_vec[1]*pitch_vec[2])*(1.0-np.cos(-theta_pitch)) +(np.sin(-theta_pitch)*pitch_vec[0]) ), ( (pitch_vec[2]*pitch_vec[2])*(1.0-np.cos(-theta_pitch)) +(np.cos(-theta_pitch)             ) )]
+                    ]
+                )
+                xyz_rotated = np.dot( Z_rotation_matrix, np.array([x,y,z]) )    # Apply Z rotation
+                xyz_rotated = np.dot( pitch_rotation_matrix, xyz_rotated )      # Apply pitch rotation
 
+                within_radial = (xyz_rotated[1]**2 + xyz_rotated[2]**2) <= r2
+                within_width  = abs(xyz_rotated[0]) <= width/2.0
                 if(within_radial and within_width):
                     pts[number_of_dipoles][0] = x+1e-20     # Softening factor
                     pts[number_of_dipoles][1] = y+1e-20     #
@@ -1352,8 +1386,6 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
     # Get total number of particles involved over all particles
     dipole_primitive_num = np.zeros(number_of_particles, dtype=int)
     for particle_i in range(number_of_particles):
-        print("========>>>>>")
-        print("     shapes[particle_i] = ",shapes[particle_i])
         match shapes[particle_i]:
             case "sphere":
                 dipole_primitive_num[particle_i] = sphere_size(args[particle_i], dipole_radius)
