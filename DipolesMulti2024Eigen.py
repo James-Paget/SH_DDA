@@ -1479,8 +1479,8 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
             print("Step ",i)
             print(i,optical)
 
-        stiffness = 1e-7 # 5e-7
-        BENDING = 0.5e-18
+        stiffness = 4e-6 # 5e-7
+        BENDING = 0.25e-18 # 0.5e-18
 
         D = diffusion_matrix(position_vectors, effective_radii)
         # gravity = gravity_force_array(position_vectors, effective_radii[0])
@@ -1494,7 +1494,7 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         # NOTE; Initial shape stored earlier before any timesteps are taken
         spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
 
-        total_force_array = optical + spring + bending + buckingham + driver#+ gravity #
+        total_force_array = bending + spring + optical #+ buckingham# + driver#+ gravity #
 
         # Record total forces too if required
         if include_force==True:

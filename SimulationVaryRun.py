@@ -1530,10 +1530,6 @@ match(sys.argv[1]):
         connection_args = [1.1*particle_separation]
         # Run
         parameter_text = simulations_fibre_2D_cylinder_thick_connectUniform(filename)
-    case "fibre_2D_sphere_thick_connectRandom":
-        pass
-    case "fibre_2D_cylinder_thick_connectRandom":
-        pass
     case "fibre_2D_sphere_waterShell":
         pass
     case "fibre_2D_cylinder_waterShell":

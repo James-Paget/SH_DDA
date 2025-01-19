@@ -102,6 +102,9 @@ def generate_yaml(preset, filename="Preset"):
             use_filament(filename, length=4e-6, radius=0.8e-6, separation=0.5e-6, particle_radius=0.1e-6, rotation_axis=[0,0,1], rotation_theta=0)
 
         case "11" | "FIBRE_1D_SPHERE":
+            ## **
+            ## MAKE THESE ADJUSTABLE FROM FUNCTION CALL, INCONVIENTIENT TO HAVE TO CHANEG ALL DETAILS INSIDE HERE
+            ## **
             use_default_options(filename, frames=20, show_output=True)
             use_laguerre3_beam(filename)
             use_fibre_1d_sphere(filename, length=2e-6, particle_radius=0.2e-6, particle_number=10)
@@ -115,9 +118,9 @@ def generate_yaml(preset, filename="Preset"):
             use_fibre_1d_cylinder(filename, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5)
 
         case "13" | "FIBRE_2D_SPHERE_HOLLOWSHELL":
-            use_default_options(filename, frames=1, show_output=True)
+            use_default_options(filename, frames=40, time_step=0.00005, show_output=True)
             use_laguerre3_beam(filename)
-            use_fibre_2d_sphere_hollowshell(filename, length=3e-6, shell_radius=1e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8)
+            use_fibre_2d_sphere_hollowshell(filename, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4)
 
         case "14" | "FIBRE_2D_CYLINDER_HOLLOWSHELL":
             use_default_options(filename, frames=1, show_output=True)
@@ -252,7 +255,7 @@ def use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, 
 def use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular):
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * (particle_number_radial*particle_number_angular*(shell_number) +particle_number_radial)   # N shells + 1 line
     coords_list = coords_list = get_fibre_2d_thick_points(length, shell_radius, shell_number, particle_number_radial, particle_number_angular)
-    
+
     separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
     separation = max( separation, shell_radius/shell_number )
     
