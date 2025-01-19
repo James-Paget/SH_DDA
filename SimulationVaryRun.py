@@ -137,7 +137,8 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
         # Test correct number of args
         if not (
             (particle["shape"] == "sphere" and len(particle["args"]) == 1) or
-            (particle["shape"] == "torus" and len(particle["args"]) == 4)
+            (particle["shape"] == "torus" and len(particle["args"]) == 4) or 
+            (particle["shape"] == "cylinder" and len(particle["args"]) == 4)
         ):
             print(f"Particle {i} has invalid args: {particle}")
             break

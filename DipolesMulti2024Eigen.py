@@ -1198,6 +1198,126 @@ def torus_sector_positions(args, dipole_radius, number_of_dipoles_total):
     return pts
 
 
+def cylinder_size(args, dipole_radius):
+    #
+    # Only supports torus flat in XY plane
+    # args = [radius, width, theta_azimuthal, theta_zenith]
+    #   radius = radius of the circular cylinder face
+    #   width  = distance between 2 circular faces, witht the origin located half way between them (COM of cylinder)
+    #   theta_Z = rotation of centre of cylinder about Z axis, in radians
+    #   theta_pitch = rotation of the Z-rotated-cylinder about its perpendicular axis (pitch up / down)
+    #
+    # e.g. Unrotated cylinder lies in the X axis
+    #
+    radius, width, theta_Z, theta_pitch = args
+    dipole_diameter = 2*dipole_radius
+    #dd2 = dipole_diameter**2
+    r2 = radius**2
+    limiting_radius = np.sqrt( pow(width/2.0,2) + pow(radius,2) )   # Radius of the sphere covering the entire cylinder (slightly more than width/2.0)
+    num = int( (limiting_radius)//dipole_diameter )                 # Check cubic area of this limiting space
+    ##
+    ## NOTE; approach above can be sped up by limiting X,Y,Z range of each by considering which rotations are given
+    ##      However, for a 1 time calcualtion like this it is not hugely important
+    ##
+
+    #
+    # Counts number of points in object
+    #
+    number_of_dipoles = 0
+
+    for i in range(-num,num+1):
+        #i2 = i*i
+        for j in range(-num,num+1):
+            j2 = j*j            
+            for k in range(-num,num+1):
+                k2 = k*k
+
+                # Rotate point to an unrotated frame
+                unrot_frame_pos = [i*dipole_diameter, j*dipole_diameter, k*dipole_diameter] # Original point
+                unrot_frame_pos = [
+                    cos(-theta_Z)*unrot_frame_pos[0] -sin(-theta_Z)*unrot_frame_pos[1],
+                    sin(-theta_Z)*unrot_frame_pos[0] -cos(-theta_Z)*unrot_frame_pos[1],
+                    unrot_frame_pos[2]
+                ]   # Rotation in the Z axis
+                pitch_vec = [-sin(-theta_Z), cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
+                unrot_frame_pos = [
+                    ( (pitch_vec[0]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch))              )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[0])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[2]),
+                    ( (pitch_vec[0]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[1])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[2]),
+                    ( (pitch_vec[0]*pitch_vec[2])*(1.0-cos(-theta_pitch)) -(cos(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[2])
+                ]   # Rotation in the perpendicular to the front facing vector (pitching up/down)
+                # Check unrotated frame point is within cylinder
+                within_radial = (j2 + k2) <= r2
+                within_width  = abs(unrot_frame_pos[0]) <= width/2.0
+
+                if(within_radial and within_width):
+                    number_of_dipoles += 1
+
+    return number_of_dipoles
+
+def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
+    #
+    # Only supports torus flat in XY plane
+    # torus_centre_radius = distance from origin to centre of tube forming the torus
+    # torus_tube_radius = radius of the tube cross section of the torus
+    # phi_lower = smaller angle in XY plane, from positive X axis, to start torus sector from (0,2*PI)
+    # phi_upper = larger angle in XY plane, from positive X axis, to end torus sector at (0,2*PI)
+    #
+    # ** Could be extended to be tilted
+    # ** Could also move x,y,z calcualtion into if to speed up program -> reduce waste on non-dipole checks
+    #
+    radius, width, theta_Z, theta_pitch = args
+    dipole_diameter = 2*dipole_radius
+    #dd2 = dipole_diameter**2
+    r2 = radius**2
+    limiting_radius = np.sqrt( pow(width/2.0,2) + pow(radius,2) )   # Radius of the sphere covering the entire cylinder (slightly more than width/2.0)
+    num = int( (limiting_radius)//dipole_diameter )                 # Check cubic area of this limiting space
+    ##
+    ## NOTE; approach above can be sped up by limiting X,Y,Z range of each by considering which rotations are given
+    ##      However, for a 1 time calcualtion like this it is not hugely important
+    ##
+
+    #
+    # Counts number of points in object
+    #
+    pts = np.zeros((number_of_dipoles_total, 3))
+    number_of_dipoles = 0
+
+    for i in range(-num,num+1):
+        #i2 = i*i
+        x = i*dipole_diameter
+        for j in range(-num,num+1):
+            j2 = j*j   
+            y = j*dipole_diameter         
+            for k in range(-num,num+1):
+                k2 = k*k
+                z = k*dipole_diameter
+
+                # Rotate point to an unrotated frame
+                unrot_frame_pos = [i*dipole_diameter, j*dipole_diameter, k*dipole_diameter] # Original point
+                unrot_frame_pos = [
+                    cos(-theta_Z)*unrot_frame_pos[0] -sin(-theta_Z)*unrot_frame_pos[1],
+                    sin(-theta_Z)*unrot_frame_pos[0] -cos(-theta_Z)*unrot_frame_pos[1],
+                    unrot_frame_pos[2]
+                ]   # Rotation in the Z axis
+                pitch_vec = [-sin(-theta_Z), cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
+                unrot_frame_pos = [
+                    ( (pitch_vec[0]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch))              )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[0])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[2]),
+                    ( (pitch_vec[0]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[1])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[2]),
+                    ( (pitch_vec[0]*pitch_vec[2])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[2])
+                ]   # Rotation in the perpendicular to the front facing vector (pitching up/down)
+                # Check unrotated frame point is within cylinder
+                within_radial = (j2 + k2) <= r2
+                within_width  = abs(unrot_frame_pos[0]) <= width/2.0
+
+                if(within_radial and within_width):
+                    pts[number_of_dipoles][0] = x+1e-20     # Softening factor
+                    pts[number_of_dipoles][1] = y+1e-20     #
+                    pts[number_of_dipoles][2] = z+1e-20
+                    number_of_dipoles += 1
+    print(number_of_dipoles," dipoles generated")
+    return pts
+
+
 def simulation(number_of_particles, positions, shapes, args, connection_mode, connection_args):
     #
     # shapes = List of shape types used
@@ -1232,11 +1352,15 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
     # Get total number of particles involved over all particles
     dipole_primitive_num = np.zeros(number_of_particles, dtype=int)
     for particle_i in range(number_of_particles):
+        print("========>>>>>")
+        print("     shapes[particle_i] = ",shapes[particle_i])
         match shapes[particle_i]:
             case "sphere":
                 dipole_primitive_num[particle_i] = sphere_size(args[particle_i], dipole_radius)
             case "torus":
                 dipole_primitive_num[particle_i] = torus_sector_size(args[particle_i], dipole_radius)
+            case "cylinder":
+                dipole_primitive_num[particle_i] = cylinder_size(args[particle_i], dipole_radius)
     dipole_primitive_num_total = np.sum(dipole_primitive_num);
     # Get dipole primitive positions for each particle
     dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   #Flattened 1D list of all dipoles for all particles
@@ -1247,6 +1371,8 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = sphere_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
             case "torus":
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = torus_sector_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
+            case "cylinder":
+                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cylinder_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
     
     if excel_output==True:
         optpos = np.zeros((frames,n_particles,3))
@@ -1284,6 +1410,8 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
             case "sphere":
                 effective_radii[p] = args[p][0]
             case "torus":
+                effective_radii[p] = (args[p][0] + args[p][1])
+            case "cylinder":
                 effective_radii[p] = (args[p][0] + args[p][1])
 
     # find which particles are connected in objects

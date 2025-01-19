@@ -110,6 +110,9 @@ class ParticleCollection (object):
                             case ("torus", 4):
                                 self.particle_shape.append("torus")
                                 self.particle_args.append(self.args)
+                            case ("cylinder", 4):
+                                self.particle_shape.append("cylinder")
+                                self.particle_args.append(self.args)
                             case _:
                                 self.particle_shape.append(self.default_shape)
                                 self.particle_args.append(self.default_args)
@@ -195,6 +198,8 @@ class ParticleCollection (object):
                     masses[i] = (4/3)*float(self.particle_density[i])*np.pi*float(self.particle_args[i][0])**3
                 case "torus":
                     masses[i] = float(self.particle_density[i])*2.0*(np.pi**2)*float(self.particle_args[i][1])**2 *float(self.particle_args[i][0])
+                case "cylinder":
+                    masses[i] = float(self.particle_density[i])*( np.pi*(float(self.particle_args[i][0])**2)*float(self.particle_args[i][1]) )
                 case _:
                     print("Invalid shape: During mass calc, ",i)
         return masses
