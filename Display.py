@@ -160,7 +160,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, center):
         radius = args[0]
-        samples = 20
+        samples = 4 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + center[0]
@@ -208,7 +208,7 @@ class DisplayObject (object):
         # z = np.outer(radius*np.sin(v), np.ones(samples)) +center[2]
         # return x, y, z
         radius, width, theta_Z, theta_pitch = args
-        samples = 20
+        samples = 10 #20
         u = np.linspace(0, 2.0*np.pi, samples)              # Parameterised values
         v = np.linspace(-width/2.0, width/2.0, samples)     #
         u, v = np.meshgrid(u, v)
