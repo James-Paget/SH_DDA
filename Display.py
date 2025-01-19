@@ -193,6 +193,55 @@ class DisplayObject (object):
         z = np.outer(torus_beam_radius*np.sin(v), np.ones(samples)) +center[2]
         return x, y, z
     
+    def make_cylinder_surface(self, args, center):
+        # radius, width, angle_Z, angle_pitch = args
+
+        # samples = 20
+        # u = np.linspace(-width/2.0, width/2.0, samples)
+        # v = np.linspace(0, 2.0*np.pi, samples)
+
+        # ###
+        # ### NEEDS TO BE FIXED FOR CYLINDER -> AR ARBITRARY ANGLES
+        # ###
+        # x = np.outer(radius*np.cos(v), np.cos(u)) +center[0]
+        # y = np.outer(radius*np.cos(v), np.sin(u)) +center[1]
+        # z = np.outer(radius*np.sin(v), np.ones(samples)) +center[2]
+        # return x, y, z
+        radius, width, theta_Z, theta_pitch = args
+        samples = 20
+        u = np.linspace(0, 2.0*np.pi, samples)              # Parameterised values
+        v = np.linspace(-width/2.0, width/2.0, samples)     #
+        u, v = np.meshgrid(u, v)
+
+        x = v                   # X-coordinates
+        y = radius*np.cos(u)    # Y-coordinates
+        z = radius*np.sin(u)    # Shift along Z-axis
+
+        Z_rotation_matrix = np.array(
+            [
+                [np.cos(theta_Z), -np.sin(theta_Z), 0.0],
+                [np.sin(theta_Z),  np.cos(theta_Z), 0.0],
+                [0.0, 0.0, 1.0]
+            ]
+        )
+        pitch_vec = [-np.sin(theta_Z), np.cos(theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
+        pitch_rotation_matrix = np.array(
+            [
+                [( (pitch_vec[0]*pitch_vec[0])*(1.0-np.cos(theta_pitch)) +(np.cos(theta_pitch))              ), ( (pitch_vec[1]*pitch_vec[0])*(1.0-np.cos(theta_pitch)) -(np.sin(theta_pitch)*pitch_vec[2]) ), ( (pitch_vec[2]*pitch_vec[0])*(1.0-np.cos(theta_pitch)) +(np.sin(theta_pitch)*pitch_vec[1]) )],
+                [( (pitch_vec[0]*pitch_vec[1])*(1.0-np.cos(theta_pitch)) +(np.sin(theta_pitch)*pitch_vec[2]) ), ( (pitch_vec[1]*pitch_vec[1])*(1.0-np.cos(theta_pitch)) +(np.cos(theta_pitch)             ) ), ( (pitch_vec[2]*pitch_vec[1])*(1.0-np.cos(theta_pitch)) -(np.sin(theta_pitch)*pitch_vec[0]) )],
+                [( (pitch_vec[0]*pitch_vec[2])*(1.0-np.cos(theta_pitch)) -(np.sin(theta_pitch)*pitch_vec[1]) ), ( (pitch_vec[1]*pitch_vec[2])*(1.0-np.cos(theta_pitch)) +(np.sin(theta_pitch)*pitch_vec[0]) ), ( (pitch_vec[2]*pitch_vec[2])*(1.0-np.cos(theta_pitch)) +(np.cos(theta_pitch)             ) )]
+            ]
+        )
+    
+        xyz_rotated = np.dot( Z_rotation_matrix, np.array([x.flatten(), y.flatten(), z.flatten()]) )    # Apply Z rotation
+        xyz_rotated = np.dot( pitch_rotation_matrix, xyz_rotated )                                      # Apply pitch rotation
+
+        x_rotated = xyz_rotated[0].reshape(x.shape) + center[0]
+        y_rotated = xyz_rotated[1].reshape(y.shape) + center[1]
+        z_rotated = xyz_rotated[2].reshape(y.shape) + center[2]
+
+        return x_rotated, y_rotated, z_rotated
+    
 
     def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, include_connections=True, quiver_scale=3e5):
         #
@@ -221,6 +270,8 @@ class DisplayObject (object):
                         x, y, z = self.make_sphere_surface(args[i], positions[t, i])
                     case "torus":
                         x, y, z = self.make_torus_sector_surface(args[i], positions[t, i])
+                    case "cylinder":
+                        x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
                 plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
                 plots.append(plot)
 
@@ -301,6 +352,8 @@ class DisplayObject (object):
                     x, y, z = self.make_sphere_surface(args[i], positions[0, i])
                 case "torus":
                     x, y, z = self.make_torus_sector_surface(args[i], positions[0, i])
+                case "cylinder":
+                    x, y, z = self.make_cylinder_surface(args[i], positions[0, i])
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 

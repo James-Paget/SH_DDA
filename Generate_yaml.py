@@ -4,7 +4,6 @@ import numpy as np
 """
 write_* functions have no parameters set.
 use_* functions have some paremeters set, making them quicker to create presets
-
 """
 
 # each added preset needed to be added to BOTH 'get_preset_options' and 'generate_yaml'
@@ -287,7 +286,8 @@ def write_particles(filename, particle_list, default_radius, default_material, c
             # Test correct number of args
             if not (
                 (particle["shape"] == "sphere" and len(particle["args"]) == 1) or
-                (particle["shape"] == "torus" and len(particle["args"]) == 4)
+                (particle["shape"] == "torus" and len(particle["args"]) == 4) or
+                (particle["shape"] == "cylinder" and len(particle["args"]) == 4)
             ):
                 print(f"Particle {i} has invalid args: {particle}")
                 break
