@@ -25,6 +25,7 @@ def get_preset_options():
         "8", "SHEET_SQUARE",
         "9", "SHEET_HEXAGON",
         "10", "FILAMENT",
+        "11", "CYLINDER",
     ]
 
 def generate_yaml(preset, filename="Preset"):
@@ -101,6 +102,10 @@ def generate_yaml(preset, filename="Preset"):
             use_laguerre3_beam(filename)
             use_filament(filename, length=4e-6, radius=0.8e-6, separation=0.5e-6, particle_radius=0.1e-6, rotation_axis=[0,0,1], rotation_theta=0)
 
+        case "11" | "CYLINDER":
+            use_default_options(filename, frames=1, show_output=True)
+            use_laguerre3_beam(filename)
+            use_cylinder(filename, num_particles=2, length=1e-6, radius=2e-7, separation=0.2e-6, rotation_axis=[0,0.707,0.707], rotation_theta=1.5)
 
         case _:
             sys.exit(f"Generate_yaml error: preset '{preset}' not found")
@@ -183,6 +188,18 @@ def use_filament(filename, length, radius, separation, particle_radius, rotation
     if rotation_theta != 0:
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
     use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
+
+def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
+    # makes a row of separated cylinders
+    coords_list = get_cylinder_points(num_particles, length, separation)
+    print(f"PRE ROT COORDSLIST IS {coords_list}")
+    if rotation_theta != 0:
+        coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
+    args_list = [[radius, length, np.pi/+np.arctan2(y,x), 0 if (x,y,z) == (0,0,0) else np.arccos(np.clip(z/np.sqrt(x**2+y**2+z**2), -1, 1))] for (x,y,z) in coords_list] # the spherical angles of the piece positions ARE their individual rotation.
+    print(f"ARGSLIST IS {args_list}")
+    print(f"COORDSLIST IS {coords_list}")
+    
+    use_default_particles(filename, "cylinder", args_list, coords_list, "num", 0)
 
 
 def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args):
@@ -312,12 +329,15 @@ def rotate_coords_list(coords_list, axis, theta):
     # Using the Rodrigues' rotation formula
     coords_list = np.array(coords_list)
     axis = np.array(axis)
+    print("IN FUNC", coords_list)
     for i in range(len(coords_list)):
         r = coords_list[i]
         comp_a = r*np.cos(theta)
         comp_b = np.cross(axis, r)*np.sin(theta)
         comp_c = axis*np.dot(axis, r)*(1-np.cos(theta))
         coords_list[i] = comp_a +comp_b + comp_c
+        print(comp_a +comp_b + comp_c)
+    print("OUT FUNC", coords_list)
     return coords_list
 
 def get_tetrahedron_points(radius=1e-6):
@@ -469,3 +489,10 @@ def get_filament_points(length, radius, separation):
     for l in range(num_len):
         coords_list.extend(circle_list + [0,l*separation,0])
     return coords_list
+
+def get_cylinder_points(num_particles, length, separation):
+    # Cyclinders running along the y-axis.
+    # length is length of each cylinder
+    # coords_list = []
+    y_coords = np.linspace(-(num_particles-1)/2, (num_particles+1)/2, num_particles+1)[:-1] * (length + separation)
+    return [[0,y,0] for y in y_coords]
