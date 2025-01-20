@@ -80,7 +80,7 @@ def Ajj(polarisability):
     return A
 
 
-def Ajk(x, y, z, r):
+def Ajk(x, y, z, r, k):
     """
     A_jk matrix; off-diagonal elements of big matrix
     """
@@ -109,7 +109,7 @@ def func4(a, b, r):
     return (a * b) / (r ** 2)
 
 
-def Djj(dipole_radius):  # For Diffusion
+def Djj(dipole_radius, k_B, temperature, viscosity):  # For Diffusion
     #
     # This is valid for a sphere, but not other shapes e.g. a torus
     # This will need to be changed when considering the dynamics of other particle shapes
@@ -121,7 +121,7 @@ def Djj(dipole_radius):  # For Diffusion
     return D
 
 
-def Djk(x, y, z, r):
+def Djk(x, y, z, r, k_B, temperature, viscosity):
     D = np.zeros([3, 3])
     D[0][0] = func3(x, r)
     D[1][1] = func3(y, r)
@@ -170,7 +170,10 @@ def buckingham_force(Hamaker, constant1, constant2, r, radius_i, radius_j):
     r_max = 1.05 * (radius_i +radius_j)    # Reduced r_max, for closer interactions. NOTE; Should only be used with smaller time-steps (<1e-4)
     r_abs = np.linalg.norm(r)
     if r_abs < r_max:
-        print("Eeek!! r_abs = ", r_abs)
+        ##
+        ## TEMPORARILY DISABLED
+        ##
+        # print("Eeek!! r_abs = ", r_abs)
         r_abs = r_max  # capping the force
 
     ##
@@ -210,10 +213,10 @@ def spring_force(stiffness_const, natural_length, r):
     return force
 
 
-def driving_force(constant1, r):
+def driving_force(constant1, r, dipole_radius):
     #print("Dipole Radius:",dipole_radius)
     r_abs = np.linalg.norm(r)
-    force = [constant1 * (r_abs - 2 * dipole_radius) * (r[i] / r_abs) for i in range(3)]
+    force = [constant1 * (r_abs - 2.0*dipole_radius) * (r[i] / r_abs) for i in range(3)]
     # force = np.zeros(3)
     # force[0] = constant1*(r_abs-2*dipole_radius)*(r[0]/r_abs)
     # force[1] = constant1*(r_abs-2*dipole_radius)*(r[1]/r_abs)
@@ -304,7 +307,7 @@ def displacement_matrix(array_of_positions):
     return displacement_matrix
 
 
-def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive):
+def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive, polarizability, beam_collection, k):
 
     list_of_displacements = [u - v for u, v in it.combinations(array_of_positions, 2)]
     number_of_displacements = len(list_of_displacements)
@@ -338,6 +341,7 @@ def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles
             array_of_displacements[i][1],
             array_of_displacements[i][2],
             array_of_distances[i],
+            k
         )
     for i in range(number_of_dipoles):  # creates D_jj matrices
         ii = i//number_of_dipoles_in_primitive
@@ -373,7 +377,7 @@ def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles
     return P_array
 
 
-def optical_force_array(array_of_particles, E0, dipole_radius, dipole_primitive):
+def optical_force_array(array_of_particles, E0, dipole_radius, dipole_primitive, k, n_particles, a0, excel_output, include_couple, beam_collection, polarizability):
 #
 # Need to:
 # (0) change array_of_positions to array of particle positions
@@ -393,7 +397,7 @@ def optical_force_array(array_of_particles, E0, dipole_radius, dipole_primitive)
             array_of_positions[i*number_of_dipoles_in_primitive+j] = array_of_particles[i] + dipole_primitive[j]
     #print(array_of_positions)
 # (2):
-    p_array = dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive)
+    p_array = dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive, polarizability, beam_collection, k)
     # print(p_array)
     displacements_matrix = displacement_matrix(array_of_positions)
 
@@ -625,13 +629,12 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
 
             current_connections = np.array(current_connections)
             #print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
-            print(current_connections)
 
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
             connection_indices = args
         case _:
-            sys.exit(f"get_connected_pairs error: modes are 'num', 'line', 'loop', 'manual'.\nInputted mode, args: {connection_mode}, {connection_args}")
+            sys.exit(f"get_connected_pairs error: modes are 'num', 'line', 'loop', 'manual'.\nInputted mode, args: {mode}, {args}")
 
     #print("Connections established= ",connection_indices)
     return connection_indices
@@ -1001,7 +1004,7 @@ def gravity_force_array(array_of_positions, dipole_radius):
     return gravity_force_matrix
 
 
-def diffusion_matrix(array_of_positions, particle_radii):
+def diffusion_matrix(array_of_positions, particle_radii, k_B, temperature, viscosity):
     # positions of particle centres
     # dipole_radius is actually considering the spehre radius here
     list_of_displacements = [u - v for u, v in it.combinations(array_of_positions, 2)]
@@ -1026,9 +1029,12 @@ def diffusion_matrix(array_of_positions, particle_radii):
             array_of_displacements[i][1],
             array_of_displacements[i][2],
             array_of_distances[i],
+            k_B,
+            temperature,
+            viscosity
         )
     for i in range(number_of_particles):
-        Djj_array[i] = Djj(particle_radii[i])
+        Djj_array[i] = Djj(particle_radii[i], k_B, temperature, viscosity)
     D_matrix[iu] = Djk_array
     D_matrix.T[iu] = D_matrix[iu]
     D_matrix[di] = Djj_array
@@ -1048,7 +1054,6 @@ def sphere_size(args, dipole_radius):
     sphere_radius = args[0]
     dd2 = dipole_diameter**2
     sr2 = sphere_radius**2
-    print(sphere_radius,dipole_radius)
     num = int(sphere_radius//dipole_diameter)
     
     number_of_dipoles = 0
@@ -1108,7 +1113,6 @@ def torus_sector_size(args, dipole_radius):
     dipole_diameter = 2*dipole_radius
     dd2 = dipole_diameter**2
     ttr2 = torus_tube_radius**2
-    print(torus_centre_radius, torus_tube_radius, dipole_radius)
     num_xy = int( (torus_tube_radius+torus_centre_radius)//dipole_diameter)     #Number of dipoles wide in each direction (XY, wide directions)
     num_z  = int( torus_centre_radius//dipole_diameter)                         #Number of dipoles tall (shorter)
     #x_shift = torus_centre_radius*np.cos( (phi_lower+phi_upper)/2.0 )
@@ -1158,7 +1162,6 @@ def torus_sector_positions(args, dipole_radius, number_of_dipoles_total):
     dipole_diameter = 2*dipole_radius
     dd2 = dipole_diameter**2
     ttr2 = torus_tube_radius**2
-    print(torus_centre_radius, torus_tube_radius, dipole_radius)
     num_xy = int( (torus_tube_radius+torus_centre_radius)//dipole_diameter)     #Number of dipoles wide in each direction (XY, wide directions)
     num_z  = int( torus_centre_radius//dipole_diameter)                         #Number of dipoles tall (shorter)
     x_shift = torus_centre_radius*np.cos( (phi_lower+phi_upper)/2.0 )
@@ -1351,13 +1354,15 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
     print(number_of_dipoles," dipoles generated")
     return pts
 
-
-def simulation(number_of_particles, positions, shapes, args, connection_mode, connection_args):
+def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms):
     #
     # shapes = List of shape types used
     # args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
     # particle_parameters; Sphere = [sphere_radius]
     #                      Torus  = [torus_centre_radius, torus_tube_radius]
+    # constants = {"spring":..., "bending":..., ...}
+    #       spring = 4e-6 # 5e-7
+    #       bending= 0.25e-18 # 0.5e-18
     #
 
     ####
@@ -1407,14 +1412,14 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cylinder_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
     
     if excel_output==True:
-        optpos = np.zeros((frames,n_particles,3))
+        optpos = np.zeros((frames,number_of_particles,3))
         if include_force==True:
-            optforce = np.zeros((frames,n_particles,3))
-            totforces = np.zeros((frames,n_particles,3))
+            optforce = np.zeros((frames,number_of_particles,3))
+            totforces = np.zeros((frames,number_of_particles,3))
         else:
             optforce = None
         if include_couple==True:
-            optcouple = np.zeros((frames,n_particles,3))
+            optcouple = np.zeros((frames,number_of_particles,3))
         else:
             optcouple = None
 
@@ -1463,42 +1468,66 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
         #couples = None
         #include_couple==False
         if excel_output==True:
-            for j in range(n_particles):
+            for j in range(number_of_particles):
                 for k in range(3):
                     optpos[i,j,k] = position_vectors[j][k]
             if include_force==True:
-                for j in range(n_particles):
+                for j in range(number_of_particles):
                     for k in range(3):
                         optforce[i,j,k] = optical[j][k]
             if include_couple==True:
-                for j in range(n_particles):
+                for j in range(number_of_particles):
                     for k in range(3):
                         optcouple[i,j,k] = couples[j][k] + torques[j][k]
 
         if i%10 == 0:
             print("Step ",i)
-            print(i,optical)
+            #print(i,optical)
 
-        stiffness = 4e-6 # 5e-7
-        BENDING = 0.25e-18 # 0.5e-18
+        stiffness = constants["spring"]
+        BENDING   = constants["bending"]
 
-        D = diffusion_matrix(position_vectors, effective_radii)
+        D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
+
+        total_force_array = np.zeros( (number_of_particles,3), dtype=np.float64 )
+        for force_param in force_terms:
+            match force_param:
+                case "optical":
+                    total_force_array += optical
+                case "spring":
+                    spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
+                    spring = spring.astype(np.float64)
+                    total_force_array += spring
+                case "bending":
+                    bending = bending_force_array(position_vectors, ijkangles, BENDING)
+                    total_force_array += bending
+                case "buckingham":
+                    buckingham = buckingham_force_array(position_vectors, effective_radii, particle_neighbours)
+                    total_force_array += buckingham
+                case "driver":
+                    driver = driving_force_array(position_vectors, "stretch", args={"driver_magnitude":3.0e-12, "axes":["y"], "influence_distance":1e-10, "initial_positions":initial_shape})      # USED with python DipolesMulti2024Eigen.py 7  
+                    total_force_array += driver
+                case "gravity":
+                    gravity = gravity_force_array(position_vectors, effective_radii[0])
+                    total_force_array += gravity
+        ##
+        ## LEGACY METHOD
+        ##
         # gravity = gravity_force_array(position_vectors, effective_radii[0])
-        buckingham = buckingham_force_array(position_vectors, effective_radii, particle_neighbours)
-
-        driver = driving_force_array(position_vectors, "stretch", args={"driver_magnitude":3.0e-12, "axes":["y"], "influence_distance":1e-10, "initial_positions":initial_shape})      # USED with python DipolesMulti2024Eigen.py 7  
+        # buckingham = buckingham_force_array(position_vectors, effective_radii, particle_neighbours)
+        # driver = driving_force_array(position_vectors, "stretch", args={"driver_magnitude":3.0e-12, "axes":["y"], "influence_distance":1e-10, "initial_positions":initial_shape})      # USED with python DipolesMulti2024Eigen.py 7  
         # driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
         # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
-        bending = bending_force_array(position_vectors, ijkangles, BENDING)
+        # bending = bending_force_array(position_vectors, ijkangles, BENDING)
         # NOTE; Initial shape stored earlier before any timesteps are taken
-        spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
+        # spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
+        # total_force_array = bending + spring + optical #+ buckingham# + driver#+ gravity #
 
-        total_force_array = bending + spring + optical #+ buckingham# + driver#+ gravity #
 
         # Record total forces too if required
         if include_force==True:
-            for j in range(n_particles):
+            for j in range(number_of_particles):
                 for k in range(3):
                     totforces[i,j,k] = total_force_array[j][k]
         
@@ -1539,177 +1568,197 @@ def simulation(number_of_particles, positions, shapes, args, connection_mode, co
 # Start of program
 ###################################################################################
 
-if int(len(sys.argv)) != 2:
-    sys.exit("Usage: python {} <FILESTEM>".format(sys.argv[0]))
-
-#===========================================================================
-# Read the yaml file into a system parameter dictionary
-#===========================================================================
-
-# Check if sys.argv[1] is in the generate presets, else it must be a YAML file name
-preset_filestem = "Preset"
-is_preset_yaml_used = Generate_yaml.generate_yaml(sys.argv[1], preset_filestem)
-if is_preset_yaml_used:
-    filestem = preset_filestem
-else:
-    filestem = sys.argv[1]
-
-filename_vtf = filestem+".vtf"
-filename_xl = filestem+".xlsx"
-filename_yaml = filestem+".yml"
-
-sys_params = ReadYAML.load_yaml(filename_yaml)
-print(sys_params)
-#===========================================================================
-# Parse the sys_params yaml file
-#===========================================================================
-beaminfo = ReadYAML.read_section(sys_params,'beams')
-paraminfo = ReadYAML.read_section(sys_params,'parameters')
-optioninfo = ReadYAML.read_section(sys_params,'options')
-displayinfo = ReadYAML.read_section(sys_params,'display')
-outputinfo = ReadYAML.read_section(sys_params,'output')
-particleinfo = ReadYAML.read_section(sys_params,'particles')
-#===========================================================================
-# Read simulation parameters (this should be done externally)
-#===========================================================================
-wavelength = float(paraminfo['wavelength'])
-dipole_radius = float(paraminfo['dipole_radius'])
-timestep = float(paraminfo['time_step'])
-#===========================================================================
-# Read simulation options (this should be done externally)
-#===========================================================================
-frames = int(optioninfo['frames'])
-#===========================================================================
-# Read output options (this should be done externally)
-#===========================================================================
-vmd_output = bool(outputinfo.get('vmd_output',True))
-excel_output = bool(outputinfo.get('excel_output',True))
-include_force = bool(outputinfo.get('include_force',True))
-include_couple = bool(outputinfo.get('include_couple',True))
-#===========================================================================
-# Read display options (this should be done externally)
-#===========================================================================
-display = Display.DisplayObject(displayinfo,frames)
-#===========================================================================
-# Read beam options and create beam collection
-#===========================================================================
-beam_collection = Beams.create_beam_collection(beaminfo,wavelength)
-#n_beams = len(beam_collection)
-#===========================================================================
-# Read particle options and create particle collection
-#===========================================================================
-particle_collection = Particles.ParticleCollection(particleinfo)
-print(f"Number of particles = {particle_collection.num_particles}")
-n_particles = particle_collection.num_particles
-#c = 3e8
-#n1 = 3.9
-#n1a = 1.5
-ref_ind = particle_collection.get_refractive_indices()
-particle_types = particle_collection.get_particle_types()
-colors = particle_collection.get_particle_colours()
-vtfcolors = particle_collection.get_particle_vtfcolours()
-#radii = particle_collection.get_particle_radii()
-shapes = particle_collection.get_particle_shape()
-args   = particle_collection.get_particle_args()
-#radius = radii[0] # because we cannot handle variable radii yet.
-density = particle_collection.get_particle_density()
-rho = density[0] # not yet implemented.
-positions = particle_collection.get_particle_positions()
-connection_mode = particle_collection.get_connection_mode()
-connection_args = particle_collection.get_connection_args()
-
-for i in range(n_particles):
-    print(i,particle_types[i],ref_ind[i],colors[i],shapes[i],args[i],density[i],positions[i])
-#===========================================================================
-# Set up particle polarisabilities and other spurious options
-#===========================================================================
-ep1 = ref_ind**2
-#ep1a = n1a * n1a
-ep2 = 1.0
-#radius = 200e-9
-#rho = 2200 # glass density
-#mass = (4/3)*rho*np.pi*radius**3
-masses  = particle_collection.get_particle_masses()
-gravity = np.zeros( (n_particles,3) ,dtype=np.float64)
-gravity[:,1] = -9.81*masses
-#gravity = np.zeros(3,dtype=np.float64)
-#gravity[1] = -9.81*mass
-print("dipole radius is:",dipole_radius,type(dipole_radius))
-water_permittivity = 80.4
-vacuum_permittivity = 1
-k = 2 * np.pi / wavelength
-epm = 1.333 # water
-#a0 = (4 * np.pi * 8.85e-12) * (radius ** 3) * ((ep1 - 1) / (ep1 + 2))
-#a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - 1) / (ep1 + 2))
-a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))
-#a0a = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1a - 1) / (ep1a + 2))
-a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
-#aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
-#a = a0
-polarizability = a#a*np.ones(n_particles)
-inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
-E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
-
-# BENDING = 1e-18# 1e-18
-# stiffness = 0  # Errors when this is bigger than 1e-3
-
-k_B = 1.38e-23
-temperature = 293
-viscosity = 8.90e-4
-
-z_offset = wavelength / 4.0 # needed for odd order Bessel beams
-z_offset = 0.0 # for most other situations
-
-beam = "plane"  # LEGACY REMOVE
-
-
-#===========================================================================
-# Perform the simulation
-#===========================================================================
-
-initialT = time.time()
-particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(n_particles, positions, shapes, args, connection_mode, connection_args)
-finalT = time.time()
-print("Elapsed time: {:8.6f} s".format(finalT-initialT))
-
-# =====================================
-# This code for matplotlib animation output and saving
-
-#for i in range(optforces.shape[0]):
-#    print("optforces "+str(i)+"= ",optforces[i]);
-
-if display.show_output==True:
-    # Plot beam, particles, forces and tracers (forces and tracers optional)
-    fig, ax = None, None                                   #
-    fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-    display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True)
-
-
-
-# writer = animation.PillowWriter(fps=30)
-
-# ani.save("bessel-ang-mom-test.gif", writer=writer)
-# =====================================
-
-# =====================================
-# This code for vtf file format output
-
-# MyFileObject = open( #local save
-#    "/Users/Tom/Documents/Uni/Optical_Forces_Project/Figures/vtf_files/local-test.vtf",
-#    "w",
-# )
-#===========================================================================
-# Write out data to files
-#===========================================================================
-
-if vmd_output==True:
+def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"]):
     #
-    # Uses old radius system, NOT shape,args
-    # Must be fixed
+    # Runs the full program
+    # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
+    #             If 'None' is used, main() will read the first terminal arguement as the name instead, e.g. "python DipolesMulti2024Eigen.py <YAML_name>"
+    #             If a name is parsed in, then this will be used as the YAML to read instead of sys.argv[1]
+    # constants = list of constants that tend to be varied in the simulatiom, which can simply be adjusted for different runs of the simulation
+    # force_terms = names of forces to be included in the simualtion, gathered here for convenience when running varying simulations
+    #               e.g. "optical", "spring", "bending", "buckingham", "driver", "gravity", ...
     #
-    pass
-    #Output.make_vmd_file(filename_vtf,n_particles,frames,timestep,particles,optpos,beam_collection,finalT-initialT,radius,dipole_radius,z_offset,particle_types,vtfcolors)
 
-if excel_output==True:
-    Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples)
+    if(YAML_name==None):
+        # No name provided, hence use sys.argv[1] as the name
+        print("Using YAML: "+str(sys.argv[1])+".yml")
+        if int(len(sys.argv)) != 2:
+            sys.exit("Usage: python {} <FILESTEM>".format(sys.argv[0]))
+    else:
+        # Name given, hence use this name provided as the YAML
+        print("Using YAML: "+str(YAML_name)+".yml")
+        sys.argv[1] = YAML_name
 
+    #===========================================================================
+    # Read the yaml file into a system parameter dictionary
+    #===========================================================================
+
+    # Check if arg is in the generate presets, else it must be a YAML file name
+    if sys.argv[1] in Generate_yaml.get_preset_options():
+        # Generate YAML from preset
+        filestem = "Preset"
+        Generate_yaml.generate_yaml(sys.argv[1], filestem)
+        
+    else:
+        filestem = sys.argv[1]
+
+    filename_vtf = filestem+".vtf"
+    filename_xl = filestem+".xlsx"
+    filename_yaml = filestem+".yml"
+
+    sys_params = ReadYAML.load_yaml(filename_yaml)
+    #===========================================================================
+    # Parse the sys_params yaml file
+    #===========================================================================
+    beaminfo = ReadYAML.read_section(sys_params,'beams')
+    paraminfo = ReadYAML.read_section(sys_params,'parameters')
+    optioninfo = ReadYAML.read_section(sys_params,'options')
+    displayinfo = ReadYAML.read_section(sys_params,'display')
+    outputinfo = ReadYAML.read_section(sys_params,'output')
+    particleinfo = ReadYAML.read_section(sys_params,'particles')
+    #===========================================================================
+    # Read simulation parameters (this should be done externally)
+    #===========================================================================
+    wavelength = float(paraminfo['wavelength'])
+    dipole_radius = float(paraminfo['dipole_radius'])
+    timestep = float(paraminfo['time_step'])
+    #===========================================================================
+    # Read simulation options (this should be done externally)
+    #===========================================================================
+    frames = int(optioninfo['frames'])
+    #===========================================================================
+    # Read output options (this should be done externally)
+    #===========================================================================
+    vmd_output = bool(outputinfo.get('vmd_output',True))
+    excel_output = bool(outputinfo.get('excel_output',True))
+    include_force = bool(outputinfo.get('include_force',True))
+    include_couple = bool(outputinfo.get('include_couple',True))
+    #===========================================================================
+    # Read display options (this should be done externally)
+    #===========================================================================
+    display = Display.DisplayObject(displayinfo,frames)
+    #===========================================================================
+    # Read beam options and create beam collection
+    #===========================================================================
+    beam_collection = Beams.create_beam_collection(beaminfo,wavelength)
+    #n_beams = len(beam_collection)
+    #===========================================================================
+    # Read particle options and create particle collection
+    #===========================================================================
+    particle_collection = Particles.ParticleCollection(particleinfo)
+    print(f"Number of particles = {particle_collection.num_particles}")
+    n_particles = particle_collection.num_particles
+    #c = 3e8
+    #n1 = 3.9
+    #n1a = 1.5
+    ref_ind = particle_collection.get_refractive_indices()
+    particle_types = particle_collection.get_particle_types()
+    colors = particle_collection.get_particle_colours()
+    vtfcolors = particle_collection.get_particle_vtfcolours()
+    #radii = particle_collection.get_particle_radii()
+    shapes = particle_collection.get_particle_shape()
+    args   = particle_collection.get_particle_args()
+    #radius = radii[0] # because we cannot handle variable radii yet.
+    density = particle_collection.get_particle_density()
+    rho = density[0] # not yet implemented.
+    positions = particle_collection.get_particle_positions()
+    connection_mode = particle_collection.get_connection_mode()
+    connection_args = particle_collection.get_connection_args()
+
+    for i in range(n_particles):
+        print(i,particle_types[i],ref_ind[i],colors[i],shapes[i],args[i],density[i],positions[i])
+    #===========================================================================
+    # Set up particle polarisabilities and other spurious options
+    #===========================================================================
+    ep1 = ref_ind**2
+    #ep1a = n1a * n1a
+    ep2 = 1.0
+    #radius = 200e-9
+    #rho = 2200 # glass density
+    #mass = (4/3)*rho*np.pi*radius**3
+    masses  = particle_collection.get_particle_masses()
+    gravity = np.zeros( (n_particles,3) ,dtype=np.float64)
+    gravity[:,1] = -9.81*masses
+    #gravity = np.zeros(3,dtype=np.float64)
+    #gravity[1] = -9.81*mass
+    print("dipole radius is:",dipole_radius,type(dipole_radius))
+    water_permittivity = 80.4
+    vacuum_permittivity = 1
+    k = 2 * np.pi / wavelength
+    epm = 1.333 # water
+    #a0 = (4 * np.pi * 8.85e-12) * (radius ** 3) * ((ep1 - 1) / (ep1 + 2))
+    #a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - 1) / (ep1 + 2))
+    a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))
+    #a0a = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1a - 1) / (ep1a + 2))
+    a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
+    #aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
+    #a = a0
+    polarizability = a#a*np.ones(n_particles)
+    inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
+    E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
+
+    # BENDING = 1e-18# 1e-18
+    # stiffness = 0  # Errors when this is bigger than 1e-3
+
+    k_B = 1.38e-23
+    temperature = 293
+    viscosity = 8.90e-4
+
+    z_offset = wavelength / 4.0 # needed for odd order Bessel beams
+    z_offset = 0.0 # for most other situations
+
+    beam = "plane"  # LEGACY REMOVE
+
+
+    #===========================================================================
+    # Perform the simulation
+    #===========================================================================
+
+    initialT = time.time()
+    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms)
+    finalT = time.time()
+    print("Elapsed time: {:8.6f} s".format(finalT-initialT))
+
+    # =====================================
+    # This code for matplotlib animation output and saving
+
+    #for i in range(optforces.shape[0]):
+    #    print("optforces "+str(i)+"= ",optforces[i]);
+
+    if display.show_output==True:
+        # Plot beam, particles, forces and tracers (forces and tracers optional)
+        fig, ax = None, None                                   #
+        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True)
+
+
+
+    # writer = animation.PillowWriter(fps=30)
+
+    # ani.save("bessel-ang-mom-test.gif", writer=writer)
+    # =====================================
+
+    # =====================================
+    # This code for vtf file format output
+
+    # MyFileObject = open( #local save
+    #    "/Users/Tom/Documents/Uni/Optical_Forces_Project/Figures/vtf_files/local-test.vtf",
+    #    "w",
+    # )
+    #===========================================================================
+    # Write out data to files
+    #===========================================================================
+
+    if vmd_output==True:
+        #
+        # Uses old radius system, NOT shape,args
+        # Must be fixed
+        #
+        pass
+        #Output.make_vmd_file(filename_vtf,n_particles,frames,timestep,particles,optpos,beam_collection,finalT-initialT,radius,dipole_radius,z_offset,particle_types,vtfcolors)
+
+    if excel_output==True:
+        Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples)
+
+if __name__ == "__main__":  # To prevent running when imported in other files
+    main()

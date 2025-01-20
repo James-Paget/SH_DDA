@@ -14,6 +14,7 @@ import math
 import pickle
 
 import Display
+import DipolesMulti2024Eigen as DM
 
 
 def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_LAGUERRE_GAUSSIAN"):
@@ -1169,10 +1170,11 @@ def simulations_fibre_1D_sphere(filename):
     Generate_yaml.generate_yaml("FIBRE_1D_SPHERE", filename=filename)
 
     # Run DipolesMulti2024Eigen.py
-    run_command = "python DipolesMulti2024Eigen.py "+filename
-    run_command = run_command.split(" ")
-    print("=== Log ===")
-    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+    # run_command = "python DipolesMulti2024Eigen.py "+filename
+    # run_command = run_command.split(" ")
+    # print("=== Log ===")
+    # result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+    DM.main(YAML_name=filename)
 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     record_particle_info(filename, particle_info, record_parameters=record_parameters)
@@ -1274,10 +1276,12 @@ def simulations_fibre_2D_cylinder_thick_connectUniform(filename):
     Generate_yaml.generate_yaml("FIBRE_2D_CYLINDER_THICK_UNI", filename=filename)
 
     # Run DipolesMulti2024Eigen.py
-    run_command = "python DipolesMulti2024Eigen.py "+filename
-    run_command = run_command.split(" ")
-    print("=== Log ===")
-    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+    # run_command = "python DipolesMulti2024Eigen.py "+filename
+    # run_command = run_command.split(" ")
+    # print("=== Log ===")
+    # result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+    print("     filename = ",filename)
+    DM.main(YAML_name=filename)
 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     record_particle_info(filename, particle_info, record_parameters=record_parameters)
