@@ -7,29 +7,9 @@ use_* functions have some paremeters set, making them quicker to create presets
 make_yaml_* makes a full yaml using the input parameters, with default values which can be used.
 """
 
-# each added preset needed to be added to BOTH 'get_preset_options' and 'generate_yaml'
-
-def get_preset_options():
-    # Return list of strings which name a preset.
-    # Names corresponding to the same preset are put on the same line, although the list is 1D.
-    return [
-        "0", "TETRAHEDRON",
-        "TETRAHEDRON_BESSEL",
-        "TETRAHEDRON_ROTATED",
-        "1", "ICOSAHEDRON",
-        "2", "LINE",
-        "3", "NSPHERE",
-        "4", "TORUS",
-        "5", "CONNECTED_RING",
-        "6", "UNCONNECTED_RING",
-        "7", "SHEET_TRIANGLE",
-        "8", "SHEET_SQUARE",
-        "9", "SHEET_HEXAGON",
-        "10", "FILAMENT",
-        "11", "CYLINDER",
-    ]
 
 def generate_yaml(preset, filename="Preset"):
+    # Return True if preset used, else False
 
     # Reset YAML contents
     with open(f"{filename}.yml", "w") as _:
@@ -78,59 +58,39 @@ def generate_yaml(preset, filename="Preset"):
             make_yaml_filament(filename)
 
         case "11" | "FIBRE_1D_SPHERE":
-            ## **
-            ## MAKE THESE ADJUSTABLE FROM FUNCTION CALL, INCONVIENTIENT TO HAVE TO CHANEG ALL DETAILS INSIDE HERE
-            ## **
-            use_default_options(filename, frames=20, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_1d_sphere(filename, length=2e-6, particle_radius=0.2e-6, particle_number=10)
+            make_yaml_fibre_1d_sphere(filename)
 
         case "12" | "FIBRE_1D_CYLINDER":
-            ## **
-            ## MAKE THESE ADJUSTABLE FROM FUNCTION CALL, INCONVIENTIENT TO HAVE TO CHANEG ALL DETAILS INSIDE HERE
-            ## **
-            use_default_options(filename, frames=10, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_1d_cylinder(filename, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5)
+            make_yaml_fibre_1d_cylinder(filename)
 
         case "13" | "FIBRE_2D_SPHERE_HOLLOWSHELL":
-            use_default_options(filename, frames=40, time_step=0.00005, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_2d_sphere_hollowshell(filename, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4)
+            make_yaml_fibre_2d_sphere_hollowshell(filename)
 
         case "14" | "FIBRE_2D_CYLINDER_HOLLOWSHELL":
-            use_default_options(filename, frames=1, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_2d_cylinder_hollowshell(filename, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8)
+            make_yaml_fibre_2d_cylinder_hollowshell(filename)
 
         case "15" | "FIBRE_2D_SPHERE_THICK_UNI":
-            use_default_options(filename, frames=1, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_2d_sphere_thick_uni(filename, length=3e-6, shell_radius=1e-6, shell_number=1, particle_radius=0.2e-6, particle_number_radial=4, particle_number_angular=6)
+            make_yaml_fibre_2d_sphere_thick_uni(filename)
 
         case "16" | "FIBRE_2D_CYLINDER_THICK_UNI":
-            use_default_options(filename, frames=1, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_2d_cylinder_thick_uni(filename, length=3e-6, shell_radius=1e-6, shell_number=1, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=6)
+            make_yaml_fibre_2d_sphere_thick_uni(filename)
         
         case "17" | "FIBRE_2D_SPHERE_SHELLLAYERS":
-            use_default_options(filename, frames=1, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_2d_sphere_shelllayers(filename, length=1.5e-6, shell_radius_max=1.5e-6, shell_number=2, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0))
+            make_yaml_fibre_2d_sphere_shelllayers(filename)
         
         case "18" | "FIBRE_2D_CYLINDER_SHELLLAYERS":
-            use_default_options(filename, frames=1, show_output=True)
-            use_laguerre3_beam(filename)
-            use_fibre_2d_cylinder_shelllayers(filename, length=1.0e-6, shell_radius_max=1.5e-6, shell_number=2, particle_length=0.4e-6, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0))
+            make_yaml_fibre_2d_cylinder_shelllayers(filename)
 
         case _:
-            sys.exit(f"Generate_yaml error: preset '{preset}' not found")
+            return False
+    
+    return True
 
         # case "11" | "CYLINDER":
         #     use_default_options(filename, frames=1, show_output=True)
         #     use_laguerre3_beam(filename)
         #     use_cylinder(filename, num_particles=3, length=1e-6, radius=2e-7, separation=0.2e-6, rotation_axis=[1,0,0], rotation_theta=0.7)
-            # XXX axis x and y rotation is SWAPPED!
+        #    # axis x and y rotation is SWAPPED!
 
 
 #=======================================================================
@@ -192,8 +152,45 @@ def make_yaml_filament(filename, frames=50, show_output=True, length=4e-6, radiu
     use_beam(filename, beam)
     use_filament(filename, length, radius, separation, particle_radius, rotation_axis, rotation_theta)
 
+def make_yaml_fibre_1d_sphere(filename, frames=20, show_output=True, length=2e-6, particle_radius=0.2e-6, particle_number=10, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_fibre_1d_sphere(filename, length, particle_radius, particle_number)
 
+def make_yaml_fibre_1d_cylinder(filename, frames=10, show_output=True, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number)
 
+def make_yaml_fibre_2d_sphere_hollowshell(filename, frames=40, time_step=0.00005, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, beam="LAGUERRE"):
+    use_default_options(filename, frames, time_step, show_output)
+    use_beam(filename, beam)
+    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular)
+
+def make_yaml_fibre_2d_cylinder_hollowshell(filename, frames=1, show_output=True, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular)
+
+def make_yaml_fibre_2d_sphere_thick_uni(filename, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_radius=0.2e-6, particle_number_radial=4, particle_number_angular=6, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, particle_radius, particle_number_radial, particle_number_angular)
+
+def make_yaml_fibre_2d_sphere_thick_uni(filename, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=6, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular)
+
+def make_yaml_fibre_2d_sphere_shelllayers(filename, frames=1, show_output=True, length=1.5e-6, shell_radius_max=1.5e-6, shell_number=2, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_fibre_2d_sphere_shelllayers(filename, length, shell_radius_max, shell_number, particle_radius, particle_separation)
+
+def make_yaml_fibre_2d_cylinder_shelllayers(filename, frames=1, show_output=True,  length=1.0e-6, shell_radius_max=1.5e-6, shell_number=2, particle_length=0.4e-6, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation)
 
 
 #=======================================================================

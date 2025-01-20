@@ -1,5 +1,5 @@
 options:
-  frames: 50
+  frames: 1
 parameters:
   wavelength: 1e-06
   dipole_radius: 4e-08
@@ -15,7 +15,7 @@ display:
   max_size: 2e-06
   resolution: 201
   frame_min: 0
-  frame_max: 50
+  frame_max: 1
   z_offset: 0.0
 beams:
   beam_0:
@@ -30,155 +30,293 @@ particles:
   default_radius: 1e-07
   default_material: FusedSilica
   connection_mode: dist
-  connection_args: 7.006999999999999e-07
+  connection_args: 6.289468492486764e-07
   particle_list:
     part_0:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: -7e-07 -2e-06 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 7.5e-07 0.0
       altcolour: True
     part_1:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -2e-06 -7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 5.018479547691438e-07 5.573586191080456e-07
       altcolour: True
     part_2:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -2e-06 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -7.839634745073983e-08 7.458914215262051e-07
       altcolour: True
     part_3:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -2e-06 7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -6.067627457812104e-07 4.408389392193552e-07
       altcolour: True
     part_4:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 7e-07 -2e-06 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -7.336107005503544e-07 -1.5593376811331896e-07
       altcolour: True
     part_5:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: -7e-07 -1.2999999999999998e-06 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -3.7500000000000086e-07 -6.495190528383285e-07
       altcolour: True
     part_6:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -1.2999999999999998e-06 -7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 2.3176274578120982e-07 -7.132923872213654e-07
       altcolour: True
     part_7:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -1.2999999999999998e-06 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 6.851590932319504e-07 -3.0505248230685076e-07
       altcolour: True
     part_8:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -1.2999999999999998e-06 7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 7.5e-07 0.0
       altcolour: True
     part_9:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 7e-07 -1.2999999999999998e-06 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 5.018479547691438e-07 5.573586191080456e-07
       altcolour: True
     part_10:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: -7e-07 -6e-07 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -7.839634745073983e-08 7.458914215262051e-07
       altcolour: True
     part_11:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -6e-07 -7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -6.067627457812104e-07 4.408389392193552e-07
       altcolour: True
     part_12:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -6e-07 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -7.336107005503544e-07 -1.5593376811331896e-07
       altcolour: True
     part_13:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 -6e-07 7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -3.7500000000000086e-07 -6.495190528383285e-07
       altcolour: True
     part_14:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 7e-07 -6e-07 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 2.3176274578120982e-07 -7.132923872213654e-07
       altcolour: True
     part_15:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: -7e-07 9.999999999999989e-08 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 6.851590932319504e-07 -3.0505248230685076e-07
       altcolour: True
     part_16:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 9.999999999999989e-08 -7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 1.5e-06 0.0
       altcolour: True
     part_17:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 9.999999999999989e-08 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 1.3703181864639015e-06 6.101049646137002e-07
       altcolour: True
     part_18:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 9.999999999999989e-08 7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 1.0036959095382876e-06 1.1147172382160912e-06
       altcolour: True
     part_19:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 7e-07 9.999999999999989e-08 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 4.6352549156242154e-07 1.4265847744427304e-06
       altcolour: True
     part_20:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: -7e-07 8e-07 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -1.5679269490147966e-07 1.4917828430524101e-06
       altcolour: True
     part_21:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 8e-07 -7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -7.499999999999992e-07 1.2990381056766586e-06
       altcolour: True
     part_22:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 8e-07 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -1.2135254915624207e-06 8.816778784387104e-07
       altcolour: True
     part_23:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 0.0 8e-07 7e-07
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -1.4672214011007083e-06 3.118675362266396e-07
       altcolour: True
     part_24:
       material: FusedSilica
-      shape: sphere
-      args: 1e-07
-      coords: 7e-07 8e-07 0.0
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -1.4672214011007088e-06 -3.118675362266379e-07
+      altcolour: True
+    part_25:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -1.213525491562422e-06 -8.816778784387084e-07
+      altcolour: True
+    part_26:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -7.500000000000017e-07 -1.299038105676657e-06
+      altcolour: True
+    part_27:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 -1.5679269490148136e-07 -1.49178284305241e-06
+      altcolour: True
+    part_28:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 4.6352549156241963e-07 -1.4265847744427308e-06
+      altcolour: True
+    part_29:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 1.003695909538286e-06 -1.1147172382160927e-06
+      altcolour: True
+    part_30:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 1.3703181864639008e-06 -6.101049646137015e-07
+      altcolour: True
+    part_31:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: -6.283185307179585e-07 1.5e-06 -1.6996616692943938e-21
+      altcolour: True
+    part_32:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 1.5e-06 0.0
+      altcolour: True
+    part_33:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 1.3703181864639015e-06 6.101049646137002e-07
+      altcolour: True
+    part_34:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 1.0036959095382876e-06 1.1147172382160912e-06
+      altcolour: True
+    part_35:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 4.6352549156242154e-07 1.4265847744427304e-06
+      altcolour: True
+    part_36:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -1.5679269490147966e-07 1.4917828430524101e-06
+      altcolour: True
+    part_37:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -7.499999999999992e-07 1.2990381056766586e-06
+      altcolour: True
+    part_38:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -1.2135254915624207e-06 8.816778784387104e-07
+      altcolour: True
+    part_39:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -1.4672214011007083e-06 3.118675362266396e-07
+      altcolour: True
+    part_40:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -1.4672214011007088e-06 -3.118675362266379e-07
+      altcolour: True
+    part_41:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -1.213525491562422e-06 -8.816778784387084e-07
+      altcolour: True
+    part_42:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -7.500000000000017e-07 -1.299038105676657e-06
+      altcolour: True
+    part_43:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 -1.5679269490148136e-07 -1.49178284305241e-06
+      altcolour: True
+    part_44:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 4.6352549156241963e-07 -1.4265847744427308e-06
+      altcolour: True
+    part_45:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 1.003695909538286e-06 -1.1147172382160927e-06
+      altcolour: True
+    part_46:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 1.3703181864639008e-06 -6.101049646137015e-07
+      altcolour: True
+    part_47:
+      material: FusedSilica
+      shape: cylinder
+      args: 1.5e-07 4e-07 0.0 0.0
+      coords: 0.0 1.5e-06 -1.6996616692943938e-21
       altcolour: True

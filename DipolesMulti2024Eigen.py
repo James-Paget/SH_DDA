@@ -1546,12 +1546,11 @@ if int(len(sys.argv)) != 2:
 # Read the yaml file into a system parameter dictionary
 #===========================================================================
 
-# Check if arg is in the generate presets, else it must be a YAML file name
-if sys.argv[1] in Generate_yaml.get_preset_options():
-    # Generate YAML from preset
-    filestem = "Preset"
-    Generate_yaml.generate_yaml(sys.argv[1], filestem)
-    
+# Check if sys.argv[1] is in the generate presets, else it must be a YAML file name
+preset_filestem = "Preset"
+is_preset_yaml_used = Generate_yaml.generate_yaml(sys.argv[1], preset_filestem)
+if is_preset_yaml_used:
+    filestem = preset_filestem
 else:
     filestem = sys.argv[1]
 
