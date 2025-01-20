@@ -5,6 +5,7 @@ from a single python run
 
 import sys
 import subprocess
+import Generate_yaml
 import numpy as np
 import xlsxwriter
 import pandas as pd
@@ -1158,6 +1159,174 @@ def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None):
 
     return np.array(dipole_sizes)[final_is], np.array(volumes)[final_is], max_error
 
+def simulations_fibre_1D_sphere(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_1D_SPHERE", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
+def simulations_fibre_1D_cylinder(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_1D_CYLINDER", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
+def simulations_fibre_2D_sphere_hollowShell(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_2D_SPHERE_HOLLOWSHELL", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
+def simulations_fibre_2D_cylinder_hollowShell(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_2D_CYLINDER_HOLLOWSHELL", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
+def simulations_fibre_2D_sphere_thick_connectUniform(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_2D_SPHERE_THICK_UNI", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
+def simulations_fibre_2D_cylinder_thick_connectUniform(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_2D_CYLINDER_THICK_UNI", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
+def simulations_fibre_2D_sphere_shellLayers(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_2D_SPHERE_SHELLLAYERS", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
+def simulations_fibre_2D_cylinder_shellLayers(filename):
+    particle_info = [];
+    #parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    record_parameters = ["F"]
+
+    # Generate set of particle in chain
+    #print(f"Performing calculation for {particle_number} particle chain")
+    Generate_yaml.generate_yaml("FIBRE_2D_CYLINDER_SHELLLAYERS", filename=filename)
+
+    # Run DipolesMulti2024Eigen.py
+    run_command = "python DipolesMulti2024Eigen.py "+filename
+    run_command = run_command.split(" ")
+    print("=== Log ===")
+    result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
 
 #=================#
 # Perform Program #
@@ -1286,6 +1455,149 @@ match(sys.argv[1]):
         connection_mode = "dist"
         connection_args = [600e-9] # [2*100e-9 +100e-9] # these connection_args copied from connected_sphereGrid
         parameter_text = simulations_singleFrame_connected_sphereShell(particle_radius, num_pts, shell_radius, connection_mode, connection_args, filename)
+    
+    #
+    # A series of tests for fibres using different models, measuring the flexibility, forces, etc experienced by each
+    #
+    case "fibre_1D_sphere":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+        chain_length    = 3e-6
+        sphere_radius   = 100e-9
+        particle_number = 5
+        frames = 10
+
+        particle_separation = chain_length/particle_number
+        connection_mode = "dist"
+        connection_args = [1.1*particle_separation]
+        # Run
+        parameter_text = simulations_fibre_1D_sphere(filename)
+    case "fibre_1D_cylinder":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+        chain_length    = 3e-6
+        cylinder_length = 400e-9
+        cylinder_radius = 100e-9
+        particle_number = 5
+        frames = 10
+
+        particle_separation = chain_length/particle_number
+        connection_mode = "dist"
+        connection_args = [1.1*particle_separation]
+        # Run
+        parameter_text = simulations_fibre_1D_cylinder(filename)
+    case "fibre_2D_sphere_hollowShell":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+        chain_length    = 3e-6
+        particle_radius = 100e-9
+        shell_radius    = 300e-9
+        particle_number = 5
+        frames = 10
+
+        particle_separation = chain_length/particle_number
+        connection_mode = "dist"
+        connection_args = [1.1*particle_separation]
+        # Run
+        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename)
+    case "fibre_2D_cylinder_hollowShell":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+        chain_length    = 3e-6
+        particle_radius = 100e-9
+        shell_radius    = 300e-9
+        particle_number = 5
+        frames = 10
+
+        particle_separation = chain_length/particle_number
+        connection_mode = "dist"
+        connection_args = [1.1*particle_separation]
+        # Run
+        parameter_text = simulations_fibre_2D_cylinder_hollowShell(filename)
+    case "fibre_2D_sphere_thick_connectUniform":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+        chain_length    = 3e-6
+        particle_radius = 100e-9
+        shell_radius    = 300e-9
+        particle_number = 5
+        frames = 10
+
+        particle_separation = chain_length/particle_number
+        connection_mode = "dist"
+        connection_args = [1.1*particle_separation]
+        # Run
+        parameter_text = simulations_fibre_2D_sphere_thick_connectUniform(filename)
+    case "fibre_2D_cylinder_thick_connectUniform":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+        chain_length    = 3e-6
+        particle_radius = 100e-9
+        shell_radius    = 300e-9
+        particle_number = 5
+        frames = 10
+
+        particle_separation = chain_length/particle_number
+        connection_mode = "dist"
+        connection_args = [1.1*particle_separation]
+        # Run
+        parameter_text = simulations_fibre_2D_cylinder_thick_connectUniform(filename)
+    case "fibre_2D_sphere_shellLayers":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+
+        # Run
+        parameter_text = simulations_fibre_2D_sphere_shellLayers(filename)
+    case "fibre_2D_cylinder_shellLayers":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        ##
+        ## NEED TO MOVE GENERATE YAML CONTROLS IN HERE
+        ##      -> CURRENTLY CONTROLLED DIRECTLY FROM PRESET
+        ##
+
+        # Run
+        parameter_text = simulations_fibre_2D_cylinder_shellLayers(filename)
+    case "fibre_2D_sphere_waterShell":
+        pass
+    case "fibre_2D_cylinder_waterShell":
+        pass
 
     case _:
         print("Unknown run type: ",sys.argv[1]);

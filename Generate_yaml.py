@@ -77,7 +77,51 @@ def generate_yaml(preset, filename="Preset"):
         case "10" | "FILAMENT":
             make_yaml_filament(filename)
 
+        case "11" | "FIBRE_1D_SPHERE":
+            ## **
+            ## MAKE THESE ADJUSTABLE FROM FUNCTION CALL, INCONVIENTIENT TO HAVE TO CHANEG ALL DETAILS INSIDE HERE
+            ## **
+            use_default_options(filename, frames=20, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_1d_sphere(filename, length=2e-6, particle_radius=0.2e-6, particle_number=10)
+
+        case "12" | "FIBRE_1D_CYLINDER":
+            ## **
+            ## MAKE THESE ADJUSTABLE FROM FUNCTION CALL, INCONVIENTIENT TO HAVE TO CHANEG ALL DETAILS INSIDE HERE
+            ## **
+            use_default_options(filename, frames=10, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_1d_cylinder(filename, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5)
+
+        case "13" | "FIBRE_2D_SPHERE_HOLLOWSHELL":
+            use_default_options(filename, frames=40, time_step=0.00005, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_2d_sphere_hollowshell(filename, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4)
+
+        case "14" | "FIBRE_2D_CYLINDER_HOLLOWSHELL":
+            use_default_options(filename, frames=1, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_2d_cylinder_hollowshell(filename, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8)
+
+        case "15" | "FIBRE_2D_SPHERE_THICK_UNI":
+            use_default_options(filename, frames=1, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_2d_sphere_thick_uni(filename, length=3e-6, shell_radius=1e-6, shell_number=1, particle_radius=0.2e-6, particle_number_radial=4, particle_number_angular=6)
+
+        case "16" | "FIBRE_2D_CYLINDER_THICK_UNI":
+            use_default_options(filename, frames=1, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_2d_cylinder_thick_uni(filename, length=3e-6, shell_radius=1e-6, shell_number=1, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=6)
         
+        case "17" | "FIBRE_2D_SPHERE_SHELLLAYERS":
+            use_default_options(filename, frames=1, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_2d_sphere_shelllayers(filename, length=1.5e-6, shell_radius_max=1.5e-6, shell_number=2, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0))
+        
+        case "18" | "FIBRE_2D_CYLINDER_SHELLLAYERS":
+            use_default_options(filename, frames=1, show_output=True)
+            use_laguerre3_beam(filename)
+            use_fibre_2d_cylinder_shelllayers(filename, length=1.0e-6, shell_radius_max=1.5e-6, shell_number=2, particle_length=0.4e-6, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0))
 
         case _:
             sys.exit(f"Generate_yaml error: preset '{preset}' not found")
@@ -230,6 +274,60 @@ def use_filament(filename, length, radius, separation, particle_radius, rotation
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
     use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
 
+def use_fibre_1d_sphere(filename, length, particle_radius, particle_number):
+    separation = length/particle_number
+    args_list = [[particle_radius]] * particle_number
+    coords_list = [[separation*(zi - (particle_number-1)/2), 0.0, 0.0] for zi in range(particle_number)]
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", separation*1.001)
+
+def use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number):
+    separation = length/particle_number
+    coords_list = [[separation*(zi - (particle_number-1)/2), 0.0, 0.0] for zi in range(particle_number)]
+    args_list = [[particle_radius, particle_length, 0.0, 0.0]] * particle_number
+    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", 1.001*separation)
+
+def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular):
+    args_list = [[particle_radius]] * (particle_number_radial*particle_number_angular)
+    coords_list = coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
+    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", separation*1.001)
+
+def use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular):
+    args_list = [[particle_radius, particle_length, 0.0, 0.0]] * (particle_number_radial*particle_number_angular)
+    coords_list = coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
+    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", separation*1.001)
+
+def use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, particle_radius, particle_number_radial, particle_number_angular):
+    args_list = [[particle_radius]] * (particle_number_radial*particle_number_angular*(shell_number) +particle_number_radial)   # N shells + 1 line
+    coords_list = coords_list = get_fibre_2d_thick_points(length, shell_radius, shell_number, particle_number_radial, particle_number_angular, include_center_line=True)
+    
+    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    separation = max( separation, shell_radius/shell_number )
+
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", separation*1.001)
+
+def use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular):
+    args_list = [[particle_radius, particle_length, 0.0, 0.0]] * (particle_number_radial*particle_number_angular*(shell_number) +particle_number_radial)   # N shells + 1 line
+    coords_list = coords_list = get_fibre_2d_thick_points(length, shell_radius, shell_number, particle_number_radial, particle_number_angular, include_center_line=True)
+
+    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    separation = max( separation, shell_radius/shell_number )
+    
+    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", separation*1.001)
+
+def use_fibre_2d_sphere_shelllayers(filename, length, shell_radius_max, shell_number, particle_radius, particle_separation):
+    coords_list = get_fibre_2d_shelllayers_points(length, shell_radius_max, shell_number, particle_separation)
+    args_list = [[particle_radius]] * len(coords_list)
+
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", particle_separation*1.001)
+
+def use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation):
+    coords_list = get_fibre_2d_shelllayers_points(length, shell_radius_max, shell_number, particle_separation)
+    args_list = [[particle_radius, particle_length, 0.0, 0.0]] * len(coords_list)
+    
+    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", particle_separation*1.001)
+
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
 #     # makes a row of separated cylinders
 #     coords_list = get_cylinder_points(num_particles, length, separation)
@@ -244,6 +342,7 @@ def use_filament(filename, length, radius, separation, particle_radius, rotation
     
 #     use_default_particles(filename, "cylinder", args_list, coords_list, "num", 0)
     # use_default_particles(filename, "sphere", [[0.15e-6]] * len(coords_list), coords_list, "num", 0)
+
 
 
 def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args):
@@ -538,6 +637,55 @@ def get_filament_points(length, radius, separation):
     circle_list = np.array(circle_list)
     for l in range(num_len):
         coords_list.extend(circle_list + [0,l*separation,0])
+    return coords_list
+
+def get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular):
+    coords_list = []
+
+    angular_separation = (2.0*np.pi) / particle_number_angular      # Theta separation between points
+    radial_separation  = (length) / (particle_number_radial-1)          # Spacing anlong width of the hollow cylinder shell being generated
+    radial_offset = length/2.0    # To centre the cylinder at the origin
+
+    for i in range(particle_number_radial):
+        for j in range(particle_number_angular):
+            coords_list.append( [radial_separation*i -radial_offset, shell_radius*np.cos(angular_separation*j), shell_radius*np.sin(angular_separation*j)] )
+
+    return coords_list
+
+def get_fibre_2d_thick_points(length, shell_radius, shell_number, particle_number_radial, particle_number_angular, include_center_line=True):
+    coords_list = []
+
+    angular_separation = (2.0*np.pi) / particle_number_angular      # Theta separation between points
+    radial_separation  = (length) / (particle_number_radial-1)          # Spacing anlong width of the hollow cylinder shell being generated
+    radial_offset = length/2.0    # To centre the cylinder at the origin
+
+    for k in range(shell_number+1):
+        shell_sub_radius = k*shell_radius/shell_number
+        for i in range(particle_number_radial):
+            for j in range(particle_number_angular):
+                if(k==0):
+                    if(include_center_line and j==0):
+                        # Line at centre
+                        coords_list.append( [radial_separation*i -radial_offset, 0.0, 0.0] )
+                else:
+                    # Surrounding shells
+                    coords_list.append( [radial_separation*i -radial_offset, shell_sub_radius*np.cos(angular_separation*j), shell_sub_radius*np.sin(angular_separation*j)] )
+    return coords_list
+
+def get_fibre_2d_shelllayers_points(length, shell_radius_max, shell_number, particle_separation):
+    coords_list = []
+
+    particle_number_radial = int(np.ceil(length / particle_separation)) ##### COULD DO BETTER BY JUST MANUALLY CONNECTING IN THE CONNECTIONS INDEX, HOWEVER WITH THIS MAY GET GAPS THAT LET PARTICLES THROUGH TOO EASILY ####
+    radial_offset = (particle_number_radial*particle_separation)/2.0
+
+    for k in range(1, shell_number+1):
+        shell_sub_radius = k*shell_radius_max/shell_number
+        angular_separation = particle_separation/shell_sub_radius
+        particle_number_angular = int(np.ceil( (2.0*np.pi*shell_sub_radius)/(particle_separation) ))
+        for j in range(particle_number_radial):
+            for i in range(particle_number_angular):
+                coords_list.append([particle_separation*j -radial_offset, shell_sub_radius*np.cos(i*angular_separation), shell_sub_radius*np.sin(i*angular_separation)])
+
     return coords_list
 
 # def get_cylinder_points(num_particles, length, separation):
