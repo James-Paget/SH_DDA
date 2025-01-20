@@ -4,6 +4,7 @@ import numpy as np
 """
 write_* functions have no parameters set.
 use_* functions have some paremeters set, making them quicker to create presets
+make_yaml_* makes a full yaml using the input parameters, with default values which can be used.
 """
 
 # each added preset needed to be added to BOTH 'get_preset_options' and 'generate_yaml'
@@ -25,6 +26,7 @@ def get_preset_options():
         "8", "SHEET_SQUARE",
         "9", "SHEET_HEXAGON",
         "10", "FILAMENT",
+        "11", "CYLINDER",
     ]
 
 def generate_yaml(preset, filename="Preset"):
@@ -36,70 +38,44 @@ def generate_yaml(preset, filename="Preset"):
     # Match to a preset.
     match str(preset):
         case "0" | "TETRAHEDRON":
-            use_default_options(filename, frames=50, show_output=True)
-            use_laguerre3_beam(filename)
-            use_tetrahedron(filename, tetrahedron_radius=1e-6, particle_radius=0.2e-6)
+            make_yaml_tetrahedron(filename)
 
         case "TETRAHEDRON_BESSEL":
-            use_default_options(filename, frames=50, show_output=True)
-            use_bessel_beam(filename)
-            use_tetrahedron(filename, tetrahedron_radius=1e-6, particle_radius=0.2e-6)
+            make_yaml_tetrahedron(filename, beam="BESSEL")
 
         case "TETRAHEDRON_ROTATED":
-            use_default_options(filename, frames=50, show_output=True)
-            use_laguerre3_beam(filename)
-            use_tetrahedron(filename, tetrahedron_radius=1e-6, particle_radius=0.2e-6, rotation_axis=[1,0,0], rotation_theta=np.pi)
-
+            make_yaml_tetrahedron(filename, rotation_axis=[1,0,0], rotation_theta=np.pi)
+            
         case "1" | "ICOSAHEDRON":
-            use_default_options(filename, frames=20, show_output=True)
-            use_laguerre3_beam(filename)
-            use_icosahedron(filename, icosahedron_radius=1e-6, particle_radius=0.2e-6)
+            make_yaml_icosahedron(filename)
 
         case "2" | "LINE":
-            use_default_options(filename, frames=20, show_output=True)
-            use_laguerre3_beam(filename)
-            use_line(filename, num_particles=5, separation=0.5e-6, particle_radius=0.2e-6, rotation_axis=[1,0,0], rotation_theta=np.pi/2)
+            make_yaml_line(filename)
 
         case "3" | "NSPHERE":
             # Approximately distributes N points over a sphere and connects them.
-            use_default_options(filename, frames=10, show_output=True)
-            use_laguerre3_beam(filename)
-            use_NSphere(filename, num_particles=40, sphere_radius=2e-6, particle_radius=0.15e-6, connection_mode="num", connection_args=5, rotation_axis=[0,0,1], rotation_theta=0)
+            make_yaml_Nsphere(filename)
 
         case "4" | "TORUS":
-            use_default_options(filename, frames=1, show_output=True)
-            use_laguerre3_beam(filename)
-            use_torus(filename, num_particles=6, inner_radius=1.15e-6, tube_radius=0.2e-6, separation=0.5e-7)
+            make_yaml_torus(filename)
 
         case "5" | "CONNECTED_RING":
-            use_default_options(filename, frames=50, show_output=True)
-            use_laguerre3_beam(filename)
-            use_connected_ring(filename, num_particles=6, ring_radius=1e-6, particle_radius=0.2e-6, rotation_axis=[0,0,1], rotation_theta=0)
+            make_yaml_connected_ring(filename)
 
         case "6" | "UNCONNECTED_RING":
-            use_default_options(filename, frames=50, show_output=True)
-            use_laguerre3_beam(filename)
-            use_unconnected_ring(filename, num_particles=6, ring_radius=1e-6, particle_radius=0.2e-6, rotation_axis=[0,0,1], rotation_theta=0)
-
+            make_yaml_unconnected_ring(filename)
+            
         case "7" | "SHEET_TRIANGLE":
-            use_default_options(filename, frames=25, show_output=True)
-            use_laguerre3_beam(filename)
-            use_sheet_triangle(filename, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, rotation_axis=[0,0,1], rotation_theta=0)
+            make_yaml_sheet_triangle(filename)
         
         case "8" | "SHEET_SQUARE":
-            use_default_options(filename, frames=50, show_output=True)
-            use_laguerre3_beam(filename)
-            use_sheet_square(filename, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, rotation_axis=[0,0,1], rotation_theta=0)
+            make_yaml_sheet_square(filename)
 
         case "9" | "SHEET_HEXAGON":
-            use_default_options(filename, frames=50, show_output=True)
-            use_laguerre3_beam(filename)
-            use_sheet_hexagon(filename, num_length=3, num_width=3, separation=0.7e-6, particle_radius=0.12e-6, rotation_axis=[0,0,1], rotation_theta=0)
+            make_yaml_sheet_hexagon(filename)
 
         case "10" | "FILAMENT":
-            use_default_options(filename, frames=50, show_output=True)
-            use_laguerre3_beam(filename)
-            use_filament(filename, length=4e-6, radius=0.8e-6, separation=0.5e-6, particle_radius=0.1e-6, rotation_axis=[0,0,1], rotation_theta=0)
+            make_yaml_filament(filename)
 
         case "11" | "FIBRE_1D_SPHERE":
             ## **
@@ -149,6 +125,75 @@ def generate_yaml(preset, filename="Preset"):
 
         case _:
             sys.exit(f"Generate_yaml error: preset '{preset}' not found")
+
+        # case "11" | "CYLINDER":
+        #     use_default_options(filename, frames=1, show_output=True)
+        #     use_laguerre3_beam(filename)
+        #     use_cylinder(filename, num_particles=3, length=1e-6, radius=2e-7, separation=0.2e-6, rotation_axis=[1,0,0], rotation_theta=0.7)
+            # XXX axis x and y rotation is SWAPPED!
+
+
+#=======================================================================
+# Make yamls
+#=======================================================================
+
+def make_yaml_tetrahedron(filename, frames=50, show_output=True, tetrahedron_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_tetrahedron(filename, tetrahedron_radius, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_icosahedron(filename, frames=20, show_output=True, icosahedron_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_icosahedron(filename, icosahedron_radius, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_line(filename, frames=20, show_output=True, num_particles=5, separation=0.5e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[1,0,0], rotation_theta=np.pi/2):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_line(filename, num_particles, separation, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_Nsphere(filename, frames=10, show_output=True, num_particles=40, sphere_radius=2e-6, particle_radius=0.1e-6, connection_mode="num", connection_args=5, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, rotation_axis, rotation_theta)
+
+def make_yaml_torus(filename, frames=1, show_output=True, num_particles=6, inner_radius=1.15e-6, tube_radius=0.2e-6, separation=0.5e-7, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_torus(filename, num_particles, inner_radius, tube_radius, separation)
+
+def make_yaml_connected_ring(filename, frames=50, show_output=True, num_particles=6, ring_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_connected_ring(filename, num_particles, ring_radius, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_unconnected_ring(filename, frames=50, show_output=True, num_particles=6, ring_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_unconnected_ring(filename, num_particles, ring_radius, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_sheet_triangle(filename, frames=25, show_output=True, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_sheet_triangle(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_sheet_square(filename, frames=25, show_output=True, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_sheet_square(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_sheet_hexagon(filename, frames=25, show_output=True, num_length=3, num_width=3, separation=0.7e-6, particle_radius=0.12e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_sheet_hexagon(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta)
+
+def make_yaml_filament(filename, frames=50, show_output=True, length=4e-6, radius=0.8e-6, separation=0.7e-6, particle_radius=0.1e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+    use_default_options(filename, frames, show_output)
+    use_beam(filename, beam)
+    use_filament(filename, length, radius, separation, particle_radius, rotation_axis, rotation_theta)
+
+
+
 
 
 #=======================================================================
@@ -283,6 +328,22 @@ def use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_
     
     use_default_particles(filename, "cylinder", args_list, coords_list, "dist", particle_separation*1.001)
 
+# def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
+#     # makes a row of separated cylinders
+#     coords_list = get_cylinder_points(num_particles, length, separation)
+#     if rotation_theta != 0:
+#         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
+#     # radius, width, theta_Z, theta_pitch
+#     test_pt = rotate_coords_list([[0,1,0]], rotation_axis, rotation_theta)[0]
+#     theta_Z, theta_pitch = np.arctan2(test_pt[1],test_pt[0]), np.arccos(np.clip(test_pt[2], -1, 1))
+#     args_list = [[radius, length, theta_Z, theta_pitch] for (x,y,z) in coords_list] # the spherical angles of the piece positions ARE their individual rotation.
+#     # XXX need to fix the 0,0,0 case.
+#     print(f"ARGSLIST IS {args_list}")
+    
+#     use_default_particles(filename, "cylinder", args_list, coords_list, "num", 0)
+    # use_default_particles(filename, "sphere", [[0.15e-6]] * len(coords_list), coords_list, "num", 0)
+
+
 
 def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args):
     """
@@ -297,6 +358,15 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 #=======================================================================
 # Beam configurations
 #=======================================================================
+
+def use_beam(filename, beam):
+    match beam:
+        case "LAGUERRE":
+            use_laguerre3_beam(filename)
+        case "BESSEL":
+            use_bessel_beam(filename)
+        case _:
+            print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
 
 def use_laguerre3_beam(filename):
     """
@@ -617,3 +687,10 @@ def get_fibre_2d_shelllayers_points(length, shell_radius_max, shell_number, part
                 coords_list.append([particle_separation*j -radial_offset, shell_sub_radius*np.cos(i*angular_separation), shell_sub_radius*np.sin(i*angular_separation)])
 
     return coords_list
+
+# def get_cylinder_points(num_particles, length, separation):
+#     # Cyclinders running along the y-axis.
+#     # length is length of each cylinder
+#     # coords_list = []
+#     y_coords = np.linspace(-(num_particles-1)/2, (num_particles+1)/2, num_particles+1)[:-1] * (length + separation)
+#     return [[0,y,0] for y in y_coords]
