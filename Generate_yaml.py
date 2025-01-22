@@ -20,6 +20,12 @@ def generate_yaml(preset, filename="Preset"):
         case "0" | "TETRAHEDRON":
             make_yaml_tetrahedron(filename)
 
+        case "TEST":
+            use_default_options(filename, frames=30, show_output=True)
+            beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":None, "translationfinal":"1.5e-6 0 0", "rotation":None}
+            write_beams(filename, [beam])
+            use_tetrahedron(filename, 1e-6, 0.2e-6, [0,0,1], 0)
+
         case "TETRAHEDRON_BESSEL":
             make_yaml_tetrahedron(filename, beam="BESSEL")
 
