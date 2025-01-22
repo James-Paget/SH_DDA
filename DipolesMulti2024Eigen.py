@@ -1650,7 +1650,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     is_beam_changing = False
     for beam_params in beaminfo.values():
         if "translationfinal" in beam_params.keys():
-            if beam_params["translationfinal"] != "None" and beam_params["translation"] != beam_params["translationfinal"]:
+            if beam_params["translationfinal"] != "None" and beam_params["translation"] != beam_params["translationfinal"]: # python None gets converted to "None" string when read from YAML
                 is_beam_changing = True
 
     # If so, make a list of collections
@@ -1768,8 +1768,8 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True)
+        # fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list)
 
 
 
