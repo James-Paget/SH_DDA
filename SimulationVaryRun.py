@@ -1194,13 +1194,13 @@ def simulations_fibre_1D_cylinder(filename, chain_length, particle_length, parti
     parameter_text = ""
     return parameter_text
 
-def simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, frames, show_output=True):
+def simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, frames, show_output=True, include_beads=False):
     particle_info = [];
     record_parameters = ["F"]
 
     # Generate YAML for set of particles and beams
     print(f"Performing calculation for {particle_number_radial*particle_number_angular} particles")
-    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, time_step, frames, show_output, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="LAGUERRE")
+    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, time_step, frames, show_output, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="LAGUERRE", include_beads=include_beads)
 
     # Run simulation
     DM.main(YAML_name=filename, constants=constants, force_terms=force_terms)
@@ -1476,11 +1476,20 @@ match(sys.argv[1]):
         frames = 20
         constants={"spring":5e-6, "bending":0.1e-18}
         force_terms=["optical", "spring", "bending"]
+        include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
         connection_mode = "dist"
-        connection_args = 0.0   # NOTE; Is overwritten in the function to pick the correct value
+        connection_args = [0.0]   # NOTE; Is overwritten in the function to pick the correct value
+        if(include_beads):
+            connection_mode = "dist_beads"
+            connection_args = [0.0, 0.0, 2] # NOTE; 0.0 values will be overwritten later in the function for correct values
+            # "dist_beads" has args = [
+            #       distance to connect non-bead particles,
+            #       distance to connect bead particles,
+            #       number of bead particles (NOTE; Assumes all beads are located at the end of the particle list)
+            #   ]
         # Run
-        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, frames, show_output=True)
+        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, frames, show_output=True, include_beads=include_beads)
     case "fibre_2D_cylinder_hollowShell":
         # Save file
         filename = "SingleLaguerre"
@@ -1492,7 +1501,7 @@ match(sys.argv[1]):
         particle_number_radial  = 8
         particle_number_angular = 6
         time_step = 0.5e-4
-        frames = 30
+        frames = 10
         constants={"spring":5e-6, "bending":0.65e-18}
         force_terms=["optical", "spring", "bending"]
 

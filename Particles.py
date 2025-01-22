@@ -21,6 +21,7 @@ class ParticleCollection (object):
                      'FusedSilica002': [1.458+0.002j, '#7e7e7e', '#aeaeae','B'],
                      'FusedSilica005': [1.458+0.005j, '#7e7e7e', '#aeaeae','B'],
                      'FusedSilica01': [1.458+0.01j, '#7e7e7e', '#aeaeae','B'],
+                     'RBC': [1.41, '#ffffff', '#eeeeee', 'Cr'],
                      'Chromium': [3.41 + 3.57j, '#ffffff', '#eeeeee', 'Cr'],
                      'Air': [1.00, '#0f0f0f', '#1f1f1f', 'Ar'],
                      }
@@ -209,6 +210,7 @@ class ParticleCollection (object):
     
     def get_connection_args(self):
         # returns a list of floats
+        print("self.connection_args = ",self.connection_args)
         if self.connection_args == "":
             return np.asarray([], dtype=float)
         else:
