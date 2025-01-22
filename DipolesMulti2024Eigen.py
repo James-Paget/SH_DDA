@@ -1449,7 +1449,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
             case "torus":
                 effective_radii[p] = (args[p][0] + args[p][1])
             case "cylinder":
-                effective_radii[p] = (args[p][0] + args[p][1])
+                effective_radii[p] = (args[p][0]/2.0 + args[p][1]/2.0)  # arg[0] for cylinder is total length
 
     # find which particles are connected in objects
     # particle_groups = group_particles_into_objects(number_of_particles, connection_indices)
