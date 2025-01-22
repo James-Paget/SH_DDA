@@ -20,10 +20,9 @@ def generate_yaml(preset, filename="Preset"):
         case "0" | "TETRAHEDRON":
             make_yaml_tetrahedron(filename)
 
-        case "TEST":
+        case "TRANSLATE_BEAM":
             use_default_options(filename, frames=30, show_output=True)
-            beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":None, "translationfinal":"1.5e-6 0 0", "rotation":None}
-            write_beams(filename, [beam])
+            use_laguerre3_beam(filename, translation=None, translationfinal="1.5e-6 0 0")
             use_tetrahedron(filename, 1e-6, 0.2e-6, [0,0,1], 0)
 
         case "TETRAHEDRON_BESSEL":
@@ -362,27 +361,27 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 # Beam configurations
 #=======================================================================
 
-def use_beam(filename, beam):
+def use_beam(filename, beam, translation=None, translationfinal=None):
     match beam:
         case "LAGUERRE":
-            use_laguerre3_beam(filename)
+            use_laguerre3_beam(filename,translation, translationfinal)
         case "BESSEL":
-            use_bessel_beam(filename)
+            use_bessel_beam(filename, translation, translationfinal)
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
 
-def use_laguerre3_beam(filename):
+def use_laguerre3_beam(filename, translation, translationfinal):
     """
     Makes a Laguerre-Gaussian beam.
     """
-    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":None, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationfinal":translationfinal, "rotation":None}
     write_beams(filename, [beam])
 
-def use_bessel_beam(filename):
+def use_bessel_beam(filename, translation, translationfinal):
     """
     Makes a Laguerre-Gaussian beam.
     """
-    beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":None, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":translation, "translationfinal":translationfinal, "rotation":None}
     write_beams(filename, [beam])
 
 #=======================================================================

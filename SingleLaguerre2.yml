@@ -11,7 +11,7 @@
 # System options
 #============================================================================================
 options:
-  frames: 10000
+  frames: 10
 #============================================================================================
 # System parameters
 #============================================================================================
@@ -36,7 +36,7 @@ display:
   max_size: 2e-6 # range will be 2 times this
   resolution: 201 # number of points in each direction of plot
   frame_min: 0 # starting frame for animation
-  frame_max: 10000 # will default to number of frames
+  frame_max: 10 # will default to number of frames
   z_offset: 0.0e-6
 #============================================================================================
 # Beam descriptions
