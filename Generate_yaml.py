@@ -78,7 +78,7 @@ def generate_yaml(preset, filename="Preset"):
             make_yaml_fibre_2d_sphere_thick_uni(filename)
 
         case "16" | "FIBRE_2D_CYLINDER_THICK_UNI":
-            make_yaml_fibre_2d_sphere_thick_uni(filename)
+            make_yaml_fibre_2d_cylinder_thick_uni(filename)
         
         case "17" | "FIBRE_2D_SPHERE_SHELLLAYERS":
             make_yaml_fibre_2d_sphere_shelllayers(filename)
@@ -157,45 +157,45 @@ def make_yaml_filament(filename, frames=50, show_output=True, length=4e-6, radiu
     use_beam(filename, beam)
     use_filament(filename, length, radius, separation, particle_radius, rotation_axis, rotation_theta)
 
-def make_yaml_fibre_1d_sphere(filename, frames=20, show_output=True, length=2e-6, particle_radius=0.2e-6, particle_number=10, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output)
+def make_yaml_fibre_1d_sphere(filename, time_step=1e-4, frames=20, show_output=True, length=2e-6, particle_radius=0.2e-6, particle_number=10, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_1d_sphere(filename, length, particle_radius, particle_number)
+    use_fibre_1d_sphere(filename, length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_1d_cylinder(filename, frames=10, show_output=True, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output)
+def make_yaml_fibre_1d_cylinder(filename, time_step=1e-4, frames=10, show_output=True, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number)
+    use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_hollowshell(filename, frames=40, time_step=0.00005, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, beam="LAGUERRE"):
-    use_default_options(filename, frames, time_step, show_output)
+def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, time_step, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular)
+    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_cylinder_hollowshell(filename, frames=1, show_output=True, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output)
+def make_yaml_fibre_2d_cylinder_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular)
+    use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_thick_uni(filename, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_radius=0.2e-6, particle_number_radial=4, particle_number_angular=6, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output)
+def make_yaml_fibre_2d_sphere_thick_uni(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_radius=0.2e-6, particle_number_radial=4, particle_number_angular=6, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, particle_radius, particle_number_radial, particle_number_angular)
+    use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_thick_uni(filename, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=6, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output)
+def make_yaml_fibre_2d_cylinder_thick_uni(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=6, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular)
+    use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_shelllayers(filename, frames=1, show_output=True, length=1.5e-6, shell_radius_max=1.5e-6, shell_number=2, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output)
+def make_yaml_fibre_2d_sphere_shelllayers(filename, time_step=1e-4, frames=1, show_output=True, length=1.5e-6, shell_radius_max=1.5e-6, shell_number=2, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_2d_sphere_shelllayers(filename, length, shell_radius_max, shell_number, particle_radius, particle_separation)
+    use_fibre_2d_sphere_shelllayers(filename, length, shell_radius_max, shell_number, particle_radius, particle_separation, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_cylinder_shelllayers(filename, frames=1, show_output=True,  length=1.0e-6, shell_radius_max=1.5e-6, shell_number=2, particle_length=0.4e-6, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output)
+def make_yaml_fibre_2d_cylinder_shelllayers(filename, time_step=1e-4, frames=1, show_output=True,  length=1.0e-6, shell_radius_max=1.5e-6, shell_number=2, particle_length=0.4e-6, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation)
+    use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args)
 
 
 #=======================================================================
@@ -276,59 +276,59 @@ def use_filament(filename, length, radius, separation, particle_radius, rotation
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
     use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
 
-def use_fibre_1d_sphere(filename, length, particle_radius, particle_number):
+def use_fibre_1d_sphere(filename, length, particle_radius, particle_number, connection_mode, connection_args):
     separation = length/particle_number
     args_list = [[particle_radius]] * particle_number
     coords_list = [[separation*(zi - (particle_number-1)/2), 0.0, 0.0] for zi in range(particle_number)]
-    use_default_particles(filename, "sphere", args_list, coords_list, "dist", separation*1.001)
+    use_default_particles(filename, "sphere", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number):
+def use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args):
     separation = length/particle_number
     coords_list = [[separation*(zi - (particle_number-1)/2), 0.0, 0.0] for zi in range(particle_number)]
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * particle_number
-    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", 1.001*separation)
+    use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular):
+def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args):
     args_list = [[particle_radius]] * (particle_number_radial*particle_number_angular)
     coords_list = coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
-    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
-    use_default_particles(filename, "sphere", args_list, coords_list, "dist", separation*1.001)
+    connection_args = 1.01*max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    use_default_particles(filename, "sphere", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular):
+def use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args):
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * (particle_number_radial*particle_number_angular)
     coords_list = coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
-    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
-    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", separation*1.001)
+    connection_args = 1.01*max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, particle_radius, particle_number_radial, particle_number_angular):
+def use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args):
     args_list = [[particle_radius]] * (particle_number_radial*particle_number_angular*(shell_number) +particle_number_radial)   # N shells + 1 line
     coords_list = coords_list = get_fibre_2d_thick_points(length, shell_radius, shell_number, particle_number_radial, particle_number_angular, include_center_line=True)
     
-    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
-    separation = max( separation, shell_radius/shell_number )
+    connection_args = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    connection_args = 1.1*max( connection_args, shell_radius/shell_number )
 
-    use_default_particles(filename, "sphere", args_list, coords_list, "dist", separation*1.001)
+    use_default_particles(filename, "sphere", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular):
+def use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args):
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * (particle_number_radial*particle_number_angular*(shell_number) +particle_number_radial)   # N shells + 1 line
     coords_list = coords_list = get_fibre_2d_thick_points(length, shell_radius, shell_number, particle_number_radial, particle_number_angular, include_center_line=True)
 
-    separation = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
-    separation = max( separation, shell_radius/shell_number )
+    connection_args = max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    connection_args = 1.1*max( connection_args, shell_radius/shell_number )
     
-    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", separation*1.001)
+    use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_sphere_shelllayers(filename, length, shell_radius_max, shell_number, particle_radius, particle_separation):
+def use_fibre_2d_sphere_shelllayers(filename, length, shell_radius_max, shell_number, particle_radius, particle_separation, connection_mode, connection_args):
     coords_list = get_fibre_2d_shelllayers_points(length, shell_radius_max, shell_number, particle_separation)
     args_list = [[particle_radius]] * len(coords_list)
 
-    use_default_particles(filename, "sphere", args_list, coords_list, "dist", particle_separation*1.001)
+    use_default_particles(filename, "sphere", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation):
+def use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args):
     coords_list = get_fibre_2d_shelllayers_points(length, shell_radius_max, shell_number, particle_separation)
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * len(coords_list)
     
-    use_default_particles(filename, "cylinder", args_list, coords_list, "dist", particle_separation*1.001)
+    use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
 #     # makes a row of separated cylinders
