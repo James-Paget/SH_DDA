@@ -39,16 +39,18 @@ class DisplayObject (object):
             self.frame_max = min(frames,int(displayinfo.get('frame_max',frames)))
             self.z_offset = float(displayinfo.get('z_offset',DisplayObject.defaults['z_offset']))
 
-    def plot_intensity(self, beam_collection):
-        nx = self.resolution
-        ny=nx
+
+    def get_intensity_points(self, beam_collection, n=None):
+        # Prepare beam surface values
+        if n == None:
+            nx = self.resolution
+        else:
+            nx = n
+        ny = nx
         Ex = np.zeros((nx, ny), dtype=complex)
         Ey = np.zeros((nx, ny), dtype=complex)
         Ez = np.zeros((nx, ny), dtype=complex)
-        z = self.z_offset
-        #I = []
         E = np.zeros(3,dtype=np.complex128)
-        #fig, ax = plt.subplots(1, num_plots)
         upper = self.max_size
         lower = -upper
         x = np.linspace(lower, upper, nx)
@@ -56,17 +58,23 @@ class DisplayObject (object):
         X, Y = np.meshgrid(x, y)
         for j in range(ny):
             for i in range(nx):
-                Beams.all_incident_fields((x[i], y[j], self.z_offset), beam_collection, E)
+                Beams.all_incident_fields((x[i], x[j], self.z_offset), beam_collection, E)
                 Ex[j][i] = E[0]
                 Ey[j][i] = E[1]
                 Ez[j][i] = E[2]
 
+        Z = np.zeros(X.shape) + self.z_offset
         I = np.square(np.abs(Ex)) + np.square(np.abs(Ey)) + np.square(np.abs(Ez))
-        print(np.shape(I))
-#        for j in range(ny):
-#            print(j,I[0][100][j])
         I0 = np.max(I)
-#            ax.axis('equal')
+        return X, Y, Z, I, I0
+
+    def plot_intensity(self, beam_collection):
+        #I = []
+        #fig, ax = plt.subplots(1, num_plots)
+        upper = self.max_size
+        lower = -upper
+        _,_,_, I, I0 = self.get_intensity_points(beam_collection)
+        print(np.shape(I))
 
         fig = plt.figure()
         ax = plt.axes(xlim=(lower, upper), ylim=(lower, upper))
@@ -111,42 +119,21 @@ class DisplayObject (object):
                 particle[0, frames - 2 : frames], particle[1, frames - 2 : frames]
             )
         return self.trajectories
-    
 
     def plot_intensity3d(self, beam_collection):
         #
         # Plots intensity of beam overlayed on figure
         #
         
-        # Prepare beam surface values
-        nx = self.resolution
-        ny=nx
-        Ex = np.zeros((nx, ny), dtype=complex)
-        Ey = np.zeros((nx, ny), dtype=complex)
-        Ez = np.zeros((nx, ny), dtype=complex)
-        E = np.zeros(3,dtype=np.complex128)
         upper = self.max_size
         lower = -upper
-        x = np.linspace(lower, upper, nx)
-        y = np.linspace(lower, upper, ny)
-        X, Y = np.meshgrid(x, y)
-        for j in range(ny):
-            for i in range(nx):
-                Beams.all_incident_fields((x[i], x[j], self.z_offset), beam_collection, E)
-                Ex[j][i] = E[0]
-                Ey[j][i] = E[1]
-                Ez[j][i] = E[2]
-
-        I = np.square(np.abs(Ex)) + np.square(np.abs(Ey)) + np.square(np.abs(Ez))
-        I0 = np.max(I)
+        X, Y, Z, I, I0 = self.get_intensity_points(beam_collection)
 
         # Make figure objects
         fig = plt.figure()
         zlower = lower
         zupper = upper
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
-
-        Z = np.zeros(X.shape) + self.z_offset
         cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
 
         ax.set_aspect('equal','box')
@@ -243,7 +230,7 @@ class DisplayObject (object):
         return x_rotated, y_rotated, z_rotated
     
 
-    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, include_connections=True, quiver_scale=3e5):
+    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, include_connections=True, quiver_scale=3e5, beam_collection_list=None):
         #
         # Plots particles with optional quiver (force forces) and tracer (for positions) plots too
         # NOTE; If a quiver plot is wanted, a list of forces must be provided as well (in the format of optforces)
@@ -323,6 +310,12 @@ class DisplayObject (object):
                         pos_x1, pos_y1, pos_z1 = np.transpose(positions[t1, :, :])
                         pos_x2, pos_y2, pos_z2 = np.transpose(positions[t2, :, :])
                         ax.quiver(pos_x1, pos_y1, pos_z1, pos_x2-pos_x1, pos_y2-pos_y1, pos_z2-pos_z1)
+
+
+            if(beam_collection_list!=None):
+                X, Y, Z, I, I0 = self.get_intensity_points(beam_collection_list[t], n=61) # lowered resolution otherwise the animation slows down.
+                beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
+                plots.append(beam_plane)
 
         # Initialise
         positions = np.array(positions)

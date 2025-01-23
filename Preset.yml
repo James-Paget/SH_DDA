@@ -1,0 +1,59 @@
+options:
+  frames: 30
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 30
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationfinal: 1.5e-6 0 0
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: num
+  connection_args: 3
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 0.0 0.0 1e-06
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 9.426414910921784e-07 0.0 -3.3380685923377075e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -4.7132074554608904e-07 8.163514779470691e-07 -3.3380685923377075e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -4.713207455460896e-07 -8.163514779470688e-07 -3.3380685923377075e-07
+      altcolour: True

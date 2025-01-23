@@ -629,6 +629,42 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
 
             current_connections = np.array(current_connections)
             #print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
+        
+        case "dist_beads":
+            # Links every non-bead particle to eachother by distance (arg[0] distance chosen)
+            # Then links beads to any other particle by distance (arg[1] distance chosen)
+            # Assumes there are N beads (arg[3]) all located at the end of the particles list
+            # args: [dist_p, dist_b, number_of_beads]
+            if num_particles < 2:
+                print("generate_connection_indices: dist num_particles error, setting connections=[]")
+
+            if(len(args) < 3):
+                print("Invalid number of arguements for connections, require 3; "+str(len(args))+" given")
+            else:
+                dist_p = args[0]
+                dist_b = args[1]
+                number_of_beads = int(args[2])
+
+                # Connect all non-bead particles 
+                for i in range(num_particles-number_of_beads):
+                    for j in range(i+1, num_particles-number_of_beads):
+                        # If Other-Other interaction
+                        if np.linalg.norm( array_of_positions[i] - array_of_positions[j] ) < dist_p:
+                            connection_indices.append((i,j))
+                            connection_indices.append((j,i))
+                            # current_connections[i] += 1
+                            # current_connections[j] += 1
+
+                # If Bead-Any interaction
+                for i in range(num_particles-number_of_beads, num_particles):
+                    for j in range(num_particles):
+                        if(i!=j):
+                            if np.linalg.norm( array_of_positions[i] - array_of_positions[j] ) < dist_b:
+                                connection_indices.append((i,j))
+                                connection_indices.append((j,i))
+                                # current_connections[i] += 1
+                                # current_connections[j] += 1
+                            
 
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
@@ -1354,17 +1390,17 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
     print(number_of_dipoles," dipoles generated")
     return pts
 
-def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms):
-    #
-    # shapes = List of shape types used
-    # args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
-    # particle_parameters; Sphere = [sphere_radius]
-    #                      Torus  = [torus_centre_radius, torus_tube_radius]
-    # constants = {"spring":..., "bending":..., ...}
-    #       spring = 4e-6 # 5e-7
-    #       bending= 0.25e-18 # 0.5e-18
-    #
-
+def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, beam_collection_list):
+    """
+    shapes = List of shape types used
+    args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
+    particle_parameters; Sphere = [sphere_radius]
+                         Torus  = [torus_centre_radius, torus_tube_radius]
+    constants = {"spring":..., "bending":..., ...}
+          spring = 4e-6 # 5e-7
+          bending= 0.25e-18 # 0.5e-18
+    
+    """
     ####
     ## NOTE; EEK CURRENTLY DISABLED FOR BUGIXING
     ####
@@ -1424,8 +1460,6 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
             optcouple = None
 
     # (1) Get Connections
-    # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +300e-9]) # For sphereGrid linking
-    # connection_indices = generate_connection_indices(position_vectors, "dist", [2*100e-9 +100e-9]) # For sphereGrid linking
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args)
     # print(f"connection indices are\n{connection_indices}")
     
@@ -1462,6 +1496,11 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
         # All changes inside optical_force_array().
         #
         # optical,couples = optical_force_array(position_vectors, E0, dipole_radius, dipole_primitive)
+
+        # Use translating beam_collections if not None
+        if beam_collection_list != None:
+            beam_collection = beam_collection_list[i]
+
 
         optical, torques, couples = Dipoles.py_optical_force_torque_array(position_vectors, np.asarray(dipole_primitive_num), dipole_radius, dipole_primitives, inverse_polarizability, beam_collection)
 
@@ -1641,6 +1680,46 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     # Read beam options and create beam collection
     #===========================================================================
     beam_collection = Beams.create_beam_collection(beaminfo,wavelength)
+
+    
+    # Test if beam should be translated each time step (requiring new beam collections each time)
+    is_beam_changing = False
+    for beam_params in beaminfo.values():
+        if "translationfinal" in beam_params.keys():
+            if beam_params["translationfinal"] != "None" and beam_params["translation"] != beam_params["translationfinal"]: # python None gets converted to "None" string when read from YAML
+                is_beam_changing = True
+
+    # If so, make a list of collections
+    if is_beam_changing:
+        number_of_timesteps = frames
+        beam_collection_list = []
+        beam_translations = {}
+        # Note, translations MUST come in and leave as strings
+
+        for beam_name in beaminfo.keys():
+            # Convert strings to float arrays
+            if beaminfo[beam_name]["translation"] == "None": # Ensure translation is defined
+                print(f"Set beam: {beam_name} translation to [0.0,0.0,0.0] from None")
+                beaminfo[beam_name]["translation"] = [0.0,0.0,0.0]
+            else:
+                beaminfo[beam_name]["translation"] = [float(x) for x in beaminfo[beam_name]["translation"].split()]
+
+            if beaminfo[beam_name]["translationfinal"] == "None":
+                beaminfo[beam_name]["translationfinal"] = beaminfo[beam_name]["translation"]
+            else:
+                beaminfo[beam_name]["translationfinal"] = [float(x) for x in beaminfo[beam_name]["translationfinal"].split()]
+            
+            beam_translations[beam_name] = np.linspace(beaminfo[beam_name]["translation"], beaminfo[beam_name]["translationfinal"], number_of_timesteps)
+
+        for t in range(number_of_timesteps):
+            for (beam_name, beam_params) in beaminfo.items():
+                beaminfo[beam_name]["translation"] = " ".join([str(x) for x in beam_translations[beam_name][t]]) # join floats to a string, translationfinal untouched an no longer needed.
+            beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength))
+            
+    # Else just use one collection like normal
+    else:
+        beam_collection_list = None
+            
     #n_beams = len(beam_collection)
     #===========================================================================
     # Read particle options and create particle collection
@@ -1697,9 +1776,6 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
     E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
 
-    # BENDING = 1e-18# 1e-18
-    # stiffness = 0  # Errors when this is bigger than 1e-3
-
     k_B = 1.38e-23
     temperature = 293
     viscosity = 8.90e-4
@@ -1715,7 +1791,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
 
     initialT = time.time()
-    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms)
+    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, beam_collection_list)
     finalT = time.time()
     print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 
@@ -1728,8 +1804,8 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True)
+        # fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted]
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list)
 
 
 
