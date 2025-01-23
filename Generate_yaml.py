@@ -167,10 +167,11 @@ def make_yaml_fibre_1d_cylinder(filename, time_step=1e-4, frames=10, show_output
     use_beam(filename, beam)
     use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
     use_default_options(filename, frames, time_step, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
+    # Varies depending on if beads are included within this function
+    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
 
 def make_yaml_fibre_2d_cylinder_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
     use_default_options(filename, frames, show_output, time_step=time_step)
@@ -288,11 +289,39 @@ def use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, pa
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * particle_number
     use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args):
+def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
     args_list = [[particle_radius]] * (particle_number_radial*particle_number_angular)
     coords_list = coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
-    connection_args = 1.01*max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
-    use_default_particles(filename, "sphere", args_list, coords_list, connection_mode, connection_args)
+    
+    bead_positions = [ [-1.5*length/2.0, 0.0, 0.0], [1.5*length/2.0, 0.0, 0.0] ]
+
+    connection_args[0] = 1.01*max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
+    if(include_beads):
+        connection_args[1] = 1.1*(abs(bead_positions[0][0]) - length/2.0)  # How far is each bead from the particles at the very edge +some tolerance 
+
+    # Shell material
+    default_radius = 1e-07
+    default_material = "FusedSilica"
+    particle_list = [{"material":"FusedSilica", "shape":"sphere", "args":args_list[i], "coords":coords_list[i], "altcolour":True} for i in range(len(coords_list))]
+    if(include_beads):
+        # Bead material
+        connection_args[2] = 2
+        bead_radius = 3e-7
+        bead_material = "FusedSilica"
+        particle_list.append( {"material":bead_material, "shape":"sphere", "args":[bead_radius], "coords":bead_positions[0], "altcolour":True} )
+        particle_list.append( {"material":bead_material, "shape":"sphere", "args":[bead_radius], "coords":bead_positions[1], "altcolour":True} )
+
+    # Manually converting connection args back to nicer readable state
+    ####
+    ## THIS SHOULD BE CHECK FOR BEFORE WRITING INSIDE write_particles()
+    ####
+    connection_args_str = str(connection_args[0])
+    if(include_beads):
+        connection_args_str = str(connection_args[0])+" "+str(connection_args[1])+" "+str(connection_args[2])
+
+    write_particles(filename, particle_list, default_radius, default_material, connection_mode, connection_args_str)
+
+    #use_default_particles(filename, "sphere", args_list, coords_list, connection_mode, connection_args)
 
 def use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args):
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * (particle_number_radial*particle_number_angular)

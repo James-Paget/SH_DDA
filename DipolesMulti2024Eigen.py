@@ -629,6 +629,42 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
 
             current_connections = np.array(current_connections)
             #print(f"avg connections {np.average(current_connections):.2f}, max diff {np.max(current_connections)-np.min(current_connections)}")
+        
+        case "dist_beads":
+            # Links every non-bead particle to eachother by distance (arg[0] distance chosen)
+            # Then links beads to any other particle by distance (arg[1] distance chosen)
+            # Assumes there are N beads (arg[3]) all located at the end of the particles list
+            # args: [dist_p, dist_b, number_of_beads]
+            if num_particles < 2:
+                print("generate_connection_indices: dist num_particles error, setting connections=[]")
+
+            if(len(args) < 3):
+                print("Invalid number of arguements for connections, require 3; "+str(len(args))+" given")
+            else:
+                dist_p = args[0]
+                dist_b = args[1]
+                number_of_beads = int(args[2])
+
+                # Connect all non-bead particles 
+                for i in range(num_particles-number_of_beads):
+                    for j in range(i+1, num_particles-number_of_beads):
+                        # If Other-Other interaction
+                        if np.linalg.norm( array_of_positions[i] - array_of_positions[j] ) < dist_p:
+                            connection_indices.append((i,j))
+                            connection_indices.append((j,i))
+                            # current_connections[i] += 1
+                            # current_connections[j] += 1
+
+                # If Bead-Any interaction
+                for i in range(num_particles-number_of_beads, num_particles):
+                    for j in range(num_particles):
+                        if(i!=j):
+                            if np.linalg.norm( array_of_positions[i] - array_of_positions[j] ) < dist_b:
+                                connection_indices.append((i,j))
+                                connection_indices.append((j,i))
+                                # current_connections[i] += 1
+                                # current_connections[j] += 1
+                            
 
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
