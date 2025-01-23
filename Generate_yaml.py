@@ -168,8 +168,8 @@ def make_yaml_fibre_1d_cylinder(filename, time_step=1e-4, frames=10, show_output
     use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args)
 
 def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
-    use_default_options(filename, frames, time_step, show_output, time_step=time_step)
-    use_beam(filename, beam)
+    use_default_options(filename, frames, show_output, time_step=time_step)
+    use_beam(filename, beam, translation=None, translationfinal="0.0 0.0 0.0")
     # Varies depending on if beads are included within this function
     use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
 
@@ -306,7 +306,7 @@ def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_rad
     if(include_beads):
         # Bead material
         connection_args[2] = 2
-        bead_radius = 3e-7
+        bead_radius = default_radius    # NOTE; The dynamics will not be valid if the radius is different (with the current implementation of the dynamics Jan.2025)
         bead_material = "FusedSilica"
         particle_list.append( {"material":bead_material, "shape":"sphere", "args":[bead_radius], "coords":bead_positions[0], "altcolour":True} )
         particle_list.append( {"material":bead_material, "shape":"sphere", "args":[bead_radius], "coords":bead_positions[1], "altcolour":True} )
@@ -392,12 +392,21 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 
 def use_beam(filename, beam, translation=None, translationfinal=None):
     match beam:
+        case "GAUSS_CSP":
+            use_gaussCSP_beam(filename,translation, translationfinal)
         case "LAGUERRE":
             use_laguerre3_beam(filename,translation, translationfinal)
         case "BESSEL":
             use_bessel_beam(filename, translation, translationfinal)
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
+
+def use_gaussCSP_beam(filename, translation, translationfinal):
+    """
+    Makes a Gaussian complex source point beam
+    """
+    beam = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationfinal":translationfinal, "rotation":None}
+    write_beams(filename, [beam])
 
 def use_laguerre3_beam(filename, translation, translationfinal):
     """
@@ -423,6 +432,7 @@ def use_default_options(filename, frames, show_output, wavelength=1e-6, dipole_r
     """
     if frame_max == None:
         frame_max = frames
+    print(" WAVELENGTH = ",wavelength)
     write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset)
 
 #=======================================================================
