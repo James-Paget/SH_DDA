@@ -46,7 +46,7 @@ beams:
     beamtype: BEAMTYPE_GAUSS_CSP
     E0: 1.5e7
     order: 3
-    w0: 1.5
+    w0: 0.4
     jones: POLARISATION_LCP
     translation: None
     translationfinal: 1.5e-6 0.0 0.0
@@ -63,6 +63,6 @@ particles:
     part_0:
       material: FusedSilica
       shape: sphere
-      args: 200e-09
+      args: 300e-09
       coords: 1.0e-6 0.0 0.0
       altcolour: True
