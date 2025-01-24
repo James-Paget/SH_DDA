@@ -1474,9 +1474,9 @@ match(sys.argv[1]):
         shell_radius    = 300e-9
         particle_number_radial  = 6
         particle_number_angular = 6
-        time_step = 1e-4
-        frames = 20
-        constants={"spring":5e-6, "bending":0.1e-18}
+        time_step = 0.5e-4
+        frames = 30
+        constants={"spring":1.0e-6, "bending":0.1e-18}
         force_terms=["optical", "spring", "bending"]
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
