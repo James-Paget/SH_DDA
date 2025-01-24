@@ -1,0 +1,119 @@
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationfinal: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist_shells
+  connection_args: True 1.0 sphere 3e-07 5e-07 sphere 2e-06 3e-06
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: 7.190653803954872e-08 -1.8494445054439166e-07 2.25e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: -2.6049187021391995e-07 1.285262057031728e-07 7.5e-08
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: 2.7889680259891496e-07 8.118850596052286e-08 -7.499999999999996e-08
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: -1.0302132279754326e-07 -1.6959247344456177e-07 -2.25e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: 3.1591110510749416e-07 -8.125270295010262e-07 1.8e-06
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: -1.2808620683736556e-06 6.319749692840385e-07 1.4e-06
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: 1.6630192248493702e-06 4.841147155183358e-07 1.0000000000000002e-06
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: -9.905297648337852e-07 -1.6305982904990198e-06 6.000000000000002e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: -3.870346222848001e-07 1.9519744366033235e-06 2e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: 1.603927071783757e-06 -1.1778870694591998e-06 -2.000000000000002e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: -1.896720830276108e-06 -2.0603420103640923e-07 -6e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: 1.1433433278335745e-06 1.3010634245487215e-06 -1.0000000000000004e-06
+      altcolour: True
+    part_12:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: 2.951313118887584e-08 -1.4279807334440579e-06 -1.3999999999999997e-06
+      altcolour: True
+    part_13:
+      material: FusedSilica
+      shape: sphere
+      args: 1.5e-07
+      coords: -6.020359213059122e-07 6.305178422989644e-07 -1.8e-06
+      altcolour: True

@@ -214,4 +214,18 @@ class ParticleCollection (object):
         if self.connection_args == "":
             return np.asarray([], dtype=float)
         else:
-            return np.asarray( [float(arg) for arg in str(self.connection_args).split(" ")],dtype=float)
+            args = []
+            # Cast string to appropriate type.
+            for arg in str(self.connection_args).split(" "):
+                if arg == "True":
+                    arg = True
+                elif arg == "False":
+                    arg = False
+                else:
+                    try:
+                        arg = float(arg)
+                    except:
+                        print(f"{arg} not flat")
+                        pass # arg left as a string
+                args.append(arg)
+            return args
