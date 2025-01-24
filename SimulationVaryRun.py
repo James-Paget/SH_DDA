@@ -1200,7 +1200,9 @@ def simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius
 
     # Generate YAML for set of particles and beams
     print(f"Performing calculation for {particle_number_radial*particle_number_angular} particles")
-    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, time_step, frames, show_output, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="LAGUERRE", include_beads=include_beads)
+    with open(f"{filename}.yml", "w") as _:     # Used to reset file each time this is run
+        pass                                    #
+    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, time_step, frames, show_output, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
 
     # Run simulation
     DM.main(YAML_name=filename, constants=constants, force_terms=force_terms)
@@ -1470,7 +1472,7 @@ match(sys.argv[1]):
         chain_length    = 3e-6
         particle_radius = 100e-9
         shell_radius    = 300e-9
-        particle_number_radial  = 12
+        particle_number_radial  = 6
         particle_number_angular = 6
         time_step = 1e-4
         frames = 20
