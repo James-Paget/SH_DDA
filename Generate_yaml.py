@@ -86,6 +86,19 @@ def generate_yaml(preset, filename="Preset"):
         case "18" | "FIBRE_2D_CYLINDER_SHELLLAYERS":
             make_yaml_fibre_2d_cylinder_shelllayers(filename)
 
+        case "SPHERICAL_SHELLLAYERS":
+            use_default_options(filename, frames=1, show_output=True, time_step=0.0001)
+            use_beam(filename, beam="LAGUERRE")
+            particle_radius=0.15e-6
+            shell_radii = [0.3e-6, 2e-6]
+            numbers_per_shell = [4,10]
+            connection_dists = [0.5e-6, 3e-6]
+            coords_list = get_NsphereShell_points(shell_radii, numbers_per_shell)
+            args_list = [[particle_radius]] * len(coords_list)
+            connection_args = "False 0.0 " + " ".join(["sphere " + str(shell_radii[i]) + " " + str(connection_dists[i]) for i in range(len(shell_radii))])
+            # connection_args = "True 1.0 " + " ".join(["sphere " + str(shell_radii[i]) + " " + str(connection_dists[i]) for i in range(len(shell_radii))])
+            use_default_particles(filename, "sphere", args_list, coords_list, connection_mode="dist_shells", connection_args=connection_args)
+
         case _:
             return False
     
@@ -735,9 +748,8 @@ def get_fibre_2d_shelllayers_points(length, shell_radius_max, shell_number, part
 
     return coords_list
 
-# def get_cylinder_points(num_particles, length, separation):
-#     # Cyclinders running along the y-axis.
-#     # length is length of each cylinder
-#     # coords_list = []
-#     y_coords = np.linspace(-(num_particles-1)/2, (num_particles+1)/2, num_particles+1)[:-1] * (length + separation)
-#     return [[0,y,0] for y in y_coords]
+def get_NsphereShell_points(radii, numbers_per_shell):
+    coords_list = []
+    for i in range(len(radii)):
+        coords_list.extend(get_sunflower_points(numbers_per_shell[i], radii[i]))
+    return coords_list

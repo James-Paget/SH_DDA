@@ -664,7 +664,78 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
                                 connection_indices.append((j,i))
                                 # current_connections[i] += 1
                                 # current_connections[j] += 1
-                            
+
+        case "dist_shells":
+            # Makes connections for concentric shells of particles
+            # args: [should_connect_shells, connect_fraction,    shell_type, radius ,connection_dist, ...  <optional more shell_type, radius, connection_dist> ]
+            # should_connect_shells, connect_fraction allows the shells to be connected.
+            # Each shell has 3 values: shell_type, radius ,connection_dist
+            # Shell types are sphere, cylinderx, cylindery, cylinderz
+            
+            # Functions for different shapes. x,y,z,r,t: stand for coords, radius and tolerance
+            shell_shapes_info = {"sphere": lambda x,y,z,r,t: x*x+y*y+z*z>=(r-t)**2 and x*x+y*y+z*z<=(r+t)**2,
+                                 "cylinderx": lambda x,y,z,r,t: y*y+z*z>=(r-t)**2 and y*y+z*z<=(r+t)**2,
+                                 "cylindery": lambda x,y,z,r,t: x*x+z*z>=(r-t)**2 and x*x+z*z<=(r+t)**2,
+                                 "cylinderz": lambda x,y,z,r,t: x*x+y*y>=(r-t)**2 and x*x+y*y<=(r+t)**2,
+                                 }
+            
+            # Extract args input.
+            should_connect_shells = args[0]
+            connect_fraction = args[1]
+            array_of_positions = np.array(array_of_positions)
+            shell_is_list = []
+            shell_types = []
+            shell_radii = []
+            shell_dists = []
+            arg_i = 2
+            while arg_i < len(args):
+                shell_types.append(args[arg_i+0])
+                shell_radii.append(args[arg_i+1])
+                shell_dists.append(args[arg_i+2])
+                arg_i+=3
+
+            if connect_fraction == 0:
+                mod_period=1.0
+                if should_connect_shells:
+                    print(f"Set mod_period to 1")
+            else:
+                mod_period = int(np.ceil(1/connect_fraction))
+            
+            # Make connections for each shell
+            for shell_i in range(len(shell_types)):
+                shell_type = shell_types[shell_i]
+                radius = shell_radii[shell_i]
+                connection_dist = shell_dists[shell_i]
+                point_is = []
+                tolerance = radius/10
+
+                # Build up list of points in the shell.
+                shell_function = shell_shapes_info[shell_type]
+                for i in range(len(array_of_positions)):
+                    x,y,z = array_of_positions[i]
+                    if shell_function(x,y,z,radius,tolerance):
+                        point_is.append(i)
+                shell_is_list.append(point_is)
+
+                # Connect close points in the shell.
+                for i in point_is:
+                    for j in point_is:
+                        if i!=j and np.linalg.norm( array_of_positions[i] - array_of_positions[j] ) < connection_dist:
+                            connection_indices.append((i,j))
+                            connection_indices.append((j,i))
+
+                # Option to connect some shell points to close ones on the next inner shell.
+                if should_connect_shells and shell_i != 0:
+                    inner_shell_is = shell_is_list[shell_i-1][::mod_period] # Slice to get a subset of inner points
+                    # Connect each of those to the closest point in the current shell.
+                    for i in inner_shell_is:
+                        print(np.linalg.norm(array_of_positions[point_is] - array_of_positions[i], axis=1))
+                        closest_is = np.argsort(np.linalg.norm(array_of_positions[point_is] - array_of_positions[i], axis=1))
+                        for closest_i in closest_is:
+                            if closest_i != i:
+                                connection_indices.append((i,closest_i))
+                                connection_indices.append((closest_i,i))
+                                break
 
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
@@ -1836,7 +1907,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
+        # fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
         display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list)
 
 
