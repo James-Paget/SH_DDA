@@ -813,7 +813,29 @@ def get_nearest_neighbours(number_of_particles, connection_indices, max_connecti
 #     return spring_force_array
 """
 
-def spring_force_array(array_of_positions, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":5e-7}):
+def generate_stiffness_matrix(number_of_particles, connection_indices, stiffness_spec={"type":"", "default_value":5e-7}):
+    #
+    # Generates a matrix of spring stiffness for each particle pair
+    #
+    spring_stiffness_matrix = np.zeros( (number_of_particles, number_of_particles), dtype=float )
+    for i,j in connection_indices:
+        spring_stiffness_element = generate_spring_stiffness_element(stiffness_spec, i, j)
+        spring_stiffness_matrix[i,j] = spring_stiffness_element
+        spring_stiffness_matrix[j,i] = spring_stiffness_element
+    return spring_stiffness_matrix
+
+def generate_naturallength_matrix(number_of_particles, connection_indices, initial_shape):
+    #
+    # Generates a matrix of natural lengths for each particle pair
+    #
+    spring_naturallength_matrix = np.zeros( (number_of_particles, number_of_particles), dtype=float )
+    for i,j in connection_indices:
+        spring_naturallength_element = generate_spring_naturallength_element(initial_shape[i], initial_shape[j])
+        spring_naturallength_matrix[i,j] = spring_naturallength_element
+        spring_naturallength_matrix[j,i] = spring_naturallength_element
+    return spring_naturallength_matrix
+
+def spring_force_array(array_of_positions, connection_indices, spring_stiffness_matrix, spring_naturallength_matrix):
     """
     . Calculates the spring forces along the connections specified
     . Pulls spring data from an initial particle arrangement given
@@ -827,15 +849,11 @@ def spring_force_array(array_of_positions, connection_indices, initial_shape, st
     displacements_matrix = displacement_matrix(array_of_positions)
     displacements_matrix_T = np.transpose(displacements_matrix)
 
-    spring_naturalLength_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
-    spring_stiffness_matrix = np.zeros([number_of_dipoles, number_of_dipoles], dtype=object)
     spring_force_matrix = np.zeros([number_of_dipoles, number_of_dipoles, 3], dtype=object)
 
     # Populate elements in each matrix
     for i,j in connection_indices:
-        spring_naturalLength_matrix[i,j] = generate_spring_naturalLength_element(initial_shape[i], initial_shape[j])   # Found from initial position set parsed in
-        spring_stiffness_matrix[i,j] = generate_spring_stiffness_element(stiffness_spec)                    # Found from a given regime specified
-        spring_force_matrix[i][j] = spring_force(spring_stiffness_matrix[i,j], spring_naturalLength_matrix[i,j], displacements_matrix_T[i][j])
+        spring_force_matrix[i][j] = spring_force(spring_stiffness_matrix[i,j], spring_naturallength_matrix[i,j], displacements_matrix_T[i][j])
     # Non-matrix stiffness and natural length approach
     # spring_force_matrix[i][j] = spring_force(stiffness, natural_length, displacements_matrix_T[i][j])
 
@@ -844,25 +862,37 @@ def spring_force_array(array_of_positions, connection_indices, initial_shape, st
     return spring_force_array
 
 
-def generate_spring_stiffness_element(stiffness_spec):
+def generate_spring_stiffness_element(stiffness_spec, i, j):
     """
     . Fetch the stiffness of the spring according to the regime specified
+
+    . stiffness_spec = {"type":..., "default_value":..., <OTHER ARGS>}
+        "type" = the regime used to set stiffness values, e.g. uniform for all, uniform except beads, etc
+        Arguements aer interpretted differently by each type
+    . i,j = the indices of the 2 particles being connected
     """
     stiffness = 0.0
     match stiffness_spec["type"]:
-        case "...":
-            # Specific pattern of stiffness wanted here
-            ####
-            ## PARSE PARAMETERS WANTED IN ARGS
-            ####
-            stiffness = 0.0
-        case _:
-            # Defualts to all springs having same, constant, value
-            stiffness = stiffness_spec["default_value"]
+        case "beads":       # {"type", "default_value", "bead_value", "bead_indices"}
+            # Allows connections between beads and any other particle to have different stiffness to 
+            # the default stiffness between non-bead particles
+            if(len(stiffness_spec) >= 4):
+                if( (i in stiffness_spec["bead_indices"]) or (j in stiffness_spec["bead_indices"]) ):
+                    stiffness = stiffness_spec["bead_value"]
+                else:
+                    stiffness = stiffness_spec["default_value"]
+            else:
+                print("-- Invalid stiffness_spec length given --")
+        case _:             # {"type", "default_value"}
+            # Defaults to all springs having same, constant, value
+            if(len(stiffness_spec) >= 2):
+                stiffness = stiffness_spec["default_value"]
+            else:
+                print("-- Invalid stiffness_spec length given --")
     return stiffness
 
 
-def generate_spring_naturalLength_element(initial_shape_p1, initial_shape_p2):
+def generate_spring_naturallength_element(initial_shape_p1, initial_shape_p2):
     """
     . Fetch the natural length of a given spring element using the initial_shape specified
     .   This will set the distance between the particles in the initial_shape as the natural length (e.g. wants to return to this shape)
@@ -1390,7 +1420,7 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
     print(number_of_dipoles," dipoles generated")
     return pts
 
-def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, beam_collection_list):
+def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list):
     """
     shapes = List of shape types used
     args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
@@ -1459,18 +1489,23 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
         else:
             optcouple = None
 
-    # (1) Get Connections
+    # (1) Set constants
+    stiffness = constants["spring"]
+    BENDING   = constants["bending"]
+
+    # (2) Get Connections
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args)
     # print(f"connection indices are\n{connection_indices}")
     
-    # (2) Get Initial Positions
-    ##
-    ## SHOULD JUST CALCULATE THE STIFFNESS & NATURAL LENGTH MATRIX FROM THIS SHAPE ONCE --> WASTE TO RECALC EACH TIME
-    ##
-    initial_shape = np.array(position_vectors)   ### MAKE SURE [NOT] SAVED BY REFERENCE ###
+    # (3) Get Initial Positions
+    initial_shape = np.array(position_vectors)
     #print(f"Initial shape is\n{initial_shape}")
 
-    # (3) Get Equilibrium Angles
+    # (4) Get stiffness & natural length matrix
+    spring_stiffness_matrix     = generate_stiffness_matrix(number_of_particles, connection_indices, stiffness_spec=stiffness_spec)
+    spring_naturallength_matrix = generate_naturallength_matrix(number_of_particles, connection_indices, initial_shape)
+
+    # (5) Get Equilibrium Angles
     ijkangles = get_equilibrium_angles(position_vectors, connection_indices)
     #print(f"Equil. Angles \n{ijkangles}")
 
@@ -1523,9 +1558,6 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
             print("Step ",i)
             #print(i,optical)
 
-        stiffness = constants["spring"]
-        BENDING   = constants["bending"]
-
         D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
 
         total_force_array = np.zeros( (number_of_particles,3), dtype=np.float64 )
@@ -1534,7 +1566,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 case "optical":
                     total_force_array += optical
                 case "spring":
-                    spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
+                    spring = spring_force_array(position_vectors, connection_indices, spring_stiffness_matrix, spring_naturallength_matrix)
                     spring = spring.astype(np.float64)
                     total_force_array += spring
                 case "bending":
@@ -1607,7 +1639,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
 # Start of program
 ###################################################################################
 
-def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"]):
+def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}):
     #
     # Runs the full program
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
@@ -1791,7 +1823,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
 
     initialT = time.time()
-    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, beam_collection_list)
+    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list)
     finalT = time.time()
     print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 
@@ -1837,4 +1869,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples)
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"])
+    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6})
+    ##
+    ## STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
+    ##

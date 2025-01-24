@@ -1194,7 +1194,7 @@ def simulations_fibre_1D_cylinder(filename, chain_length, particle_length, parti
     parameter_text = ""
     return parameter_text
 
-def simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, frames, show_output=True, include_beads=False):
+def simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, stiffness_spec, frames, show_output=True, include_beads=False):
     particle_info = [];
     record_parameters = ["F"]
 
@@ -1205,7 +1205,7 @@ def simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius
     Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, time_step, frames, show_output, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
 
     # Run simulation
-    DM.main(YAML_name=filename, constants=constants, force_terms=force_terms)
+    DM.main(YAML_name=filename, constants=constants, force_terms=force_terms, stiffness_spec=stiffness_spec)
 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     record_particle_info(filename, particle_info, record_parameters=record_parameters)
@@ -1480,6 +1480,7 @@ match(sys.argv[1]):
         force_terms=["optical", "spring", "bending"]
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
+        # Get connections
         connection_mode = "dist"
         connection_args = [0.0]   # NOTE; Is overwritten in the function to pick the correct value
         if(include_beads):
@@ -1490,8 +1491,17 @@ match(sys.argv[1]):
             #       distance to connect bead particles,
             #       number of bead particles (NOTE; Assumes all beads are located at the end of the particle list)
             #   ]
+
+        # Get stiffness matrix specs
+        bead_indices = []
+        for i in range(1, connection_args[2]+1):
+            bead_indices.append((particle_number_radial*particle_number_angular)-i)
+        stiffness = 5e-6
+        stiffness_spec = {"type":"beads", "default_value":stiffness, "bead_value":3.0*stiffness, "bead_indices":bead_indices}
+        #stiffness_spec = {"type":"", "default_value":stiffness}   # Default version for uniform stiffness
+
         # Run
-        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, frames, show_output=True, include_beads=include_beads)
+        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, time_step, constants, force_terms, stiffness_spec, frames, show_output=True, include_beads=include_beads)
     case "fibre_2D_cylinder_hollowShell":
         # Save file
         filename = "SingleLaguerre"
