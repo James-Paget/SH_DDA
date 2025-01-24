@@ -170,7 +170,7 @@ def make_yaml_fibre_1d_cylinder(filename, time_step=1e-4, frames=10, show_output
 def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
     use_default_options(filename, frames, show_output, time_step=time_step)
     #use_beam(filename, beam, translation="2.5e-6 0.0 0.0", translationfinal="1.0e-6 0.0 0.0")  ### DOES NOT ALLOW PARAMETER VARIATION EASILY ###
-    #use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationfinal="2.5e-6 1.5e-6 0.0")
+    # use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationfinal="2.5e-6 1.5e-6 0.0")
 
     beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":2.5e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": "2.5e-6 0.0 0.0", "translationfinal": "2.5e-6 1.5e-6 0.0", "rotation":None}
     beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":2.5e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation":"-2.5e-6 0.0 0.0", "translationfinal":None, "rotation":None}
