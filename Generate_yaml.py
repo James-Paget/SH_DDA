@@ -102,7 +102,7 @@ def generate_yaml(preset, filename="Preset"):
         case "CUBE":
             use_default_options(filename, frames=10, show_output=True, time_step=0.0001)
             use_beam(filename, "LAGUERRE")
-            args_list = [[0.15e-6]] * 4
+            args_list = [[0.20e-6]] * 4
             coords_list = get_tetrahedron_points(1e-6)
             use_default_particles(filename, "cube", args_list, coords_list, "num", 3)
 

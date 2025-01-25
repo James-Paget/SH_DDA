@@ -1494,19 +1494,19 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
 def cube_size(args, dipole_radius):
     dipole_diameter = 2*dipole_radius
     cube_radius = args[0]
-    num = int(2*cube_radius//dipole_diameter) # mult by 2 for half int lattices
+    num = int(2*cube_radius/dipole_diameter) # mult by 2 for half int lattices
     number_of_dipoles = num**3
     print(number_of_dipoles," dipoles generated")
     return number_of_dipoles
 
 def cube_positions(args, dipole_radius, number_of_dipoles_total):
+    # NOTE: cube uses int or half int lattice depending what can fit more dipoles.
     dipole_diameter = 2*dipole_radius
     cube_radius = args[0]
-    num = int(2*cube_radius//dipole_diameter)
+    num = int(2*cube_radius/dipole_diameter)
     pts = np.zeros((number_of_dipoles_total, 3))
     number_of_dipoles = 0
     nums = np.arange(0,num,1)
-    # print("NUM IS ", num)
     for i in nums:
         x = i*dipole_diameter +1e-20
         for j in nums:
@@ -1516,10 +1516,7 @@ def cube_positions(args, dipole_radius, number_of_dipoles_total):
                 pts[number_of_dipoles] = [x, y, z]
                 number_of_dipoles += 1
     pts -= (num-1)/2 * dipole_diameter # shift back to origin. odd num on lattice, even num on half integer lattice.
-
-    print("Closest point to origin is", pts[np.where(np.linalg.norm(pts, axis=1) == np.min(np.linalg.norm(pts, axis=1)))]) # test the full/half int shift.
-    # print(f"PTS ARE\n{pts}\n\n")
-
+    # print(f"Z PTS ARE\n{pts[:num, 2]}\n\n") # test the full/half int shift.
     return pts
 
 
