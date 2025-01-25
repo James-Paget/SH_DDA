@@ -99,6 +99,15 @@ def generate_yaml(preset, filename="Preset"):
             # connection_args = "True 1.0 " + " ".join(["sphere " + str(shell_radii[i]) + " " + str(connection_dists[i]) for i in range(len(shell_radii))])
             use_default_particles(filename, "sphere", args_list, coords_list, connection_mode="dist_shells", connection_args=connection_args)
 
+        case "CUBE":
+            use_default_options(filename, frames=10, show_output=True, time_step=0.0001)
+            use_beam(filename, "LAGUERRE")
+            args_list = [[0.20e-6]] * 4
+            coords_list = get_tetrahedron_points(1e-6)
+            use_default_particles(filename, "cube", args_list, coords_list, "num", 3)
+
+
+
         case _:
             return False
     
@@ -516,7 +525,8 @@ def write_particles(filename, particle_list, default_radius, default_material, c
             if not (
                 (particle["shape"] == "sphere" and len(particle["args"]) == 1) or
                 (particle["shape"] == "torus" and len(particle["args"]) == 4) or
-                (particle["shape"] == "cylinder" and len(particle["args"]) == 4)
+                (particle["shape"] == "cylinder" and len(particle["args"]) == 4) or
+                (particle["shape"] == "cube" and len(particle["args"]) == 1)
             ):
                 print(f"Particle {i} has invalid args: {particle}")
                 break
