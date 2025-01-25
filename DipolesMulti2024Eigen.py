@@ -1491,6 +1491,38 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
     print(number_of_dipoles," dipoles generated")
     return pts
 
+def cube_size(args, dipole_radius):
+    dipole_diameter = 2*dipole_radius
+    cube_radius = args[0]
+    num = int(2*cube_radius//dipole_diameter) # mult by 2 for half int lattices
+    number_of_dipoles = num**3
+    print(number_of_dipoles," dipoles generated")
+    return number_of_dipoles
+
+def cube_positions(args, dipole_radius, number_of_dipoles_total):
+    dipole_diameter = 2*dipole_radius
+    cube_radius = args[0]
+    num = int(2*cube_radius//dipole_diameter)
+    pts = np.zeros((number_of_dipoles_total, 3))
+    number_of_dipoles = 0
+    nums = np.arange(0,num,1)
+    # print("NUM IS ", num)
+    for i in nums:
+        x = i*dipole_diameter +1e-20
+        for j in nums:
+            y = j*dipole_diameter +1e-20
+            for k in nums:
+                z = k*dipole_diameter +1e-20
+                pts[number_of_dipoles] = [x, y, z]
+                number_of_dipoles += 1
+    pts -= (num-1)/2 * dipole_diameter # shift back to origin. odd num on lattice, even num on half integer lattice.
+
+    print("Closest point to origin is", pts[np.where(np.linalg.norm(pts, axis=1) == np.min(np.linalg.norm(pts, axis=1)))]) # test the full/half int shift.
+    # print(f"PTS ARE\n{pts}\n\n")
+
+    return pts
+
+
 def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list):
     """
     shapes = List of shape types used
@@ -1535,6 +1567,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 dipole_primitive_num[particle_i] = torus_sector_size(args[particle_i], dipole_radius)
             case "cylinder":
                 dipole_primitive_num[particle_i] = cylinder_size(args[particle_i], dipole_radius)
+            case "cube":
+                dipole_primitive_num[particle_i] = cube_size(args[particle_i], dipole_radius)
     dipole_primitive_num_total = np.sum(dipole_primitive_num);
     # Get dipole primitive positions for each particle
     dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   #Flattened 1D list of all dipoles for all particles
@@ -1547,6 +1581,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = torus_sector_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
             case "cylinder":
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cylinder_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
+            case "cube":
+                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cube_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
     
     if excel_output==True:
         optpos = np.zeros((frames,number_of_particles,3))
@@ -1590,6 +1626,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 effective_radii[p] = (args[p][0] + args[p][1])
             case "cylinder":
                 effective_radii[p] = (np.sqrt( (args[p][0]/2.0)**2 + (args[p][1])**2 ))  # arg[0] for cylinder is total length
+            case "cube":
+                effective_radii[p] = args[p][0] * np.sqrt(2)
 
     # find which particles are connected in objects
     # particle_groups = group_particles_into_objects(number_of_particles, connection_indices)
@@ -1907,7 +1945,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        # fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
+        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
         display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_quiver=True, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list)
 
 
