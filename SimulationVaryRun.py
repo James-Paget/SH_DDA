@@ -1476,8 +1476,10 @@ match(sys.argv[1]):
         particle_number_radial  = 6
         particle_number_angular = 6
         time_step = 0.5e-4
-        frames = 30
-        constants={"spring":1.0e-6, "bending":0.1e-18}
+        frames = 60
+
+        stiffness = 1.0e-6
+        constants={"spring":stiffness, "bending":0.1e-18}
         force_terms=["optical", "spring", "bending"]
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
@@ -1497,7 +1499,6 @@ match(sys.argv[1]):
         bead_indices = []
         for i in range(1, connection_args[2]+1):
             bead_indices.append((particle_number_radial*particle_number_angular)-i)
-        stiffness = 5e-6
         stiffness_spec = {"type":"beads", "default_value":stiffness, "bead_value":3.0*stiffness, "bead_indices":bead_indices}
         #stiffness_spec = {"type":"", "default_value":stiffness}   # Default version for uniform stiffness
 
