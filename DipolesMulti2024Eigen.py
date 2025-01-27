@@ -1420,6 +1420,22 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
     print(number_of_dipoles," dipoles generated")
     return pts
 
+def rotate_arbitrary(theta, v, n):
+    #
+    # theta = angle to rotate by (ccw)
+    # v = vector to rotate
+    # n = axis to rotate about
+    #
+    arb_rotation_matrix = np.array(
+        [
+            [( (n[0]*n[0])*(1.0-np.cos(-theta)) +(np.cos(-theta))              ), ( (n[1]*n[0])*(1.0-np.cos(-theta)) -(np.sin(-theta)*n[2]) ), ( (n[2]*n[0])*(1.0-np.cos(-theta)) +(np.sin(-theta)*n[1]) )],
+            [( (n[0]*n[1])*(1.0-np.cos(-theta)) +(np.sin(-theta)*n[2]) ), ( (n[1]*n[1])*(1.0-np.cos(-theta)) +(np.cos(-theta)             ) ), ( (n[2]*n[1])*(1.0-np.cos(-theta)) -(np.sin(-theta)*n[0]) )],
+            [( (n[0]*n[2])*(1.0-np.cos(-theta)) -(np.sin(-theta)*n[1]) ), ( (n[1]*n[2])*(1.0-np.cos(-theta)) +(np.sin(-theta)*n[0]) ), ( (n[2]*n[2])*(1.0-np.cos(-theta)) +(np.cos(-theta)             ) )]
+        ]
+    )
+    v_rotated = np.dot( arb_rotation_matrix, v )    # Apply rotation
+    return v_rotated
+
 def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list):
     """
     shapes = List of shape types used
@@ -1717,12 +1733,21 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     # Test if beam should be translated each time step (requiring new beam collections each time)
     is_beam_changing = False
     for beam_params in beaminfo.values():
-        if "translationfinal" in beam_params.keys():
-            if beam_params["translationfinal"] != "None" and beam_params["translation"] != beam_params["translationfinal"]: # python None gets converted to "None" string when read from YAML
+        if "translationargs" in beam_params.keys():
+            if beam_params["translationargs"] != "None" and beam_params["translation"] != beam_params["translationargs"]: # python None gets converted to "None" string when read from YAML
                 is_beam_changing = True
 
     # If so, make a list of collections
     if is_beam_changing:
+        #
+        # translationargs = args for translation
+        # translationtype  = regime to translate by e.g. "linear", "circle"
+        #       linear => translationargs={x y z}
+        #       circle => translationargs={N nx ny nz vx vy vz}
+        #               N = number of loops of circle to perform -> can be negative for reverse dir, and fractions for sectors
+        #               n = vector of normal to circular plane to move in
+        #               v = vector point to centre of circle from inital translation point (will let you determine how to traverse any circle with this point located on it)
+        #
         number_of_timesteps = frames
         beam_collection_list = []
         beam_translations = {}
@@ -1736,16 +1761,34 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
             else:
                 beaminfo[beam_name]["translation"] = [float(x) for x in beaminfo[beam_name]["translation"].split()]
 
-            if beaminfo[beam_name]["translationfinal"] == "None":
-                beaminfo[beam_name]["translationfinal"] = beaminfo[beam_name]["translation"]
+            if beaminfo[beam_name]["translationargs"] == "None":
+                beaminfo[beam_name]["translationargs"] = beaminfo[beam_name]["translation"]
             else:
-                beaminfo[beam_name]["translationfinal"] = [float(x) for x in beaminfo[beam_name]["translationfinal"].split()]
+                beaminfo[beam_name]["translationargs"] = [float(x) for x in beaminfo[beam_name]["translationargs"].split()]
             
-            beam_translations[beam_name] = np.linspace(beaminfo[beam_name]["translation"], beaminfo[beam_name]["translationfinal"], number_of_timesteps)
+            # Specify points for translation
+            match beaminfo[beam_name]["translationtype"]:
+                case "linear":
+                    # Move in a straight line between two points
+                    beam_translations[beam_name] = np.linspace(beaminfo[beam_name]["translation"], beaminfo[beam_name]["translationargs"], number_of_timesteps)
+                case "circle":
+                    # Move around a circle N times
+                    beam_loops  = beaminfo[beam_name]["translationargs"][0]
+                    beam_origin    = [ beaminfo[beam_name]["translation"][0], beaminfo[beam_name]["translation"][1], beaminfo[beam_name]["translation"][2] ]
+                    beam_normal    = [ beaminfo[beam_name]["translationargs"][1], beaminfo[beam_name]["translationargs"][2], beaminfo[beam_name]["translationargs"][3] ]
+                    beam_centreDir = [ beaminfo[beam_name]["translationargs"][4], beaminfo[beam_name]["translationargs"][5], beaminfo[beam_name]["translationargs"][6] ]
+                    beam_theta_step= (beam_loops*2.0*np.pi)/(number_of_timesteps)
+                    beam_translations[beam_name] = np.zeros((number_of_timesteps,3), dtype=float)
+                    for i in range(number_of_timesteps):
+                        beam_translations[beam_name][i] = np.array(beam_origin) +np.array(beam_centreDir) -rotate_arbitrary(beam_theta_step*i, beam_centreDir, beam_normal)
+                case "point_set":
+                    pass
+                case _:
+                    print("-- YAML 'translationtype' not known;"+str(beaminfo[beam_name]["translationtype"])+" --")
 
         for t in range(number_of_timesteps):
             for (beam_name, beam_params) in beaminfo.items():
-                beaminfo[beam_name]["translation"] = " ".join([str(x) for x in beam_translations[beam_name][t]]) # join floats to a string, translationfinal untouched an no longer needed.
+                beaminfo[beam_name]["translation"] = " ".join([str(x) for x in beam_translations[beam_name][t]]) # join floats to a string, translationargs untouched an no longer needed.
             beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength))
             
     # Else just use one collection like normal

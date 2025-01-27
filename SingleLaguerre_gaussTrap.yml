@@ -49,7 +49,7 @@ beams:
     w0: 0.4
     jones: POLARISATION_LCP
     translation: None
-    translationfinal: 1.5e-6 0.0 0.0
+    translationargs: 1.5e-6 0.0 0.0
     rotation: None
 #============================================================================================
 # Particle descriptions

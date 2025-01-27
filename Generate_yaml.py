@@ -22,7 +22,7 @@ def generate_yaml(preset, filename="Preset"):
 
         case "TRANSLATE_BEAM":
             use_default_options(filename, frames=30, show_output=True)
-            use_laguerre3_beam(filename, translation=None, translationfinal="1.5e-6 0 0")
+            use_laguerre3_beam(filename, translation=None, translationargs="1.5e-6 0 0")
             use_tetrahedron(filename, 1e-6, 0.2e-6, [0,0,1], 0)
 
         case "TETRAHEDRON_BESSEL":
@@ -169,11 +169,12 @@ def make_yaml_fibre_1d_cylinder(filename, time_step=1e-4, frames=10, show_output
 
 def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
     use_default_options(filename, frames, show_output, time_step=time_step)
-    #use_beam(filename, beam, translation="2.5e-6 0.0 0.0", translationfinal="1.0e-6 0.0 0.0")  ### DOES NOT ALLOW PARAMETER VARIATION EASILY ###
-    # use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationfinal="2.5e-6 1.5e-6 0.0")
+    #use_beam(filename, beam, translation="2.5e-6 0.0 0.0", translationargs="1.0e-6 0.0 0.0")  ### DOES NOT ALLOW PARAMETER VARIATION EASILY ###
+    # use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationargs="2.5e-6 1.5e-6 0.0")
 
-    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":2.5e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": "2.5e-6 0.0 0.0", "translationfinal": "2.5e-6 1.5e-6 0.0", "rotation":None}
-    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":2.5e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation":"-2.5e-6 0.0 0.0", "translationfinal":None, "rotation":None}
+    #2.5e-6 1.5e-6 0.0
+    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":3.1e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": "2.3e-6 0.0 0.0", "translationargs": "-0.5 0.0 0.0 1.0 -1.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":3.1e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation":"-2.3e-6 0.0 0.0", "translationargs":None, "translationtype":"linear", "rotation":None}
     write_beams(filename, [beam_1, beam_2])
 
     # Varies depending on if beads are included within this function
@@ -396,36 +397,36 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 # Beam configurations
 #=======================================================================
 
-def use_beam(filename, beam, translation=None, translationfinal=None):
+def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None):
     match beam:
         case "GAUSS_CSP":
-            use_gaussCSP_beam(filename,translation, translationfinal)
+            use_gaussCSP_beam(filename,translation, translationargs, translationtype)
         case "LAGUERRE":
-            use_laguerre3_beam(filename,translation, translationfinal)
+            use_laguerre3_beam(filename,translation, translationargs, translationtype)
         case "BESSEL":
-            use_bessel_beam(filename, translation, translationfinal)
+            use_bessel_beam(filename, translation, translationargs, translationtype)
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
 
-def use_gaussCSP_beam(filename, E0=1.5e7, w0=0.4, translation="0.0 0.0 0.0", translationfinal=None):
+def use_gaussCSP_beam(filename, E0=1.5e7, w0=0.4, translation="0.0 0.0 0.0", translationargs=None, translationtype=None):
     """
     Makes a Gaussian complex source point beam
     """
-    beam = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationfinal":translationfinal, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":None}
     write_beams(filename, [beam])
 
-def use_laguerre3_beam(filename, translation, translationfinal):
+def use_laguerre3_beam(filename, translation, translationargs, translationtype=None):
     """
     Makes a Laguerre-Gaussian beam.
     """
-    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationfinal":translationfinal, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":None}
     write_beams(filename, [beam])
 
-def use_bessel_beam(filename, translation, translationfinal):
+def use_bessel_beam(filename, translation, translationargs, translationtype=None):
     """
     Makes a Laguerre-Gaussian beam.
     """
-    beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":translation, "translationfinal":translationfinal, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":None}
     write_beams(filename, [beam])
 
 #=======================================================================
