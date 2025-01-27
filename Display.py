@@ -145,17 +145,17 @@ class DisplayObject (object):
         return fig,ax
 
 
-    def make_sphere_surface(self, args, center):
+    def make_sphere_surface(self, args, centre):
         radius = args[0]
         samples = 4 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
-        x = radius * np.outer(np.cos(u), np.sin(v)) + center[0]
-        y = radius * np.outer(np.sin(u), np.sin(v)) + center[1]
-        z = radius * np.outer(np.ones(samples), np.cos(v)) + center[2]
+        x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
+        y = radius * np.outer(np.sin(u), np.sin(v)) + centre[1]
+        z = radius * np.outer(np.ones(samples), np.cos(v)) + centre[2]
         return x, y, z
     
-    def make_torus_sector_surface(self, args, center):
+    def make_torus_sector_surface(self, args, centre):
         torus_centre_radius = args[0]
         torus_beam_radius = args[1]
         phi_lower = args[2]
@@ -175,12 +175,12 @@ class DisplayObject (object):
             set_b = np.linspace(0.0, phi_upper, int(samples/2.0))
             u = np.concatenate( (set_a, set_b) )
         v = np.linspace(0, 2.0*np.pi, samples)
-        x = np.outer(torus_centre_radius + torus_beam_radius*np.cos(v), np.cos(u)) +center[0] -x_shift
-        y = np.outer(torus_centre_radius + torus_beam_radius*np.cos(v), np.sin(u)) +center[1] -y_shift
-        z = np.outer(torus_beam_radius*np.sin(v), np.ones(samples)) +center[2]
+        x = np.outer(torus_centre_radius + torus_beam_radius*np.cos(v), np.cos(u)) +centre[0] -x_shift
+        y = np.outer(torus_centre_radius + torus_beam_radius*np.cos(v), np.sin(u)) +centre[1] -y_shift
+        z = np.outer(torus_beam_radius*np.sin(v), np.ones(samples)) +centre[2]
         return x, y, z
     
-    def make_cylinder_surface(self, args, center):
+    def make_cylinder_surface(self, args, centre):
         # radius, width, angle_Z, angle_pitch = args
 
         # samples = 20
@@ -190,9 +190,9 @@ class DisplayObject (object):
         # ###
         # ### NEEDS TO BE FIXED FOR CYLINDER -> AR ARBITRARY ANGLES
         # ###
-        # x = np.outer(radius*np.cos(v), np.cos(u)) +center[0]
-        # y = np.outer(radius*np.cos(v), np.sin(u)) +center[1]
-        # z = np.outer(radius*np.sin(v), np.ones(samples)) +center[2]
+        # x = np.outer(radius*np.cos(v), np.cos(u)) +centre[0]
+        # y = np.outer(radius*np.cos(v), np.sin(u)) +centre[1]
+        # z = np.outer(radius*np.sin(v), np.ones(samples)) +centre[2]
         # return x, y, z
         radius, width, theta_Z, theta_pitch = args
         samples = 10 #20
@@ -223,11 +223,34 @@ class DisplayObject (object):
         xyz_rotated = np.dot( Z_rotation_matrix, np.array([x.flatten(), y.flatten(), z.flatten()]) )    # Apply Z rotation
         xyz_rotated = np.dot( pitch_rotation_matrix, xyz_rotated )                                      # Apply pitch rotation
 
-        x_rotated = xyz_rotated[0].reshape(x.shape) + center[0]
-        y_rotated = xyz_rotated[1].reshape(y.shape) + center[1]
-        z_rotated = xyz_rotated[2].reshape(z.shape) + center[2]
+        x_rotated = xyz_rotated[0].reshape(x.shape) + centre[0]
+        y_rotated = xyz_rotated[1].reshape(y.shape) + centre[1]
+        z_rotated = xyz_rotated[2].reshape(z.shape) + centre[2]
 
         return x_rotated, y_rotated, z_rotated
+    
+    def make_cube_surface(self, args, centre):
+        radius = args[0]
+        x1 = centre[0] - radius
+        x2 = centre[0] + radius
+        y1 = centre[1] - radius
+        y2 = centre[1] + radius
+        z1 = centre[2] - radius
+        z2 = centre[2] + radius
+
+        x = [[x1, x2, x2, x1, x1],  
+            [x1, x2, x2, x1, x1],  
+            [x1, x2, x2, x1, x1],  
+            [x1, x2, x2, x1, x1]]  
+        y = [[y1, y1, y2, y2, y1],  
+            [y1, y1, y2, y2, y1],  
+            [y1, y1, y1, y1, y1],          
+            [y2, y2, y2, y2, y2]]   
+        z = [[z1, z1, z1, z1, z1],                       
+            [z2, z2, z2, z2, z1],   
+            [z1, z1, z2, z2, z1],               
+            [z1, z1, z2, z2, z1]]               
+        return np.array(x), np.array(y), np.array(z)
     
 
     def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, include_connections=True, quiver_scale=3e5, beam_collection_list=None):
@@ -259,6 +282,8 @@ class DisplayObject (object):
                         x, y, z = self.make_torus_sector_surface(args[i], positions[t, i])
                     case "cylinder":
                         x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
+                    case "cube":
+                        x, y, z = self.make_cube_surface(args[i], positions[t, i])
                 plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
                 plots.append(plot)
 
@@ -347,6 +372,9 @@ class DisplayObject (object):
                     x, y, z = self.make_torus_sector_surface(args[i], positions[0, i])
                 case "cylinder":
                     x, y, z = self.make_cylinder_surface(args[i], positions[0, i])
+                case "cube":
+                    x, y, z = self.make_cube_surface(args[i], positions[0, i])
+                
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 

@@ -664,7 +664,78 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
                                 connection_indices.append((j,i))
                                 # current_connections[i] += 1
                                 # current_connections[j] += 1
-                            
+
+        case "dist_shells":
+            # Makes connections for concentric shells of particles
+            # args: [should_connect_shells, connect_fraction,    shell_type, radius ,connection_dist, ...  <optional more shell_type, radius, connection_dist> ]
+            # should_connect_shells, connect_fraction allows the shells to be connected.
+            # Each shell has 3 values: shell_type, radius ,connection_dist
+            # Shell types are sphere, cylinderx, cylindery, cylinderz
+            
+            # Functions for different shapes. x,y,z,r,t: stand for coords, radius and tolerance
+            shell_shapes_info = {"sphere": lambda x,y,z,r,t: x*x+y*y+z*z>=(r-t)**2 and x*x+y*y+z*z<=(r+t)**2,
+                                 "cylinderx": lambda x,y,z,r,t: y*y+z*z>=(r-t)**2 and y*y+z*z<=(r+t)**2,
+                                 "cylindery": lambda x,y,z,r,t: x*x+z*z>=(r-t)**2 and x*x+z*z<=(r+t)**2,
+                                 "cylinderz": lambda x,y,z,r,t: x*x+y*y>=(r-t)**2 and x*x+y*y<=(r+t)**2,
+                                 }
+            
+            # Extract args input.
+            should_connect_shells = args[0]
+            connect_fraction = args[1]
+            array_of_positions = np.array(array_of_positions)
+            shell_is_list = []
+            shell_types = []
+            shell_radii = []
+            shell_dists = []
+            arg_i = 2
+            while arg_i < len(args):
+                shell_types.append(args[arg_i+0])
+                shell_radii.append(args[arg_i+1])
+                shell_dists.append(args[arg_i+2])
+                arg_i+=3
+
+            if connect_fraction == 0:
+                mod_period=1.0
+                if should_connect_shells:
+                    print(f"Set mod_period to 1")
+            else:
+                mod_period = int(np.ceil(1/connect_fraction))
+            
+            # Make connections for each shell
+            for shell_i in range(len(shell_types)):
+                shell_type = shell_types[shell_i]
+                radius = shell_radii[shell_i]
+                connection_dist = shell_dists[shell_i]
+                point_is = []
+                tolerance = radius/10
+
+                # Build up list of points in the shell.
+                shell_function = shell_shapes_info[shell_type]
+                for i in range(len(array_of_positions)):
+                    x,y,z = array_of_positions[i]
+                    if shell_function(x,y,z,radius,tolerance):
+                        point_is.append(i)
+                shell_is_list.append(point_is)
+
+                # Connect close points in the shell.
+                for i in point_is:
+                    for j in point_is:
+                        if i!=j and np.linalg.norm( array_of_positions[i] - array_of_positions[j] ) < connection_dist:
+                            connection_indices.append((i,j))
+                            connection_indices.append((j,i))
+
+                # Option to connect some shell points to close ones on the next inner shell.
+                if should_connect_shells and shell_i != 0:
+                    inner_shell_is = shell_is_list[shell_i-1][::mod_period] # Slice to get a subset of inner points
+                    # Connect each of those to the closest point in the current shell.
+                    for i in inner_shell_is:
+                        print(np.linalg.norm(array_of_positions[point_is] - array_of_positions[i], axis=1))
+                        closest_is = np.argsort(np.linalg.norm(array_of_positions[point_is] - array_of_positions[i], axis=1))
+                        for closest_i in closest_is:
+                            if closest_i != i:
+                                connection_indices.append((i,closest_i))
+                                connection_indices.append((closest_i,i))
+                                break
 
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
@@ -1435,6 +1506,33 @@ def rotate_arbitrary(theta, v, n):
     )
     v_rotated = np.dot( arb_rotation_matrix, v )    # Apply rotation
     return v_rotated
+def cube_size(args, dipole_radius):
+    dipole_diameter = 2*dipole_radius
+    cube_radius = args[0]
+    num = int(2*cube_radius/dipole_diameter) # mult by 2 for half int lattices
+    number_of_dipoles = num**3
+    print(number_of_dipoles," dipoles generated")
+    return number_of_dipoles
+
+def cube_positions(args, dipole_radius, number_of_dipoles_total):
+    # NOTE: cube uses int or half int lattice depending what can fit more dipoles.
+    dipole_diameter = 2*dipole_radius
+    cube_radius = args[0]
+    num = int(2*cube_radius/dipole_diameter)
+    pts = np.zeros((number_of_dipoles_total, 3))
+    number_of_dipoles = 0
+    nums = np.arange(0,num,1)
+    for i in nums:
+        x = i*dipole_diameter +1e-20
+        for j in nums:
+            y = j*dipole_diameter +1e-20
+            for k in nums:
+                z = k*dipole_diameter +1e-20
+                pts[number_of_dipoles] = [x, y, z]
+                number_of_dipoles += 1
+    pts -= (num-1)/2 * dipole_diameter # shift back to origin. odd num on lattice, even num on half integer lattice.
+    # print(f"Z PTS ARE\n{pts[:num, 2]}\n\n") # test the full/half int shift.
+    return pts
 
 def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list):
     """
@@ -1480,6 +1578,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 dipole_primitive_num[particle_i] = torus_sector_size(args[particle_i], dipole_radius)
             case "cylinder":
                 dipole_primitive_num[particle_i] = cylinder_size(args[particle_i], dipole_radius)
+            case "cube":
+                dipole_primitive_num[particle_i] = cube_size(args[particle_i], dipole_radius)
     dipole_primitive_num_total = np.sum(dipole_primitive_num);
     # Get dipole primitive positions for each particle
     dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   #Flattened 1D list of all dipoles for all particles
@@ -1492,6 +1592,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = torus_sector_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
             case "cylinder":
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cylinder_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
+            case "cube":
+                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cube_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
     
     if excel_output==True:
         optpos = np.zeros((frames,number_of_particles,3))
@@ -1535,6 +1637,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 effective_radii[p] = (args[p][0] + args[p][1])
             case "cylinder":
                 effective_radii[p] = (np.sqrt( (args[p][0]/2.0)**2 + (args[p][1])**2 ))  # arg[0] for cylinder is total length
+            case "cube":
+                effective_radii[p] = args[p][0] * np.sqrt(2)
 
     # find which particles are connected in objects
     # particle_groups = group_particles_into_objects(number_of_particles, connection_indices)

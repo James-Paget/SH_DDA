@@ -88,8 +88,8 @@ class ParticleCollection (object):
                 i=0
                 self.particle_type = []
                 #self.particle_radius = []
-                self.particle_shape = []    # Name of shape e.g "sphere", "torus"
-                self.particle_args  = []    # Parameters for specific shape e.g. [radius], [r1,r2,phi1,phi2]
+                self.particle_shape = []    # Name of shape e.g "sphere", "torus", "cylinder", "cube"
+                self.particle_args  = []    # Parameters for specific shape e.g. [radius], [r1,r2,phi1,phi2] ,..., [radius]
                 self.particle_colour = []
                 self.particle_vtfcolour = []
                 self.particle_positions = []
@@ -113,6 +113,9 @@ class ParticleCollection (object):
                                 self.particle_args.append(self.args)
                             case ("cylinder", 4):
                                 self.particle_shape.append("cylinder")
+                                self.particle_args.append(self.args)
+                            case ("cube", 1):
+                                self.particle_shape.append("cube")
                                 self.particle_args.append(self.args)
                             case _:
                                 self.particle_shape.append(self.default_shape)
@@ -201,6 +204,8 @@ class ParticleCollection (object):
                     masses[i] = float(self.particle_density[i])*2.0*(np.pi**2)*float(self.particle_args[i][1])**2 *float(self.particle_args[i][0])
                 case "cylinder":
                     masses[i] = float(self.particle_density[i])*( np.pi*(float(self.particle_args[i][0])**2)*float(self.particle_args[i][1]) )
+                case "cube":
+                    masses[i] = float(self.particle_density[i])*8.0*float(self.particle_args[i][0])**3
                 case _:
                     print("Invalid shape: During mass calc, ",i)
         return masses
@@ -209,9 +214,20 @@ class ParticleCollection (object):
         return self.connection_mode
     
     def get_connection_args(self):
-        # returns a list of floats
-        print("self.connection_args = ",self.connection_args)
         if self.connection_args == "":
             return np.asarray([], dtype=float)
         else:
-            return np.asarray( [float(arg) for arg in str(self.connection_args).split(" ")],dtype=float)
+            args = []
+            # Cast string to appropriate type.
+            for arg in str(self.connection_args).split(" "):
+                if arg == "True":
+                    arg = True
+                elif arg == "False":
+                    arg = False
+                else:
+                    try:
+                        arg = float(arg)
+                    except:
+                        pass # arg left as a string
+                args.append(arg)
+            return args
