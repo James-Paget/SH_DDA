@@ -1299,6 +1299,37 @@ def simulations_fibre_2D_cylinder_shellLayers(filename, chain_length, shell_radi
     parameter_text = ""
     return parameter_text
 
+def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, time_step=1e-4, show_output=True):
+    #
+    # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
+    #
+    ##
+    ## NEED TO ASSESS WHAT PARTICLES SHOULD BE MEASURED?, SHOULD YOU MEASURE THE WHOLE THING?
+    ##
+    particle_info = [];
+    record_parameters = ["F"]
+
+    # Generate YAML for set of particles and beams
+    print("Performing refinement calculation for cuboid")
+    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, frames=1, show_output=show_output, beam="LAGUERRE")
+
+    # Run simulation
+    DM.main(YAML_name=filename, force_terms=force_terms)
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = "\n".join(
+        (
+            "Refined_Cuboid",
+            "dimensions   (m)= "+str(dimensions),
+            "dipole_size  (m)= "+str(dipole_size),
+            "separations  (m)= "+str(separations),
+            "particle_size(m)= "+str(particle_size)
+        )
+    )
+    return parameter_text
+
 
 #=================#
 # Perform Program #
@@ -1599,10 +1630,21 @@ match(sys.argv[1]):
         connection_args = 1.01*particle_separation
         # Run
         parameter_text = simulations_fibre_2D_cylinder_shellLayers(filename, chain_length, shell_radius, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args, time_step, constants, force_terms, frames, show_output=True)
-    case "fibre_2D_sphere_waterShell":
-        pass
-    case "fibre_2D_cylinder_waterShell":
-        pass
+    case "refine_cuboid":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        dimensions  = [1.0e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
+        dipole_size = 40e-9
+        separations = [0.4e-6, 0.0, 0.0]    # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        particle_size = 0.2e-6      # e.g radius of sphere, width of cube
+        force_terms=["optical"]#["optical", "spring", "bending", "buckingham"]
+
+        # Run
+        parameter_text = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, show_output=True)
+        # Plot graph here
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, ..., "Particle number", "", parameter_text)
+        Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
