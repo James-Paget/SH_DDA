@@ -1299,7 +1299,7 @@ def simulations_fibre_2D_cylinder_shellLayers(filename, chain_length, shell_radi
     parameter_text = ""
     return parameter_text
 
-def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, time_step=1e-4, show_output=True):
+def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, time_step=1e-4, show_output=True):
     #
     # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
     #
@@ -1311,7 +1311,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
 
     # Generate YAML for set of particles and beams
     print("Performing refinement calculation for cuboid")
-    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, frames=1, show_output=show_output, beam="LAGUERRE")
+    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
 
     # Run simulation
     DM.main(YAML_name=filename, force_terms=force_terms)
@@ -1639,9 +1639,10 @@ match(sys.argv[1]):
         separations = [0.4e-6, 0.0, 0.0]    # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         particle_size = 0.2e-6      # e.g radius of sphere, width of cube
         force_terms=["optical"]#["optical", "spring", "bending", "buckingham"]
+        particle_shape = "cube"
 
         # Run
-        parameter_text = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, show_output=True)
+        parameter_text = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, show_output=True)
         # Plot graph here
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, ..., "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
