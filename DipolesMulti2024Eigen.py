@@ -1230,7 +1230,6 @@ def sphere_positions(args, dipole_radius, number_of_dipoles_total):
                 if rad2 < sr2:
                     pts[number_of_dipoles] = [x, y, z]
                     number_of_dipoles += 1
-    # pts -= (num-1)/2 * dipole_diameter
     print(number_of_dipoles," dipoles generated")
     # print(f"Z PTS ARE\n{np.unique(pts[:, 2])}\n\n") # test the full/half int shift.
     return pts
@@ -1401,29 +1400,6 @@ def cylinder_size(args, dipole_radius):
                 if(within_radial and within_width):
                     number_of_dipoles += 1
 
-
-
-
-                # Rotate point to an unrotated frame
-                # unrot_frame_pos = [i*dipole_diameter, j*dipole_diameter, k*dipole_diameter] # Original point
-                # unrot_frame_pos = [
-                #     cos(-theta_Z)*unrot_frame_pos[0] -sin(-theta_Z)*unrot_frame_pos[1],
-                #     sin(-theta_Z)*unrot_frame_pos[0] -cos(-theta_Z)*unrot_frame_pos[1],
-                #     unrot_frame_pos[2]
-                # ]   # Rotation in the Z axis
-                # pitch_vec = [-sin(-theta_Z), cos(-theta_Z), 0] # Front facing vector (1,0,0) rotated, then perpendicular taken (-y,x,0)
-                # unrot_frame_pos = [
-                #     ( (pitch_vec[0]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch))              )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[0])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[0])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[2]),
-                #     ( (pitch_vec[0]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[2]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[1])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[1])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[2]),
-                #     ( (pitch_vec[0]*pitch_vec[2])*(1.0-cos(-theta_pitch)) -(sin(-theta_pitch)*pitch_vec[1]) )*(unrot_frame_pos[0]) + ( (pitch_vec[1]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(sin(-theta_pitch)*pitch_vec[0]) )*(unrot_frame_pos[1]) + ( (pitch_vec[2]*pitch_vec[2])*(1.0-cos(-theta_pitch)) +(cos(-theta_pitch)             ) )*(unrot_frame_pos[2])
-                # ]   # Rotation in the perpendicular to the front facing vector (pitching up/down)
-                # Check unrotated frame point is within cylinder
-                # within_radial = (y**2 + z**2) <= r2
-                # within_width  = abs(unrot_frame_pos[0]) <= width/2.0
-
-                # if(within_radial and within_width):
-                #     number_of_dipoles += 1
-
     return number_of_dipoles
 
 def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
@@ -1555,7 +1531,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     #    MyFileObject = open('anyfile.txt','w')
     #position_vectors = positions(number_of_particles)
     position_vectors = positions    # Of each particle centre
-    print(positions)
+    # print(positions)
     #position_vectors = np.zeros((number_of_particles,3),dtype=np.float64)
     temp = np.zeros(6)
     temp[0] = 1e-8
@@ -1584,6 +1560,12 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
             case "cube":
                 dipole_primitive_num[particle_i] = cube_size(args[particle_i], dipole_radius)
     dipole_primitive_num_total = np.sum(dipole_primitive_num);
+
+    # Check dipole_primitive_num_total is an expected number
+    dipole_primitive_num_max = 2000
+    if not (dipole_primitive_num_total >= 0 and dipole_primitive_num_total <= dipole_primitive_num_max):
+        sys.exit(f"Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap.")
+
     # Get dipole primitive positions for each particle
     dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   #Flattened 1D list of all dipoles for all particles
     dpn_start_indices = np.append(0, np.cumsum(dipole_primitive_num[:-1]))
