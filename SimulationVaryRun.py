@@ -1398,7 +1398,7 @@ def simulations_fibre_2D_cylinder_shellLayers(filename, chain_length, shell_radi
     parameter_text = ""
     return parameter_text
 
-def simulations_refine_cuboid(dimensions, dipole_size, separations, object_offset, particle_size, force_terms, particle_shape, time_step=1e-4, show_output=True):
+def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, object_offset, time_step=1e-4, show_output=True):
     #
     # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
     #
@@ -1430,6 +1430,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, object_offse
     dipVary_forceX_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
     dipVary_forceY_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
     dipVary_forceZ_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
+    
     for i in range(len(dipole_sizes)):
         # Generate YAML for set of particles and beams
         Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_sizes[i], separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
@@ -1451,6 +1452,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, object_offse
         dipVary_forceX_data[1][i] = recorded_force[0]
         dipVary_forceY_data[1][i] = recorded_force[1]
         dipVary_forceZ_data[1][i] = recorded_force[2]
+        
     data_set.append(dipVary_forceMag_data)
     data_set.append(dipVary_forceX_data)
     data_set.append(dipVary_forceY_data)
@@ -1870,12 +1872,13 @@ match(sys.argv[1]):
         object_offset = [1e-6, 0e-6, 0e-6]     # Offset the whole object
         dipole_size = 40e-9     # 40e-9
         separations = [0.4e-6, 0.2e-6, 0.2e-6]    # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        object_offset = [0e-6, 0e-6, 0e-6]     # Offset the whole object
         particle_size = 0.2e-6      # e.g radius of sphere, width of cube
         force_terms=["optical"] # ["optical", "spring", "bending", "buckingham"]
         particle_shape = "cube"
 
         # Run
-        parameter_text, data_set = simulations_refine_cuboid(dimensions, dipole_size, separations, object_offset, particle_size, force_terms, particle_shape, show_output=False)
+        parameter_text, data_set = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, object_offset, show_output=False)
         # Plot graph here
         datalabel_set = np.array([ 
             "F Mag",
@@ -1886,7 +1889,7 @@ match(sys.argv[1]):
         # datacolor_set = np.array([ 
         #     "red"
         # ])
-        graphlabel_set = {"title":"Title", "xAxis":"some X", "yAxis":"some Y"}
+        graphlabel_set = {"title":"Title", "xAxis":"Dipole Size (micro m)", "yAxis":"some Y"}
         Display.plot_multi_data(data_set=data_set, datalabel_set=datalabel_set, graphlabel_set=graphlabel_set)  #, datacolor_set=datacolor_set
 
     case "refine_cuboid_general":
