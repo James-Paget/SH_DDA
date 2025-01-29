@@ -1073,14 +1073,13 @@ def calc_sphere_volumes(particle_total, dipole_size_range, radii):
             dipole_diameter = 2*dipole_size
             dd2 = dipole_diameter**2
             sr2 = sphere_radius**2
-            num = int(sphere_radius//dipole_diameter)
-            
-            number_of_dipoles = 0
-            for i in range(-num,num+1):
+            num = int(2*sphere_radius/dipole_diameter)
+            nums = np.arange(-(num-1)/2,(num+1)/2,1)
+            for i in nums:
                 i2 = i*i
-                for j in range(-num,num+1):
+                for j in nums:
                     j2 = j*j
-                    for k in range(-num,num+1):
+                    for k in nums:
                         k2 = k*k
                         rad2 = (i2+j2+k2)*dd2
                         if rad2 < sr2:
@@ -1468,6 +1467,41 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
     )
     return parameter_text, np.array(data_set)
 
+def simulations_refine_cuboid_general(dimensions, dipole_sizes, separations, object_offset, particle_sizes, force_terms, particle_shapes, time_step=1e-4, show_output=True):
+    #
+    # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
+    #
+    ##
+    ## NEED TO ASSESS WHAT PARTICLES SHOULD BE MEASURED?, SHOULD YOU MEASURE THE WHOLE THING?
+    ##
+    particle_info = [];
+    record_parameters = ["F"]
+
+    # Generate YAML for set of particles and beams
+    print("Performing refinement calculation for cuboid")
+    for particle_shape in particle_shapes:
+        for particle_size in particle_sizes:
+            for dipole_size in dipole_sizes:
+                for separations in separations_list: # note, separations has x,y,z components.
+                    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+                    # Run simulation
+                    DM.main(YAML_name=filename, force_terms=force_terms)
+
+                    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+                    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = "\n".join(
+        (
+            "Refined_Cuboid",
+            "dimensions   (m)= "+str(dimensions),
+            "dipole_size  (m)= "+str(dipole_size),
+            "separations  (m)= "+str(separations),
+            "particle_size(m)= "+str(particle_size)
+        )
+    )
+    return parameter_text
+
+
 
 #=================#
 # Perform Program #
@@ -1793,6 +1827,23 @@ match(sys.argv[1]):
         # ])
         graphlabel_set = {"title":"Title", "xAxis":"some X", "yAxis":"some Y"}
         Display.plot_multi_data(data_set=data_set, datalabel_set=datalabel_set, graphlabel_set=graphlabel_set)  #, datacolor_set=datacolor_set
+
+    case "refine_cuboid_general": # 2nd version to reduce merge conflicts.
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        dimensions  = [1.0e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
+        object_offset = [1e-6, 0e-6, 0e-6]     # Offset the whole object
+        force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
+        dipole_sizes = [40e-9, 50e-9]          # list to iterate
+        particle_sizes = [0.15e-6]              # list to iterate: e.g radius of sphere, width of cube
+        separations_list = [[0.4e-6, 0.0, 0.0]]  # list to iterate: Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        particle_shapes = ["cube", "sphere"]     # list to iterate
+        # Run
+        parameter_text = simulations_refine_cuboid_general(dimensions, dipole_sizes, separations_list, object_offset, particle_sizes, force_terms, particle_shapes, show_output=True)
+        # Plot graph here
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, ..., "Particle number", "", parameter_text)
+        Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
 
     case _:
         print("Unknown run type: ",sys.argv[1]);

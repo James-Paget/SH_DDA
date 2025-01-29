@@ -97,7 +97,7 @@ class ParticleCollection (object):
                 self.particle_density = []
                 for newparticle in self.particle_list:
                     particle = self.particle_list[newparticle]
-                    print("Loading particle",particle)
+                    # print("Loading particle",particle)
                     if particle != None:
                         self.particle_type.append(particle.get('material',self.default_material))
                         #self.particle_radius.append(float(particle.get('radius',self.default_radius)))

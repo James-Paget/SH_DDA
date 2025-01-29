@@ -232,10 +232,10 @@ def make_yaml_fibre_2d_cylinder_shelllayers(filename, time_step=1e-4, frames=1, 
     use_beam(filename, beam)
     use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args)
 
-def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, dipole_radius=dipole_size, time_step=time_step)
+def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE"):
+    use_default_options(filename, frames, show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    use_refine_cuboid(filename, dimensions, dipole_size, separations, particle_size, particle_shape)
+    use_refine_cuboid(filename, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape)
 
 #=======================================================================
 # Particle configurations
@@ -397,11 +397,12 @@ def use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_
     
     use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_refine_cuboid(filename, dimensions, dipole_size, separations, particle_size, particle_shape="sphere"):
+def use_refine_cuboid(filename, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape="sphere"):
     #
     # particle_size = radius of sphere OR half width of cube
     #
     coords_list = get_refine_cuboid(dimensions, dipole_size, separations, particle_size)
+    coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * len(coords_list)
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
@@ -783,8 +784,11 @@ def get_refine_cuboid(dimensions, dipole_size, separations, particle_size):
     coords_list = []
 
     particle_numbers = np.floor((np.array(dimensions)-np.array(separations)) / particle_size)      # Number of particles in each axis
-    particle_step = 2.0*particle_size +np.array(separations)/(particle_numbers-1)                       # Step in position to each particle in each axis
-
+    particle_step = np.zeros(3)
+    for i in range(3):
+        if particle_numbers[i] != 1.0:
+            particle_step[i] = 2.0*particle_size + separations[i]/(particle_numbers[i]-1)                       # Step in position to each particle in each axis
+    
     for i in range(int(particle_numbers[0])):
         for j in range(int(particle_numbers[1])):
             for k in range(int(particle_numbers[2])):
