@@ -540,9 +540,6 @@ def pull_file_data(filename, parameters_stored, read_frames, read_parameters, in
             frame = read_frames[i]
             data_fragment = 0
             try:
-                print("========")
-                print("===> frame      = ",frame)
-                print("===> block_index= ",block_index)
                 data_fragment = data.iloc[frame, block_index]
             except:
                 print("--Invalid XLSX reading, either an invalid row or column [x,y]=["+str(block_index)+","+str(frame)+"] => Data defaults to 0--")
@@ -1405,22 +1402,61 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
     #
     # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
     #
-    ##
-    ## NEED TO ASSESS WHAT PARTICLES SHOULD BE MEASURED?, SHOULD YOU MEASURE THE WHOLE THING?
-    ##
-    particle_info = [];
-    record_parameters = ["F"]
 
-    # Generate YAML for set of particles and beams
+    # Specify parameters for data pulling later
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+    read_frames = [
+        0
+    ]
+    read_parameters = [
+        {"type":"F", "particle":0, "subtype":0},
+        {"type":"F", "particle":0, "subtype":1},
+        {"type":"F", "particle":0, "subtype":2}
+    ]
+
+    # Begin calculations
+    ####
+    #### REMOVE DIPOLE_SIZE ARGS
+    ####
     print("Performing refinement calculation for cuboid")
-    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, particle_shape, frames=3, show_output=show_output, beam="LAGUERRE")
-
-    # Run simulation
-    DM.main(YAML_name=filename, force_terms=force_terms)
+    dipole_sizes = np.linspace(40e-9, 120e-9, 15)
+    data_set = []
+    dipVary_forceMag_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])   #[ [dipole_sizes], [recorded_data]-> e.g. force magnitude ]
+    dipVary_forceX_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
+    dipVary_forceY_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
+    dipVary_forceZ_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
+    for i in range(len(dipole_sizes)):
+        # Generate YAML for set of particles and beams
+        Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_sizes[i], separations, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+        # Run simulation
+        DM.main(YAML_name=filename, force_terms=force_terms)
+        # Pull data needed from this frame, add it to another list tracking
+        output_data = pull_file_data(
+            filename, 
+            parameters_stored, 
+            read_frames, 
+            read_parameters, 
+            invert_output=False
+        )
+        # Calculate required quantities
+        recorded_force = np.array([output_data[0, 0], output_data[0, 1], output_data[0, 2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
+        recorded_force_mag = np.sqrt(np.dot(recorded_force, recorded_force.conjugate()))        # Calculate dep. var. to be plotted
+        # Store quantities
+        dipVary_forceMag_data[1][i] = recorded_force_mag
+        dipVary_forceX_data[1][i] = recorded_force[0]
+        dipVary_forceY_data[1][i] = recorded_force[1]
+        dipVary_forceZ_data[1][i] = recorded_force[2]
+    data_set.append(dipVary_forceMag_data)
+    data_set.append(dipVary_forceX_data)
+    data_set.append(dipVary_forceY_data)
+    data_set.append(dipVary_forceZ_data)
 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
-    record_particle_info(filename, particle_info, record_parameters=record_parameters)
-    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
     parameter_text = "\n".join(
         (
             "Refined_Cuboid",
@@ -1430,7 +1466,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
             "particle_size(m)= "+str(particle_size)
         )
     )
-    return parameter_text
+    return parameter_text, np.array(data_set)
 
 
 #=================#
@@ -1740,60 +1776,23 @@ match(sys.argv[1]):
         dipole_size = 40e-9     # 40e-9
         separations = [0.4e-6, 0.2e-6, 0.2e-6]    # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         particle_size = 0.2e-6      # e.g radius of sphere, width of cube
-        force_terms=["optical"]#["optical", "spring", "bending", "buckingham"]
+        force_terms=["optical"] # ["optical", "spring", "bending", "buckingham"]
         particle_shape = "cube"
 
         # Run
-        #parameter_text = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, show_output=True)
+        parameter_text, data_set = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, show_output=False)
         # Plot graph here
-
-        ##
-        ## PULL DATA FROM COMBINED FILE
-        ##
-        parameters_stored = [
-            {"type":"X", "args":["x", "y", "z"]},
-            {"type":"F", "args":["Fx", "Fy", "Fz"]},
-            {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
-            {"type":"C", "args":["Cx", "Cy", "Cz"]}
-        ]
-        read_frames = [
-            0,
-            2
-        ]
-        read_parameters = [
-            {"type":"X", "particle":0, "subtype":0}, 
-            {"type":"X", "particle":0, "subtype":1},
-            {"type":"F", "particle":0, "subtype":0},
-            {"type":"F", "particle":2, "subtype":0},
-            {"type":"F", "particle":10000, "subtype":0}
-        ]
-        output_data = pull_file_data(
-            "SingleLaguerre", 
-            parameters_stored, 
-            read_frames, 
-            read_parameters, 
-            invert_output=False
-        )
-        print("===")
-        print("read_frames    = ", read_frames)
-        print("read_parameters= ", read_parameters)
-        print("output         = ", output_data)
-
-
-        data_set = np.array([ 
-            np.array([ np.array([0,1,2,3,4,5,6,7]), pow(np.array([0,1,2,3,4,5,6,7]),2) ]), 
-            np.array([ np.array([0,1,2,3,4,5,6,7]), pow(np.array([0,1,2,3,4,5,6,7]),3) ]) 
-        ])
         datalabel_set = np.array([ 
-            "data_1", 
-            "data_2" 
+            "F Mag",
+            "Fx",
+            "Fy",
+            "Fz"
         ])
-        datacolor_set = np.array([ 
-            "red",
-            "blue"
-        ])
-        graphlabel_set = {"title":"Some title", "xAxis":"some X", "yAxis":"some Y"}
-        #Display.plot_multi_data(data_set=data_set, datalabel_set=datalabel_set, graphlabel_set=graphlabel_set)  #, datacolor_set=datacolor_set
+        # datacolor_set = np.array([ 
+        #     "red"
+        # ])
+        graphlabel_set = {"title":"Title", "xAxis":"some X", "yAxis":"some Y"}
+        Display.plot_multi_data(data_set=data_set, datalabel_set=datalabel_set, graphlabel_set=graphlabel_set)  #, datacolor_set=datacolor_set
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
