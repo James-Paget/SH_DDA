@@ -1191,14 +1191,14 @@ def sphere_size(args, dipole_radius):
     sphere_radius = args[0]
     dd2 = dipole_diameter**2
     sr2 = sphere_radius**2
-    num = int(sphere_radius//dipole_diameter)
-    
     number_of_dipoles = 0
-    for i in range(-num,num+1):
+    num = int(2*sphere_radius/dipole_diameter)
+    nums = np.arange(-(num-1)/2,(num+1)/2,1)
+    for i in nums:
         i2 = i*i
-        for j in range(-num,num+1):
+        for j in nums:
             j2 = j*j
-            for k in range(-num,num+1):
+            for k in nums:
                 k2 = k*k
                 rad2 = (i2+j2+k2)*dd2
                 if rad2 < sr2:
@@ -1215,24 +1215,26 @@ def sphere_positions(args, dipole_radius, number_of_dipoles_total):
     sr2 = sphere_radius**2
     pts = np.zeros((number_of_dipoles_total, 3))
     number_of_dipoles = 0
-    num = int(sphere_radius//dipole_diameter)
-    for i in range(-num,num+1):
+    num = int(2*sphere_radius/dipole_diameter)
+    nums = np.arange(-(num-1)/2,(num+1)/2,1)
+    for i in nums:
         i2 = i*i
-        x = i*dipole_diameter
-        for j in range(-num,num+1):
+        x = i*dipole_diameter +1e-20
+        for j in nums:
             j2 = j*j
-            y = j*dipole_diameter
-            for k in range(-num,num+1):
+            y = j*dipole_diameter +1e-20
+            for k in nums:
                 k2 = k*k
                 z = k*dipole_diameter
                 rad2 = (i2+j2+k2)*dd2
                 if rad2 < sr2:
-                    pts[number_of_dipoles][0] = x+1e-20     # Softening factor
-                    pts[number_of_dipoles][1] = y+1e-20     #
-                    pts[number_of_dipoles][2] = z
+                    pts[number_of_dipoles] = [x, y, z]
                     number_of_dipoles += 1
+    # pts -= (num-1)/2 * dipole_diameter
     print(number_of_dipoles," dipoles generated")
+    # print(f"Z PTS ARE\n{np.unique(pts[:, 2])}\n\n") # test the full/half int shift.
     return pts
+
 
 
 def torus_sector_size(args, dipole_radius):
@@ -1506,6 +1508,7 @@ def rotate_arbitrary(theta, v, n):
     )
     v_rotated = np.dot( arb_rotation_matrix, v )    # Apply rotation
     return v_rotated
+
 def cube_size(args, dipole_radius):
     dipole_diameter = 2*dipole_radius
     cube_radius = args[0]
@@ -1527,7 +1530,7 @@ def cube_positions(args, dipole_radius, number_of_dipoles_total):
         for j in nums:
             y = j*dipole_diameter +1e-20
             for k in nums:
-                z = k*dipole_diameter +1e-20
+                z = k*dipole_diameter
                 pts[number_of_dipoles] = [x, y, z]
                 number_of_dipoles += 1
     pts -= (num-1)/2 * dipole_diameter # shift back to origin. odd num on lattice, even num on half integer lattice.

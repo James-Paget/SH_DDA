@@ -105,8 +105,13 @@ def generate_yaml(preset, filename="Preset"):
             args_list = [[0.20e-6]] * 4
             coords_list = get_tetrahedron_points(1e-6)
             use_default_particles(filename, "cube", args_list, coords_list, "num", 3)
-
-
+        
+        case "ONE_PARTICLE":
+            use_default_options(filename, frames=10, show_output=True, time_step=0.0001)
+            use_beam(filename, "LAGUERRE")
+            args_list = [[0.20e-6]]
+            coords_list = [[0.0, 0.0, 0.0]]
+            use_default_particles(filename, "sphere", args_list, coords_list, "num", 0)
 
         case _:
             return False
@@ -227,10 +232,10 @@ def make_yaml_fibre_2d_cylinder_shelllayers(filename, time_step=1e-4, frames=1, 
     use_beam(filename, beam)
     use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args)
 
-def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, frames=1, show_output=True, beam="LAGUERRE"):
+def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE"):
     use_default_options(filename, frames, show_output, time_step=time_step)
     use_beam(filename, beam)
-    use_refine_cuboid(filename, dimensions, dipole_size, separations, particle_size)
+    use_refine_cuboid(filename, dimensions, dipole_size, separations, particle_size, particle_shape)
 
 #=======================================================================
 # Particle configurations
@@ -392,14 +397,14 @@ def use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_
     
     use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_refine_cuboid(filename, dimensions, dipole_size, separations, particle_size):
+def use_refine_cuboid(filename, dimensions, dipole_size, separations, particle_size, particle_shape="sphere"):
     #
     # particle_size = radius of sphere OR half width of cube
     #
     coords_list = get_refine_cuboid(dimensions, dipole_size, separations, particle_size)
     args_list = [[particle_size]] * len(coords_list)
     
-    use_default_particles(filename, "sphere", args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
 
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
 #     # makes a row of separated cylinders
