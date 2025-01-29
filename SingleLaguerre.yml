@@ -26678,3 +26678,8697 @@ particles:
       args: 2e-07
       coords: 7e-07 5e-07 5e-07
       altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 1e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 5e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 -3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 1e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 5e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 1e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 5e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 1e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 5e-07
+      altcolour: True
+    part_12:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 -3e-07
+      altcolour: True
+    part_13:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 1e-07
+      altcolour: True
+    part_14:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 5e-07
+      altcolour: True
+    part_15:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 -3e-07
+      altcolour: True
+    part_16:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 1e-07
+      altcolour: True
+    part_17:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 5e-07
+      altcolour: True
+    part_18:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_19:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 1e-07
+      altcolour: True
+    part_20:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 5e-07
+      altcolour: True
+    part_21:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 -3e-07
+      altcolour: True
+    part_22:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 1e-07
+      altcolour: True
+    part_23:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 5e-07
+      altcolour: True
+    part_24:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 -3e-07
+      altcolour: True
+    part_25:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 1e-07
+      altcolour: True
+    part_26:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 5e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 1e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 5e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 -3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 1e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 5e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 1e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 5e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 1e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 5e-07
+      altcolour: True
+    part_12:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 -3e-07
+      altcolour: True
+    part_13:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 1e-07
+      altcolour: True
+    part_14:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 5e-07
+      altcolour: True
+    part_15:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 -3e-07
+      altcolour: True
+    part_16:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 1e-07
+      altcolour: True
+    part_17:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 5e-07
+      altcolour: True
+    part_18:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_19:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 1e-07
+      altcolour: True
+    part_20:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 5e-07
+      altcolour: True
+    part_21:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 -3e-07
+      altcolour: True
+    part_22:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 1e-07
+      altcolour: True
+    part_23:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 5e-07
+      altcolour: True
+    part_24:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 -3e-07
+      altcolour: True
+    part_25:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 1e-07
+      altcolour: True
+    part_26:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 5e-07
+      altcolour: True
+options:
+  frames: 10
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 10
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 1e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 5e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 -3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 1e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 1e-07 5e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 1e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 5e-07 5e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 1e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 5e-07
+      altcolour: True
+    part_12:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 -3e-07
+      altcolour: True
+    part_13:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 1e-07
+      altcolour: True
+    part_14:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 1e-07 5e-07
+      altcolour: True
+    part_15:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 -3e-07
+      altcolour: True
+    part_16:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 1e-07
+      altcolour: True
+    part_17:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 5e-07 5e-07
+      altcolour: True
+    part_18:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_19:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 1e-07
+      altcolour: True
+    part_20:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 5e-07
+      altcolour: True
+    part_21:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 -3e-07
+      altcolour: True
+    part_22:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 1e-07
+      altcolour: True
+    part_23:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 1e-07 5e-07
+      altcolour: True
+    part_24:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 -3e-07
+      altcolour: True
+    part_25:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 1e-07
+      altcolour: True
+    part_26:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 5e-07 5e-07
+      altcolour: True
+options:
+  frames: 3
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 3
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 3
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 3
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 3
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 3
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 6e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: True
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.285714285714286e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.5714285714285715e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.8571428571428566e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.142857142857143e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.428571428571428e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.714285714285714e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 6e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.105263157894737e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.2105263157894737e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.315789473684211e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.421052631578947e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.5263157894736844e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.631578947368421e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.736842105263158e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.8421052631578944e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.9473684210526315e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.052631578947368e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.157894736842105e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.2631578947368416e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.368421052631579e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.473684210526316e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.578947368421052e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.684210526315789e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.789473684210526e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.894736842105263e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 6e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.5714285714285715e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.142857142857143e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.7142857142857144e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 6.285714285714286e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 6.857142857142857e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 7.428571428571427e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 8e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 8.57142857142857e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 9.142857142857143e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 9.714285714285713e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.0285714285714285e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.0857142857142856e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.1428571428571427e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.2e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4.5714285714285715e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.142857142857143e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 5.7142857142857144e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 6.285714285714286e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 6.857142857142857e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 7.428571428571427e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 8e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 8.57142857142857e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 9.142857142857143e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 9.714285714285713e-08
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.0285714285714285e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.0857142857142856e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.1428571428571427e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1.2e-07
+  time_step: 0.0001
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+display:
+  show_output: False
+  frame_interval: 2
+  max_size: 2e-06
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 -3e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 -3e-07 3e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 -3e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: -5e-07 3e-07 3e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 -3e-07
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 -3e-07 3e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 -3e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 1e-07 3e-07 3e-07
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 -3e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 -3e-07 3e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 -3e-07
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: cube
+      args: 2e-07
+      coords: 7e-07 3e-07 3e-07
+      altcolour: True

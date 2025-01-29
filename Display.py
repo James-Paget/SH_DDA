@@ -676,3 +676,31 @@ def plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=None, best
     plt.ylabel("Object volume (m^3)")
     plt.title("Total volume against dipole size")
     plt.show()
+
+def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphlabel_set={"title":"", "xAxis":"", "yAxis":""}, show_legend=True):
+    #
+    # Plots multiple sets of data on a single axis
+    # Data and labels are parsed in to fit the scenario required
+    #
+    # data_set = [ [set_1], [set_2], ... ]
+    #       Such that [set_1] = [ [x_data], [y_data] ] to be plotted, NOTE; Assumed to be numpy arrays
+    # datalabel_set  = [ "set_1_label", "set_2_label", ... ]
+    #       Labels for each data set, shown in the legend
+    # graphlabel_set = {"title":..., "xAxis":..., "yAxis":...}
+    #       Labels for the graph in general
+    #
+
+    # Go through each data set and plot
+    fig, ax = plt.subplots()
+    for i in range(len(data_set)):
+        if(len(datacolor_set) < len(data_set)):
+            ax.plot(data_set[i,0], data_set[i,1], label=datalabel_set[i])
+        else:
+            ax.plot(data_set[i,0], data_set[i,1], label=datalabel_set[i], color=datacolor_set[i])
+
+    plt.title(graphlabel_set["title"])
+    plt.xlabel(graphlabel_set["xAxis"])
+    plt.ylabel(graphlabel_set["yAxis"])
+    if(show_legend):
+        ax.legend()
+    plt.show()

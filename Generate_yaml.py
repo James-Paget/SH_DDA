@@ -233,7 +233,7 @@ def make_yaml_fibre_2d_cylinder_shelllayers(filename, time_step=1e-4, frames=1, 
     use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args)
 
 def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+    use_default_options(filename, frames, show_output, dipole_radius=dipole_size, time_step=time_step)
     use_beam(filename, beam)
     use_refine_cuboid(filename, dimensions, dipole_size, separations, particle_size, particle_shape)
 
@@ -479,7 +479,6 @@ def use_default_options(filename, frames, show_output, wavelength=1e-6, dipole_r
     """
     if frame_max == None:
         frame_max = frames
-    print(" WAVELENGTH = ",wavelength)
     write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset)
 
 #=======================================================================
