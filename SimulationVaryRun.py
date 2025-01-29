@@ -452,6 +452,108 @@ def store_combined_particle_info(filename, particle_info, record_parameters=["F"
 
     workbook.close()
 
+def pull_file_data(filename, parameters_stored, read_frames, read_parameters, invert_output=False):
+    ####
+    #### NOW JUST USES ORIGINAL XLSX MADE
+    ####
+
+    #
+    # Pulls specified data from a .xlsx file, returns a list of all data requested
+    #
+    # Output is given as EITHER;
+    #       #NON-INVERTED#
+    #       [ [A_p, B_p, C_p], [A_q, B_q, C_q] ]
+    #       If requesting read_frames=[p, q] and read_parameters = [A, B, C]
+    #       e.g. stored as lists of data from each frame, for each parameter in that frame (in the order provided)
+    #                   OR
+    #       #INVERTED#
+    #       [ [A_p, A_q], [B_p, B_q], [C_p, C_q] ]
+    #       If requesting read_frames=[p, q] and read_parameters = [A, B, C]
+    #       e.g. stored as lists of data from each frame, for each parameter in that frame (in the order provided)
+    #       NOTE; Each parameter A,B,C,etc is a scalar value, e.g. If you want to extract a vector, will 
+    #             need to request parameters "Px", "Py", "Pz" individually
+    #
+    # Works for data formatted as;
+    #       Xn Yn Zn P11n P12n P13n ... PK1n PK2n PK3n ... Xm Ym Zm P11m P12m P13m ... PK1m PK2m PK3m
+    #       ------------------------------------------     ------------------------------------------
+    #       A particle with (x,y,z) pos and 'K'             'm-n' particles in total, all storing 
+    #       parameters which can have arbitrary             the same format of parameters
+    #       length (e.g. length 3 for vectors)
+    #
+    # NOTE; This is the format of the "_combined.xlsx" files generated in SimuationVary() tests
+    #       This format assumes frame_i is located on row_i
+    #
+    # filename = file to pull data from WITHOUT the extension type e.g. "<name>" NOT "<name>.xlsx"
+    # parameters_stored = [ [x,y,z], [Fx,Fy,Fz], ... ]
+    #       Blocks of particles being stored
+    # read_frames = List of which rows to read from
+    # read_parameters = List of which columns to read from
+    #           Format as;
+    #               [{param_1}, {param_2}, ...]
+    #               For {param_i} = {"type", "particle", "subtype"}
+    #                   "type"     = Which general quantity is it, e.g. "X" for pos, "F" for force, "FT" for total force, "C" for torque, ...
+    #                   "particle" = Which particle number do you want to read it for e.g. 0 for 0th particle
+    #                   "subtype"  = Which component of the type do you want e.g. if "type"="F", then "subtype"=0 => want to read "Fx" for the given particle
+    #       Using both read_frames and read_parameters can specify and and subset of data to retrieve (in complex cases, with some 
+    #       extra data stored as well)
+    # invert_ouput = What format to store found data in; [frames X params] OR [params X frames]
+    #
+    
+    def get_block_index(parameter, parameters_stored, number_of_particles):
+        #
+        # Sum previous sections visited, to get an index offset to bring you to the 'block' of 
+        # values relevent to this parameter, + an extra offset for which particle this is for, 
+        # + another offset for which of these parameters in the block you want
+        #
+        print("number_of_particles= ", number_of_particles)
+        block_index = 0
+        for i in range(len(parameters_stored)):     # parameters_stored is ordered correctly
+            number_of_block_parameters = len(parameters_stored[i]["args"])
+            if(parameters_stored[i]["type"] == parameter["type"]):
+                block_index += param["particle"]*number_of_block_parameters +param["subtype"] +1 # +1 to avoid time column
+                break
+            else:
+                block_index += number_of_block_parameters*number_of_particles
+        return block_index
+    
+    def get_parameters_stored_length(parameters_stored):
+        parameter_total = 0
+        for param in parameters_stored:
+            parameter_total += len(param["args"])
+        return parameter_total
+
+    # Setup values
+    if(invert_output):
+        output = np.zeros( (len(read_parameters), len(read_frames)) )
+    else:
+        output = np.zeros( (len(read_frames), len(read_parameters)) )
+    data = pd.read_excel(filename+".xlsx")
+    data_length = data.count(axis='columns')
+    parameters_per_particle = get_parameters_stored_length(parameters_stored)
+    number_of_particles = int((data_length[0]-1)/parameters_per_particle)
+
+    # Pull data
+    for j in range(len(read_parameters)):
+        param = read_parameters[j]
+        block_index    = get_block_index(param, parameters_stored, number_of_particles)
+        for i in range(len(read_frames)):
+            frame = read_frames[i]
+            data_fragment = 0
+            try:
+                print("========")
+                print("===> frame      = ",frame)
+                print("===> block_index= ",block_index)
+                data_fragment = data.iloc[frame, block_index]
+            except:
+                print("--Invalid XLSX reading, either an invalid row or column [x,y]=["+str(block_index)+","+str(frame)+"] => Data defaults to 0--")
+            if(invert_output):
+                output[j,i] = data_fragment
+            else:
+                output[i,j] = data_fragment
+
+    # Output data
+    return output
+
 def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False):
     #
     # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
@@ -1311,7 +1413,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
 
     # Generate YAML for set of particles and beams
     print("Performing refinement calculation for cuboid")
-    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, particle_size, particle_shape, frames=3, show_output=show_output, beam="LAGUERRE")
 
     # Run simulation
     DM.main(YAML_name=filename, force_terms=force_terms)
@@ -1635,17 +1737,63 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
         # Args
         dimensions  = [1.0e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
-        dipole_size = 40e-9
-        separations = [0.4e-6, 0.0, 0.0]    # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        dipole_size = 40e-9     # 40e-9
+        separations = [0.4e-6, 0.2e-6, 0.2e-6]    # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         particle_size = 0.2e-6      # e.g radius of sphere, width of cube
         force_terms=["optical"]#["optical", "spring", "bending", "buckingham"]
         particle_shape = "cube"
 
         # Run
-        parameter_text = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, show_output=True)
+        #parameter_text = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, show_output=True)
         # Plot graph here
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, ..., "Particle number", "", parameter_text)
-        Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
+
+        ##
+        ## PULL DATA FROM COMBINED FILE
+        ##
+        parameters_stored = [
+            {"type":"X", "args":["x", "y", "z"]},
+            {"type":"F", "args":["Fx", "Fy", "Fz"]},
+            {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+            {"type":"C", "args":["Cx", "Cy", "Cz"]}
+        ]
+        read_frames = [
+            0,
+            2
+        ]
+        read_parameters = [
+            {"type":"X", "particle":0, "subtype":0}, 
+            {"type":"X", "particle":0, "subtype":1},
+            {"type":"F", "particle":0, "subtype":0},
+            {"type":"F", "particle":2, "subtype":0},
+            {"type":"F", "particle":10000, "subtype":0}
+        ]
+        output_data = pull_file_data(
+            "SingleLaguerre", 
+            parameters_stored, 
+            read_frames, 
+            read_parameters, 
+            invert_output=False
+        )
+        print("===")
+        print("read_frames    = ", read_frames)
+        print("read_parameters= ", read_parameters)
+        print("output         = ", output_data)
+
+
+        data_set = np.array([ 
+            np.array([ np.array([0,1,2,3,4,5,6,7]), pow(np.array([0,1,2,3,4,5,6,7]),2) ]), 
+            np.array([ np.array([0,1,2,3,4,5,6,7]), pow(np.array([0,1,2,3,4,5,6,7]),3) ]) 
+        ])
+        datalabel_set = np.array([ 
+            "data_1", 
+            "data_2" 
+        ])
+        datacolor_set = np.array([ 
+            "red",
+            "blue"
+        ])
+        graphlabel_set = {"title":"Some title", "xAxis":"some X", "yAxis":"some Y"}
+        #Display.plot_multi_data(data_set=data_set, datalabel_set=datalabel_set, graphlabel_set=graphlabel_set)  #, datacolor_set=datacolor_set
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
