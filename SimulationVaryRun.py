@@ -12,6 +12,7 @@ import pandas as pd
 import random
 import math
 import pickle
+import itertools as it
 
 import Display
 import DipolesMulti2024Eigen as DM
@@ -1467,7 +1468,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, object_offse
     )
     return parameter_text, np.array(data_set)
 
-def simulations_refine_cuboid_general(dimensions, dipole_sizes, separations, object_offset, particle_sizes, force_terms, particle_shapes, time_step=1e-4, show_output=True):
+def simulations_refine_general(dimensions, variables_list, object_offset, force_terms, time_step=1e-4, show_output=False):
     #
     # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
     #
@@ -1482,60 +1483,83 @@ def simulations_refine_cuboid_general(dimensions, dipole_sizes, separations, obj
     read_frames = [
         0
     ]
+    # type must match with that of parameters_stored, subtype just indexes the args.
     read_parameters = [
         {"type":"F", "particle":0, "subtype":0},
         {"type":"F", "particle":0, "subtype":1},
         {"type":"F", "particle":0, "subtype":2}
     ]
+    
+    dipole_sizes = variables_list["dipole_sizes"]
+    separations_list = variables_list["separations_list"]
+    particle_sizes = variables_list["particle_sizes"]
+    particle_shapes = variables_list["particle_shapes"]
+    # get the independent variable
+    indep_name = variables_list["indep_var"]
+    indep_list = np.array(variables_list[indep_name] )
+    num_indep = len(indep_list)
+
+    match indep_name:
+        case "dipole_sizes": line_vars = [separations_list, particle_sizes, particle_shapes]
+        case "separations_list": line_vars = [dipole_sizes, particle_sizes, particle_shapes]
+        case "particle_sizes": line_vars = [dipole_size, separations, particle_shapes]
+        case "particle_shapes": line_vars = [dipole_size, separations, particle_sizes]
 
     # Begin calculations
-    ####
-    #### REMOVE DIPOLE_SIZE ARGS
-    ####
     print("Performing refinement calculation for cuboid")
-    dipole_sizes = np.linspace(40e-9, 120e-9, 15)
     data_set = []
-    dipVary_forceMag_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])   #[ [dipole_sizes], [recorded_data]-> e.g. force magnitude ]
-    dipVary_forceX_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
-    dipVary_forceY_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
-    dipVary_forceZ_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
-    for i in range(len(dipole_sizes)):
-        # Generate YAML for set of particles and beams
-        Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_sizes[i], separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
-        # Run simulation
-        DM.main(YAML_name=filename, force_terms=force_terms)
-        # Pull data needed from this frame, add it to another list tracking
-        output_data = pull_file_data(
-            filename, 
-            parameters_stored, 
-            read_frames, 
-            read_parameters, 
-            invert_output=False
-        )
-        # Calculate required quantities
-        recorded_force = np.array([output_data[0, 0], output_data[0, 1], output_data[0, 2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
-        recorded_force_mag = np.sqrt(np.dot(recorded_force, recorded_force.conjugate()))        # Calculate dep. var. to be plotted
-        # Store quantities
-        dipVary_forceMag_data[1][i] = recorded_force_mag
-        dipVary_forceX_data[1][i] = recorded_force[0]
-        dipVary_forceY_data[1][i] = recorded_force[1]
-        dipVary_forceZ_data[1][i] = recorded_force[2]
-    data_set.append(dipVary_forceMag_data)
-    data_set.append(dipVary_forceX_data)
-    data_set.append(dipVary_forceY_data)
-    data_set.append(dipVary_forceZ_data)
+    data_set_params = []
+    forceMag_data = np.array([ indep_list, np.zeros(num_indep) ])  
+    forceX_data = np.array([ indep_list, np.zeros(num_indep) ])
+    forceY_data = np.array([ indep_list, np.zeros(num_indep) ])
+    forceZ_data = np.array([ indep_list, np.zeros(num_indep) ])
+
+    for params in it.product(*line_vars):
+        match indep_name:
+            case "dipole_sizes": separations, particle_size, particle_shape = params
+            case "separations_list": dipole_size, particle_size, particle_shape = params
+            case "particle_sizes": dipole_size, separations, particle_shape = params
+            case "particle_shapes": dipole_size, separations, particle_size = params
+
+        for i, indep_var in enumerate(indep_list):
+            match indep_name:
+                    case "dipole_sizes": dipole_size = indep_var
+                    case "separations_list": separations = indep_var
+                    case "particle_sizes": particle_sizes = indep_var
+                    case "particle_shapes": particle_shapes = indep_var
+        
+            # Generate YAML for set of particles and beams
+            Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+            # Run simulation
+            DM.main(YAML_name=filename, force_terms=force_terms)
+            # Pull data needed from this frame, add it to another list tracking
+            output_data = pull_file_data(
+                filename, 
+                parameters_stored, 
+                read_frames, 
+                read_parameters, 
+                invert_output=False
+            )
+            # Calculate required quantities
+            recorded_force = np.array([output_data[0, 0], output_data[0, 1], output_data[0, 2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
+            recorded_force_mag = np.sqrt(np.dot(recorded_force, recorded_force.conjugate()))        # Calculate dep. var. to be plotted
+            
+            # Store quantities
+            forceMag_data[1][i] = recorded_force_mag
+            forceX_data[1][i] = recorded_force[0]
+            forceY_data[1][i] = recorded_force[1]
+            forceZ_data[1][i] = recorded_force[2]
+
+        data_set.append(forceMag_data)
+        data_set.append(forceX_data)
+        data_set.append(forceY_data)
+        data_set.append(forceZ_data)
+        data_set_params.append(params)
+        
 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
-    parameter_text = "\n".join(
-        (
-            "Refined_Cuboid",
-            "dimensions   (m)= "+str(dimensions),
-            "dipole_size  (m)= "+str(dipole_size),
-            "separations  (m)= "+str(separations),
-            "particle_size(m)= "+str(particle_size)
-        )
-    )
-    return parameter_text, np.array(data_set)
+    parameter_text = ""
+    return parameter_text, np.array(data_set), data_set_params
 
 
 
@@ -1872,15 +1896,38 @@ match(sys.argv[1]):
         dimensions  = [1.0e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
         object_offset = [1e-6, 0e-6, 0e-6]     # Offset the whole object
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
-        dipole_sizes = [40e-9, 50e-9]          # list to iterate
-        particle_sizes = [0.15e-6]              # list to iterate: e.g radius of sphere, width of cube
-        separations_list = [[0.4e-6, 0.0, 0.0]]  # list to iterate: Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        particle_shapes = ["cube", "sphere"]     # list to iterate
+
+        # Iterables
+        dipole_sizes = np.linspace(40e-9, 100e-9, 10)         
+        particle_sizes = [0.16e-6] # e.g radius of sphere, half-width of cube
+        separations_list = [[0.4e-6, 0.0, 0.0]]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        particle_shapes = ["cube", "sphere"]    
+
+        variables_list = {
+            "indep_var": "dipole_sizes", # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes
+            "dipole_sizes": dipole_sizes,
+            "separations_list": separations_list,
+            "particle_sizes": particle_sizes,
+            "particle_shapes": particle_shapes,
+        }
+
         # Run
-        parameter_text = simulations_refine_cuboid_general(dimensions, dipole_sizes, separations_list, object_offset, particle_sizes, force_terms, particle_shapes, show_output=True)
+        parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, object_offset, force_terms, show_output=False)
         # Plot graph here
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, ..., "Particle number", "", parameter_text)
-        Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
+        linestyle_set = np.repeat(["-", "--", ":", "-."], 4) # This could limit the number of lines that can be plotted - CHANGE
+        print(linestyle_set)
+        datalabel_set = np.empty(len(data_set), dtype=object)
+        for i, param in enumerate(data_set_params):
+            datalabel_set[4*i+0] = f"F Mag {str(param)}"
+            datalabel_set[4*i+1] = f"Fx {str(param)}"
+            datalabel_set[4*i+2] = f"Fy {str(param)}"
+            datalabel_set[4*i+3] = f"Fz {str(param)}"
+
+        # datacolor_set = np.array([ 
+        #     "red"
+        # ])
+        graphlabel_set = {"title":f"Forces against {variables_list['indep_var']}", "xAxis":f"{variables_list['indep_var']}", "yAxis":"Forces"} # NOTE single quotes needed to prevent strings clashing.
+        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)  #, datacolor_set=datacolor_set
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
