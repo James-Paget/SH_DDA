@@ -1397,7 +1397,7 @@ def simulations_fibre_2D_cylinder_shellLayers(filename, chain_length, shell_radi
     parameter_text = ""
     return parameter_text
 
-def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, time_step=1e-4, show_output=True):
+def simulations_refine_cuboid(dimensions, dipole_size, separations, object_offset, particle_size, force_terms, particle_shape, time_step=1e-4, show_output=True):
     #
     # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
     #
@@ -1431,7 +1431,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
     dipVary_forceZ_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
     for i in range(len(dipole_sizes)):
         # Generate YAML for set of particles and beams
-        Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_sizes[i], separations, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+        Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_sizes[i], separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
         # Run simulation
         DM.main(YAML_name=filename, force_terms=force_terms)
         # Pull data needed from this frame, add it to another list tracking
@@ -1471,25 +1471,61 @@ def simulations_refine_cuboid_general(dimensions, dipole_sizes, separations, obj
     #
     # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
     #
-    ##
-    ## NEED TO ASSESS WHAT PARTICLES SHOULD BE MEASURED?, SHOULD YOU MEASURE THE WHOLE THING?
-    ##
-    particle_info = [];
-    record_parameters = ["F"]
 
-    # Generate YAML for set of particles and beams
+    # Specify parameters for data pulling later
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+    read_frames = [
+        0
+    ]
+    read_parameters = [
+        {"type":"F", "particle":0, "subtype":0},
+        {"type":"F", "particle":0, "subtype":1},
+        {"type":"F", "particle":0, "subtype":2}
+    ]
+
+    # Begin calculations
+    ####
+    #### REMOVE DIPOLE_SIZE ARGS
+    ####
     print("Performing refinement calculation for cuboid")
-    for particle_shape in particle_shapes:
-        for particle_size in particle_sizes:
-            for dipole_size in dipole_sizes:
-                for separations in separations_list: # note, separations has x,y,z components.
-                    Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
-                    # Run simulation
-                    DM.main(YAML_name=filename, force_terms=force_terms)
+    dipole_sizes = np.linspace(40e-9, 120e-9, 15)
+    data_set = []
+    dipVary_forceMag_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])   #[ [dipole_sizes], [recorded_data]-> e.g. force magnitude ]
+    dipVary_forceX_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
+    dipVary_forceY_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
+    dipVary_forceZ_data = np.array([ np.array(dipole_sizes), np.zeros( len(dipole_sizes) ) ])
+    for i in range(len(dipole_sizes)):
+        # Generate YAML for set of particles and beams
+        Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_sizes[i], separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+        # Run simulation
+        DM.main(YAML_name=filename, force_terms=force_terms)
+        # Pull data needed from this frame, add it to another list tracking
+        output_data = pull_file_data(
+            filename, 
+            parameters_stored, 
+            read_frames, 
+            read_parameters, 
+            invert_output=False
+        )
+        # Calculate required quantities
+        recorded_force = np.array([output_data[0, 0], output_data[0, 1], output_data[0, 2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
+        recorded_force_mag = np.sqrt(np.dot(recorded_force, recorded_force.conjugate()))        # Calculate dep. var. to be plotted
+        # Store quantities
+        dipVary_forceMag_data[1][i] = recorded_force_mag
+        dipVary_forceX_data[1][i] = recorded_force[0]
+        dipVary_forceY_data[1][i] = recorded_force[1]
+        dipVary_forceZ_data[1][i] = recorded_force[2]
+    data_set.append(dipVary_forceMag_data)
+    data_set.append(dipVary_forceX_data)
+    data_set.append(dipVary_forceY_data)
+    data_set.append(dipVary_forceZ_data)
 
-                    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
-                    record_particle_info(filename, particle_info, record_parameters=record_parameters)
-    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     parameter_text = "\n".join(
         (
             "Refined_Cuboid",
@@ -1499,7 +1535,7 @@ def simulations_refine_cuboid_general(dimensions, dipole_sizes, separations, obj
             "particle_size(m)= "+str(particle_size)
         )
     )
-    return parameter_text
+    return parameter_text, np.array(data_set)
 
 
 
@@ -1807,6 +1843,7 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
         # Args
         dimensions  = [1.0e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
+        object_offset = [1e-6, 0e-6, 0e-6]     # Offset the whole object
         dipole_size = 40e-9     # 40e-9
         separations = [0.4e-6, 0.2e-6, 0.2e-6]    # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         particle_size = 0.2e-6      # e.g radius of sphere, width of cube
@@ -1814,7 +1851,7 @@ match(sys.argv[1]):
         particle_shape = "cube"
 
         # Run
-        parameter_text, data_set = simulations_refine_cuboid(dimensions, dipole_size, separations, particle_size, force_terms, particle_shape, show_output=False)
+        parameter_text, data_set = simulations_refine_cuboid(dimensions, dipole_size, separations, object_offset, particle_size, force_terms, particle_shape, show_output=False)
         # Plot graph here
         datalabel_set = np.array([ 
             "F Mag",
@@ -1828,7 +1865,7 @@ match(sys.argv[1]):
         graphlabel_set = {"title":"Title", "xAxis":"some X", "yAxis":"some Y"}
         Display.plot_multi_data(data_set=data_set, datalabel_set=datalabel_set, graphlabel_set=graphlabel_set)  #, datacolor_set=datacolor_set
 
-    case "refine_cuboid_general": # 2nd version to reduce merge conflicts.
+    case "refine_cuboid_general":
         # Save file
         filename = "SingleLaguerre"
         # Args
