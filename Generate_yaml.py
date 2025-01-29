@@ -478,6 +478,11 @@ def use_default_options(filename, frames, show_output, wavelength=1e-6, dipole_r
     """
     Make the default options, requiring just filename, frames, show_output
     """
+    # To clear the old YAML before writing the new
+    # NOTE; Requires this function to be run before any other writes occur
+    with open(f"{filename}.yml", "w") as _:
+        pass
+    # Continue writing in blank slate
     if frame_max == None:
         frame_max = frames
     write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset)
