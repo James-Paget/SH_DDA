@@ -677,7 +677,7 @@ def plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=None, best
     plt.title("Total volume against dipole size")
     plt.show()
 
-def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphlabel_set={"title":"", "xAxis":"", "yAxis":""}, show_legend=True):
+def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphlabel_set={"title":"", "xAxis":"", "yAxis":""}, linestyle_set=None, show_legend=True):
     #
     # Plots multiple sets of data on a single axis
     # Data and labels are parsed in to fit the scenario required
@@ -694,9 +694,10 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
     fig, ax = plt.subplots()
     for i in range(len(data_set)):
         if(len(datacolor_set) < len(data_set)):
-            ax.plot(data_set[i,0], data_set[i,1], label=datalabel_set[i])
+            # print(linestyle_set[i])
+            ax.plot(data_set[i,0], data_set[i,1], label=datalabel_set[i], linestyle=linestyle_set[i])
         else:
-            ax.plot(data_set[i,0], data_set[i,1], label=datalabel_set[i], color=datacolor_set[i])
+            ax.plot(data_set[i,0], data_set[i,1], label=datalabel_set[i], color=datacolor_set[i], linestyle=linestyle_set[i])
 
     plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
