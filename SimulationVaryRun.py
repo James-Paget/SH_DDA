@@ -1543,11 +1543,11 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
         # Iterate over independent variable to get the data for each line.
         for i, indep_var in enumerate(indep_list):
             match indep_name:
-                    case "dipole_sizes": dipole_size = indep_var
-                    case "separations_list": separations = indep_var
-                    case "particle_sizes": particle_size = indep_var
-                    case "particle_shapes": particle_shape = indep_var
-                    case "object_offsets": object_offset = indep_var
+                case "dipole_sizes": dipole_size = indep_var
+                case "separations_list": separations = indep_var
+                case "particle_sizes": particle_size = indep_var
+                case "particle_shapes": particle_shape = indep_var
+                case "object_offsets": object_offset = indep_var
         
             # Generate YAML for set of particles and beams
             Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
@@ -1572,16 +1572,100 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
             forceZ_data[1][i] = recorded_force[2]
             # print(f"\n{indep_var} has z-force: {recorded_force[2]}\n")
 
-        data_set.append(forceMag_data)
-        data_set.append(forceX_data)
-        data_set.append(forceY_data)
-        data_set.append(forceZ_data)
+        data_set.append(np.array(forceMag_data))
+        data_set.append(np.array(forceX_data))
+        data_set.append(np.array(forceY_data))
+        data_set.append(np.array(forceZ_data))
         data_set_params.append(params)
         
 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     parameter_text = ""
     return parameter_text, np.array(data_set), data_set_params
+
+
+def filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name):
+    #
+    # Filter for what force types are wanted
+    # Options, force_filter=["Fmag", "Fx", "Fy", "Fz"] XXX could add Ftheta, Fr
+    # Returns filtered data_set, datalabel_set
+    # The label only use the variables in legend_params since others do not change so are shown in the title.
+    #
+    i_dict = {"dipole_sizes":0, "separations_list":1, "particle_sizes":2, "particle_shapes":3, "object_offsets":4} # convert between names and list index.
+    indep_val = i_dict[indep_name]
+
+    filtered_i = []
+    datalabel_set = []
+    # Iterate over the experiments
+    for i, params in enumerate(data_set_params):
+        # Pick what variables to show in the legend.
+        param_str = ""
+        for key, value in i_dict.items():
+            if value > indep_val: value -= 1 # params DOESN'T include the indep var so the indices in i_dict beyond the indep var must be shifted (-1) to fill the gap.
+            if key in legend_params:
+                param_str += f"{display_var(key, params[value])} "
+
+        # Pick what forces to plot and create the legend string.
+        if "Fmag" in force_filter:
+            filtered_i.append(4*i)
+            datalabel_set.append(f"F Mag, {param_str}")
+        if "Fx" in force_filter:
+            filtered_i.append(4*i+1)
+            datalabel_set.append(f"Fx, {param_str}")
+        if "Fy" in force_filter:
+            filtered_i.append(4*i+2)
+            datalabel_set.append(f"Fy, {param_str}")
+        if "Fz" in force_filter:
+            filtered_i.append(4*i+3)
+            datalabel_set.append(f"Fz, {param_str}")
+    
+    return data_set[filtered_i], datalabel_set
+
+def display_var(variable_type, value=None):
+    #
+    # Returns a string based on the arguments
+    # if value=None, returns the name and units of variable_type as a tuple e.g. "dipole size", "/m"
+    # Else returns a single formatted string using the value e.g. "dipole size = 4e-8m"
+    #
+    if value == None:
+        match variable_type:
+            case "dipole_sizes": return "dipole size", "/m"
+            case "separations_list": return "separation", "/m"
+            case "particle_sizes": return "particle size", "/m"
+            case "particle_shapes": return " particle shape"
+            case "object_offsets": return "offset", "/m"
+            case _: return f"{variable_type} UNKNOWN", "UNITS"
+    
+    else:
+        match variable_type:
+            case "dipole_sizes": return f"dipole size = {value}m"
+            case "separations_list": return f"separation = [{value[0]},{value[1]},{value[2]}]m"
+            case "particle_sizes": return f"particle size = {value}m"
+            case "particle_shapes": return f" particle shape = {value}"
+            case "object_offsets": return f"offset = [{value[0]},{value[1]},{value[2]}]m"
+            case _: return f"{variable_type} UNKNOWN"
+
+def get_titlelegend(variables_list, indep_name):
+    #
+    # Formats the graph title.
+    # Variables that don't change are put in the graph title. Otherwise, they are recorded to go in the legend.
+    # This excludes the independent variable.
+    #
+    titlestr = f"Forces against {display_var(indep_name)[0]}"
+    legend_params = []
+    newline_count = 1
+    # For each variable, print it in the legend or the title.
+    for key, value in variables_list.items():
+        if key == indep_name: continue # Indep var isn't in title or legend.
+        if len(value) == 1: # It doesn't change so put in the title
+            titlestr += f", {display_var(key, value[0])}"
+            if newline_count == 2:
+                newline_count = 0
+                titlestr += "\n"
+            newline_count += 1
+        else: # variable changes so keep in legend
+            legend_params.append(key)
+    return titlestr, legend_params
 
 
 
@@ -1920,16 +2004,17 @@ match(sys.argv[1]):
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
 
         # Iterables
-        # dipole_sizes = np.linspace(40e-9, 100e-9, 10)         
-        # particle_sizes = [0.16e-6] # e.g radius of sphere, half-width of cube
-        # separations_list = [[0.4e-6, 0.0, 0.0]]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        # particle_shapes = ["cube", "sphere"] 
-        # 
-        dipole_sizes = np.linspace(40e-9, 100e-9, 1)         
+        dipole_sizes = np.linspace(50e-9, 100e-9, 1)         
         particle_sizes = [0.16e-6] # e.g radius of sphere, half-width of cube
         separations_list = [[0.4e-6, 0.0, 0.0]]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        particle_shapes = ["cube"] # ["cube", "sphere"]   
-        object_offsets = [[1e-6, 0e-6, 0e-6], [1e-6, 0e-6, 0.5e-6], [1e-6, 0e-6, 1e-6], [1e-6, 0e-6, 1.5e-6], [1e-6, 0e-6, 2e-6]]     # Offset the whole object 
+        particle_shapes = ["cube", "sphere"] 
+        object_offsets = [[1e-6, 0e-6, 0e-6], [1e-6, 0e-6, 0.5e-6], [1e-6, 0e-6, 1e-6], [1e-6, 0e-6, 1.5e-6], [1e-6, 0e-6, 2e-6]]
+
+        # dipole_sizes = np.linspace(50e-9, 100e-9, 20)         
+        # particle_sizes = [0.15e-6, 0.1e-6] # e.g radius of sphere, half-width of cube
+        # separations_list = [[0.4e-6, 0.0, 0.0]]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        # particle_shapes = ["cube", "sphere"] # ["cube", "sphere"]   
+        # object_offsets = [[1e-6, 0e-6, 0e-6], [1e-6, 0e-6, 1e-6]]     # Offset the whole object 
 
         variables_list = {
             "indep_var": "object_offsets", # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes
@@ -1941,30 +2026,26 @@ match(sys.argv[1]):
         }
 
         # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
-        if variables_list["indep_var"] == "separations_list":
-            indep_vector_component = 0
-        elif variables_list["indep_var"] == "object_offsets":
-            indep_vector_component = 2
-        else:
-            indep_vector_component = 0
+        indep_name = variables_list["indep_var"]
+        if indep_name == "separations_list": indep_vector_component = 0
+        elif indep_name == "object_offsets": indep_vector_component = 2
+        else: indep_vector_component = 0
 
         # Run
         parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False, indep_vector_component=indep_vector_component)
-        # Plot graph here
-        linestyle_set = np.repeat(["-", "--", ":", "-."], 4) # This could limit the number of lines that can be plotted - CHANGE
-        # print(linestyle_set)
-        datalabel_set = np.empty(len(data_set), dtype=object)
-        for i, param in enumerate(data_set_params):
-            datalabel_set[4*i+0] = f"F Mag {str(param)}"
-            datalabel_set[4*i+1] = f"Fx {str(param)}"
-            datalabel_set[4*i+2] = f"Fy {str(param)}"
-            datalabel_set[4*i+3] = f"Fz {str(param)}"
 
-        # datacolor_set = np.array([ 
-        #     "red"
-        # ])
-        graphlabel_set = {"title":f"Forces against {variables_list['indep_var']}", "xAxis":f"{variables_list['indep_var']}", "yAxis":"Forces"} # NOTE single quotes needed to prevent strings clashing.
-        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)  #, datacolor_set=datacolor_set
+        # Format output and make legend/title strings
+        force_filter=["Fx"] # options are ["Fmag","Fx", "Fy", "Fz"]
+        titlestr, legend_params = get_titlelegend(variables_list, indep_name)
+        data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
+        
+        # Plot graph here
+        # linestyle_set = np.repeat(["-", "--", ":", "-."], int(len(data_set)/4))
+        # print(f"DATASET IS {data_set}\ndatalabel_set is {datalabel_set}\ndata_set_params is {data_set_params}")
+        linestyle_set = np.repeat(["-"], len(data_set))
+        xAxis_varname, xAxis_units = display_var(indep_name)
+        graphlabel_set = {"title":titlestr, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} # single quotes needed to prevent strings clashing.
+        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
