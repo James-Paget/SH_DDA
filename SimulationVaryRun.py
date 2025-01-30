@@ -1470,9 +1470,9 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
     )
     return parameter_text, np.array(data_set)
 
-def simulations_refine_general(dimensions, variables_list, object_offset, force_terms, time_step=1e-4, show_output=False):
+def simulations_refine_general(dimensions, variables_list, force_terms, time_step=1e-4, show_output=False, indep_vector_component=2):
     #
-    # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
+    # Consider an object of given parameters, vary its aspects, take force measurements for each scenario
     #
 
     # Specify parameters for data pulling later
@@ -1492,43 +1492,62 @@ def simulations_refine_general(dimensions, variables_list, object_offset, force_
         {"type":"F", "particle":0, "subtype":2}
     ]
     
+    # get list of variables from the dictionary.
     dipole_sizes = variables_list["dipole_sizes"]
     separations_list = variables_list["separations_list"]
     particle_sizes = variables_list["particle_sizes"]
     particle_shapes = variables_list["particle_shapes"]
-    # get the independent variable
+    object_offsets = variables_list["object_offsets"]
+    # get the independent variable (the one to be plotted against)
     indep_name = variables_list["indep_var"]
     indep_list = np.array(variables_list[indep_name] )
-    num_indep = len(indep_list)
 
+    # Based on the indep var, set what variable are varied over different lines of the graph.
     match indep_name:
-        case "dipole_sizes": line_vars = [separations_list, particle_sizes, particle_shapes]
-        case "separations_list": line_vars = [dipole_sizes, particle_sizes, particle_shapes]
-        case "particle_sizes": line_vars = [dipole_size, separations, particle_shapes]
-        case "particle_shapes": line_vars = [dipole_size, separations, particle_sizes]
+        case "dipole_sizes": 
+            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "separations_list": 
+            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot agaisnt
+        case "particle_sizes": 
+            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "particle_shapes": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets]
+            indep_axis_list = indep_list
+        case "object_offsets": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot agaisnt
+
 
     # Begin calculations
     print("Performing refinement calculation for cuboid")
     data_set = []
     data_set_params = []
-    forceMag_data = np.array([ indep_list, np.zeros(num_indep) ])  
-    forceX_data = np.array([ indep_list, np.zeros(num_indep) ])
-    forceY_data = np.array([ indep_list, np.zeros(num_indep) ])
-    forceZ_data = np.array([ indep_list, np.zeros(num_indep) ])
+    num_indep = len(indep_axis_list)
+    forceMag_data = np.array([ indep_axis_list, np.zeros(num_indep) ])  
+    forceX_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
+    forceY_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
+    forceZ_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
 
+    # Iterate though every combination of variables that are varied across the lines of the graph.
     for params in it.product(*line_vars):
         match indep_name:
-            case "dipole_sizes": separations, particle_size, particle_shape = params
-            case "separations_list": dipole_size, particle_size, particle_shape = params
-            case "particle_sizes": dipole_size, separations, particle_shape = params
-            case "particle_shapes": dipole_size, separations, particle_size = params
+            case "dipole_sizes": separations, particle_size, particle_shape, object_offset = params
+            case "separations_list": dipole_size, particle_size, particle_shape, object_offset = params
+            case "particle_sizes": dipole_size, separations, particle_shape, object_offset = params
+            case "particle_shapes": dipole_size, separations, particle_size, object_offset = params
+            case "object_offsets": dipole_size, separations, particle_size, particle_shape = params
 
+        # Iterate over independent variable to get the data for each line.
         for i, indep_var in enumerate(indep_list):
             match indep_name:
                     case "dipole_sizes": dipole_size = indep_var
                     case "separations_list": separations = indep_var
-                    case "particle_sizes": particle_sizes = indep_var
-                    case "particle_shapes": particle_shapes = indep_var
+                    case "particle_sizes": particle_size = indep_var
+                    case "particle_shapes": particle_shape = indep_var
+                    case "object_offsets": object_offset = indep_var
         
             # Generate YAML for set of particles and beams
             Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
@@ -1551,6 +1570,7 @@ def simulations_refine_general(dimensions, variables_list, object_offset, force_
             forceX_data[1][i] = recorded_force[0]
             forceY_data[1][i] = recorded_force[1]
             forceZ_data[1][i] = recorded_force[2]
+            # print(f"\n{indep_var} has z-force: {recorded_force[2]}\n")
 
         data_set.append(forceMag_data)
         data_set.append(forceX_data)
@@ -1897,28 +1917,42 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
         # Args
         dimensions  = [1.0e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
-        object_offset = [1e-6, 0e-6, 0e-6]     # Offset the whole object
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
 
         # Iterables
-        dipole_sizes = np.linspace(40e-9, 100e-9, 10)         
+        # dipole_sizes = np.linspace(40e-9, 100e-9, 10)         
+        # particle_sizes = [0.16e-6] # e.g radius of sphere, half-width of cube
+        # separations_list = [[0.4e-6, 0.0, 0.0]]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        # particle_shapes = ["cube", "sphere"] 
+        # 
+        dipole_sizes = np.linspace(40e-9, 100e-9, 1)         
         particle_sizes = [0.16e-6] # e.g radius of sphere, half-width of cube
         separations_list = [[0.4e-6, 0.0, 0.0]]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        particle_shapes = ["cube", "sphere"]    
+        particle_shapes = ["cube"] # ["cube", "sphere"]   
+        object_offsets = [[1e-6, 0e-6, 0e-6], [1e-6, 0e-6, 0.5e-6], [1e-6, 0e-6, 1e-6], [1e-6, 0e-6, 1.5e-6], [1e-6, 0e-6, 2e-6]]     # Offset the whole object 
 
         variables_list = {
-            "indep_var": "dipole_sizes", # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes
+            "indep_var": "object_offsets", # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes
             "dipole_sizes": dipole_sizes,
             "separations_list": separations_list,
             "particle_sizes": particle_sizes,
             "particle_shapes": particle_shapes,
+            "object_offsets": object_offsets
         }
 
+        # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
+        if variables_list["indep_var"] == "separations_list":
+            indep_vector_component = 0
+        elif variables_list["indep_var"] == "object_offsets":
+            indep_vector_component = 2
+        else:
+            indep_vector_component = 0
+
         # Run
-        parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, object_offset, force_terms, show_output=False)
+        parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False, indep_vector_component=indep_vector_component)
         # Plot graph here
         linestyle_set = np.repeat(["-", "--", ":", "-."], 4) # This could limit the number of lines that can be plotted - CHANGE
-        print(linestyle_set)
+        # print(linestyle_set)
         datalabel_set = np.empty(len(data_set), dtype=object)
         for i, param in enumerate(data_set_params):
             datalabel_set[4*i+0] = f"F Mag {str(param)}"
