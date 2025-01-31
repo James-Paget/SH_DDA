@@ -1562,7 +1562,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     dipole_primitive_num_total = np.sum(dipole_primitive_num);
 
     # Check dipole_primitive_num_total is an expected number
-    dipole_primitive_num_max = 2000
+    dipole_primitive_num_max = 4000
     if not (dipole_primitive_num_total >= 0 and dipole_primitive_num_total <= dipole_primitive_num_max):
         sys.exit(f"Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap.")
 

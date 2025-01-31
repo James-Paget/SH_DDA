@@ -677,7 +677,7 @@ def plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=None, best
     plt.title("Total volume against dipole size")
     plt.show()
 
-def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphlabel_set={"title":"", "xAxis":"", "yAxis":""}, show_legend=True):
+def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphlabel_set={"title":"", "xAxis":"", "yAxis":""}, linestyle_set=None, show_legend=True):
     #
     # Plots multiple sets of data on a single axis
     # Data and labels are parsed in to fit the scenario required
