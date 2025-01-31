@@ -452,9 +452,46 @@ def store_combined_particle_info(filename, particle_info, record_parameters=["F"
 
     workbook.close()
 
+def get_closest_particle(point, output_data):
+    #
+    # Looks through all particles in a given frame (from some output data), and finds the 
+    # index of the particles closest to the point given
+    #
+    # expects point as numpy array
+    # output_data in the format of (x0,y0,z0, ...) for each particle, and no other readings
+    #
+    low_dist  = 1.0e10  # Distance of closest particle to point (easily beatable placeholder when initialised)
+    low_index = 0       # Index of the particle that is closest to the point (placeholder of 0 when initialised)
+    for i in range(0,len(output_data[0]),3):
+        pos  = np.array([ output_data[0,i+0], output_data[0,i+1], output_data[0,i+2] ])
+        dist = np.linalg.norm( point-pos )
+        if(dist <= low_dist):
+            low_dist  = dist
+            low_index = int(np.floor(i/3.0))
+    return low_index
+
+def get_number_of_particles_YAML(filename, parameters_stored):
+    #
+    # Gets the number of particles directly from the YAML given
+    # Used in situations where exact number of particles from a system is hard to calculate
+    #
+    def get_parameters_stored_length(parameters_stored):
+        parameter_total = 0
+        for param in parameters_stored:
+            parameter_total += len(param["args"])
+        return parameter_total
+    
+    data = pd.read_excel(filename+".xlsx")
+    data_length = data.count(axis='columns')
+    parameters_per_particle = get_parameters_stored_length(parameters_stored)
+    number_of_particles = int((data_length[0]-1)/parameters_per_particle)
+    return number_of_particles
+
 def pull_file_data(filename, parameters_stored, read_frames, read_parameters, invert_output=False):
     ####
     #### NOW JUST USES ORIGINAL XLSX MADE
+    ####
+    #### CORRECT DESCRIPTION GIVEN FOR THIS
     ####
 
     #
@@ -1469,6 +1506,133 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
     )
     return parameter_text, np.array(data_set)
 
+def simulations_refine_arch_prism(dimensions, separations, particle_length, dipole_size, deflection, object_offset, force_terms, particle_shape, show_output=True):
+    #
+    # Consider a cuboid of given parameters, calculate the path it should be located on when deflected by some amount
+    #
+    time_step = 1e-4
+
+    # Specify parameters for data pulling later
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+    read_frames = [
+        0
+    ]
+
+    # Begin calculations
+    print("Performing refinement calculation for cuboid")
+    
+    ####
+    ## ADD DIPOLE DIRECT PLOTTER TO GET BETTER VIEW OF WHERE DIPOLES ARE
+    ####
+    ####
+    ## SWITCH TO DAVID'S VARY METHOD
+    ####
+    vary_deflection = np.linspace(0.0e-6, 0.5e-6, 3) # Varying deflection
+    vary_dipoleSize = np.linspace(25e-9, 60e-9, 10) # Varying dipoleSize
+    vary_particleLength = np.linspace(100e-9, 75e-9, 1) # Varying particleLength
+    vary_separationX    = np.linspace(0.0e-6, 0.5e-6, 5) # Varying particleLength
+    ####
+    ## -> SHOULD BE TESTING PARTICLE LENGTHS THAT ACTUALLY FIR NICELY INTO THE REGION
+    ####
+
+    data_set = []
+    data_vary_dipoleSize_F       = np.array([ np.array(vary_dipoleSize), np.zeros( len(vary_dipoleSize) ) ])
+    data_vary_dipoleSize_FperDip = np.array([ np.array(vary_dipoleSize), np.zeros( len(vary_dipoleSize) ) ])
+    data_vary_dipoleSize_modF2   = np.array([ np.array(vary_dipoleSize), np.zeros( len(vary_dipoleSize) ) ])   #[ [dipole_sizes], [recorded_data]-> e.g. force magnitude ]
+    
+    for j in range(len(vary_particleLength)):
+        for i in range(len(vary_dipoleSize)):
+            # Generate YAML for set of particles and beams
+            Generate_yaml.make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, vary_particleLength[j], vary_dipoleSize[i], deflection, object_offset, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+            
+            number_of_particles = get_number_of_particles_YAML(filename, parameters_stored)
+            read_parameters_central = []
+            for p in range(number_of_particles):
+                read_parameters_central.append({"type":"X", "particle":p, "subtype":0})
+                read_parameters_central.append({"type":"X", "particle":p, "subtype":1})
+                read_parameters_central.append({"type":"X", "particle":p, "subtype":2})
+            read_parameters = []
+            for p in range(number_of_particles):
+                read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                read_parameters.append({"type":"F", "particle":p, "subtype":2})
+            
+            #central_particle_number = 0
+            central_particle_number = get_closest_particle(     # Measure forces on central particle for all systems
+                np.array([0.0, 0.0, deflection]),
+                output_data = pull_file_data(
+                    filename, 
+                    parameters_stored, 
+                    read_frames, 
+                    read_parameters_central, 
+                    invert_output=False
+                )
+            )
+            centre_dipoles = DM.sphere_size([vary_particleLength[j]], vary_dipoleSize[i])   # Number of dipoles of centre particle (ALL HAVE SAME NUMBER)
+            
+            # Run simulation
+            DM.main(YAML_name=filename, force_terms=force_terms)
+            # Pull data needed from this frame, add it to another list tracking
+            output_data = pull_file_data(
+                filename, 
+                parameters_stored, 
+                read_frames, 
+                read_parameters, 
+                invert_output=False
+            )
+            # Calculate required quantities
+            # (1)&(2) Get magnitude of force per dipole on central particle
+            centre_force_vec = np.array(
+                [
+                    output_data[0, 3*central_particle_number +0],
+                    output_data[0, 3*central_particle_number +1],
+                    output_data[0, 3*central_particle_number +2]
+                ]
+            )
+            centre_force = np.sqrt(np.dot(centre_force_vec, centre_force_vec.conjugate()))  # Finding |F| for centre particle
+            data_vary_dipoleSize_F[1][i] = centre_force
+            data_vary_dipoleSize_FperDip[1][i] = centre_force/centre_dipoles
+
+            # (3) Get magnitude^2 of force across full mesh
+            total_force_vec = np.zeros(3, dtype=complex)
+            for p in range(0, len(output_data[0]), 3):    # Go through each particle in sets of 3 (Fx,Fy,Fz measurements)
+                total_force_vec[0] += output_data[0, p+0]
+                total_force_vec[1] += output_data[0, p+1]
+                total_force_vec[2] += output_data[0, p+2]
+            total_force = np.dot(total_force_vec, total_force_vec.conjugate())  # Finding |F|^2
+            data_vary_dipoleSize_modF2[1][i] = total_force
+
+            
+            
+            ### OLD QUANITTIES ###
+            # recorded_force = np.array([output_data[0, 0], output_data[0, 1], output_data[0, 2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
+            # recorded_force_mag = np.sqrt(np.dot(recorded_force, recorded_force.conjugate()))        # Calculate dep. var. to be plotted
+            # Store quantities
+            # dipVary_forceMag_data[1][i] = recorded_force_mag
+            # dipVary_forceX_data[1][i] = recorded_force[0]
+            # dipVary_forceY_data[1][i] = recorded_force[1]
+            # dipVary_forceZ_data[1][i] = recorded_force[2]
+            
+        data_set.append(data_vary_dipoleSize_F)
+        data_set.append(data_vary_dipoleSize_FperDip)
+        data_set.append(data_vary_dipoleSize_modF2)
+
+        # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+        parameter_text = "\n".join(
+            (
+                "Refined_Cuboid",
+                "dimensions   (m)= "+str(dimensions),
+                "separations  (m)= "+str(separations),
+                "particle_size(m)= "+str(particle_length)
+            )
+        )
+    return parameter_text, np.array(data_set)
+
 def simulations_refine_cuboid_general(dimensions, dipole_sizes, separations, object_offset, particle_sizes, force_terms, particle_shapes, time_step=1e-4, show_output=True):
     #
     # Consider a cuboid of given parameters, vary aspects of cuboid, take force measurements for each scenario
@@ -1861,6 +2025,34 @@ match(sys.argv[1]):
             "Fx",
             "Fy",
             "Fz"
+        ])
+        # datacolor_set = np.array([ 
+        #     "red"
+        # ])
+        graphlabel_set = {"title":"Title", "xAxis":"Dipole Size (micro m)", "yAxis":"some Y"}
+        Display.plot_multi_data(data_set=data_set, datalabel_set=datalabel_set, graphlabel_set=graphlabel_set)  #, datacolor_set=datacolor_set
+
+    case "refine_arch_prism":
+        # Save file
+        filename = "SingleLaguerre"
+        # Args
+        show_output     = True
+        dimensions      = np.array([2.0e-6, 0.5e-6, 0.5e-6])    # Bounding box for prism
+        separations     = np.array([0.0, 0.0, 0.0])
+        particle_length = 100e-9                                # Radius or half-width
+        dipole_size     = 40e-9
+        deflection      = 0.25e-6           # Of centre in micrometres (also is deflection to centre of rod, not underside)
+        object_offset   = [-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]     # Offset the whole object
+        force_terms     = ["optical"]   # ["optical", "spring", "bending", "buckingham"]
+        particle_shape  = "sphere"
+
+        # Run
+        parameter_text, data_set = simulations_refine_arch_prism(dimensions, separations, particle_length, dipole_size, deflection, object_offset, force_terms, particle_shape, show_output=show_output)
+        # Plot graph here
+        datalabel_set = np.array([ 
+            "|F| (centre)",
+            "|F| per dipole (centre)",
+            "|F|^2 total mesh"
         ])
         # datacolor_set = np.array([ 
         #     "red"
