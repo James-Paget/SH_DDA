@@ -237,6 +237,11 @@ def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separa
     use_beam(filename, beam)
     use_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape)
 
+def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_length, dipole_size, deflection, object_offset, particle_shape, frames=1, show_output=False, beam="LAGUERRE"):
+    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+    use_beam(filename, beam)
+    use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_length, particle_shape)
+
 #=======================================================================
 # Particle configurations
 #=======================================================================
@@ -404,6 +409,16 @@ def use_refine_cuboid(filename, dimensions, separations, object_offset, particle
     coords_list = get_refine_cuboid(dimensions, separations, particle_size)
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * len(coords_list)
+    
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
+
+def use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_length, particle_shape="sphere"):
+    #
+    # particle_size = radius of sphere OR half width of cube
+    #
+    coords_list = get_refine_arch_prism(dimensions, separations, particle_length, deflection)
+    coords_list = np.array(coords_list) + object_offset
+    args_list = [[particle_length]] * len(coords_list)
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
 
@@ -798,6 +813,77 @@ def get_refine_cuboid(dimensions, separations, particle_size):
         for j in range(int(particle_numbers[1])):
             for k in range(int(particle_numbers[2])):
                 coords_list.append([i*particle_step[0] -dimensions[0]/2.0, j*particle_step[1] -dimensions[1]/2.0, k*particle_step[2] -dimensions[2]/2.0])
+
+    return coords_list
+
+def get_refine_arch_prism(dimensions, separations, particle_length, deflection):
+    #
+    # particle_size = radius of sphere OR half width of cube
+    #
+    curve_numbers = np.floor((dimensions -separations)/(2.0*particle_length))
+    curve_separations = (dimensions-2.0*particle_length*curve_numbers) / (curve_numbers+1.0)    # Separation between each curve, NOT including the 2R term
+
+    def get_arch_coord(x, height_factor, width_factor):
+        # Sinusoidal bending
+        return np.array([x, 0.0, height_factor*np.sin( (np.pi*(x/dimensions[0])/width_factor) )])
+
+    def check_prism_bounds(prism_type, point, args):
+        #
+        # Checks whether a point is within the bounds for a given prism
+        #
+        withinBounds=False
+        match prism_type:
+            case "circle":
+                # args = [radius]
+                withinBounds = np.sqrt( pow(point[0],2) + pow(point[1],2) ) <= args[0]
+            case "rect":
+                # args = [half_width, half_height]
+                withinBounds = ( (-args[0] <= point[0]) and (point[0] < args[0]) ) and ( (-args[1] <= point[1]) and (point[1] < args[1]) )
+            case "triangle":
+                pass
+        return withinBounds
+    
+    def get_deflected_width(b_prime):
+        # Works best for low eccentricity
+
+        a = 2.0e-6#2.0e-6      # Width (original, to conserve)
+        b = 0.5e-6#1.0e-6     # Deflection (original, to conserve)
+        #b_prime = 0.01e-6   # Deflection (New)
+        c = (3.0/2.0)*(a+b) -np.sqrt(a*b)
+        d = b_prime -(c*(2.0/3.0))
+        a_tild = (np.sqrt(b_prime)/3.0) +np.sqrt(-d +(b_prime/9.0))
+        a_prime = pow(a_tild, 2)    # Width (New)
+
+        # print("===")
+        # print("a= ",a)
+        # print("b= ",b)
+        # print("a_prime= ",a_prime)
+        # print("b_prime= ",b_prime)
+        return a_prime
+
+    # Generate particle grid
+    coords_plane_list = []
+    for j in range(int(curve_numbers[1])):
+        j_coord = (j+1.0)*curve_separations[1] +(2.0*j +1.0)*particle_length
+        for k in range(int(curve_numbers[2])):
+            k_coord = (k+1.0)*curve_separations[1] +(2.0*k +1.0)*particle_length
+            #if(check_prism_bounds("circle", [j_coord -dimensions[1]/2.0, k_coord -dimensions[2]/2.0], [dimensions[1]/2.0])):
+            if(check_prism_bounds("rect", [j_coord -dimensions[1]/2.0, k_coord -dimensions[2]/2.0], [dimensions[1]/2.0, dimensions[2]/2.0])):
+                coords_plane_list.append(
+                    np.array([
+                        0.0,
+                        j_coord,
+                        k_coord
+                    ])
+                )
+
+    # Generate this grid as you move through the parameterised curve
+    coords_list = []
+    x_set = np.linspace(0.0, get_deflected_width(deflection), int(curve_numbers[0]))    #dimensions[0]
+    for x in x_set:
+        origin = get_arch_coord(x, deflection, 1.0)
+        for p in coords_plane_list:
+            coords_list.append(p+origin)
 
     return coords_list
 
