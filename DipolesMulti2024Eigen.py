@@ -1563,7 +1563,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     # Check dipole_primitive_num_total is an expected number
     dipole_primitive_num_max = 15000
     if not (dipole_primitive_num_total >= 0 and dipole_primitive_num_total <= dipole_primitive_num_max):
-        sys.exit(f"Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap.")
+        sys.exit(f"Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap. (Search This Error)")
 
     # Get dipole primitive positions for each particle
     dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   #Flattened 1D list of all dipoles for all particles
