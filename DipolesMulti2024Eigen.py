@@ -1500,7 +1500,7 @@ def cube_positions(args, dipole_radius, number_of_dipoles_total):
     num = int(2*cube_radius/dipole_diameter)
     pts = np.zeros((number_of_dipoles_total, 3))
     number_of_dipoles = 0
-    nums = np.arange(0,num,1)
+    nums = np.arange(-(num-1)/2,(num+1)/2,1)
     for i in nums:
         x = i*dipole_diameter +1e-20
         for j in nums:
@@ -1509,7 +1509,6 @@ def cube_positions(args, dipole_radius, number_of_dipoles_total):
                 z = k*dipole_diameter
                 pts[number_of_dipoles] = [x, y, z]
                 number_of_dipoles += 1
-    pts -= (num-1)/2 * dipole_diameter # shift back to origin. odd num on lattice, even num on half integer lattice.
     # print(f"Z PTS ARE\n{pts[:num, 2]}\n\n") # test the full/half int shift.
     return pts
 
@@ -1562,7 +1561,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     dipole_primitive_num_total = np.sum(dipole_primitive_num);
 
     # Check dipole_primitive_num_total is an expected number
-    dipole_primitive_num_max = 4000
+    dipole_primitive_num_max = 15000
     if not (dipole_primitive_num_total >= 0 and dipole_primitive_num_total <= dipole_primitive_num_max):
         sys.exit(f"Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap.")
 
