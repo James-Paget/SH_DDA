@@ -456,7 +456,7 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None):
     match beam:
         case "GAUSS_CSP":
-            use_gaussCSP_beam(filename,translation, translationargs, translationtype)
+            use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype)
         case "LAGUERRE":
             use_laguerre3_beam(filename,translation, translationargs, translationtype)
         case "BESSEL":
@@ -844,10 +844,10 @@ def get_refine_arch_prism(dimensions, separations, particle_length, deflection):
         return withinBounds
     
     def get_deflected_width(b_prime):
-        # Works best for low eccentricity
+        # Works best for low eccentricity -> Close to circle in plane
 
-        a = 2.0e-6#2.0e-6      # Width (original, to conserve)
-        b = 0.5e-6#1.0e-6     # Deflection (original, to conserve)
+        a = dimensions[0]#2.0e-6      # Width (original, to conserve)
+        b = 0.01e-6#1.0e-6     # Deflection (original, to conserve)
         #b_prime = 0.01e-6   # Deflection (New)
         c = (3.0/2.0)*(a+b) -np.sqrt(a*b)
         d = b_prime -(c*(2.0/3.0))
@@ -879,9 +879,10 @@ def get_refine_arch_prism(dimensions, separations, particle_length, deflection):
 
     # Generate this grid as you move through the parameterised curve
     coords_list = []
-    x_set = np.linspace(0.0, get_deflected_width(deflection), int(curve_numbers[0]))    #dimensions[0]
-    for x in x_set:
-        origin = get_arch_coord(x, deflection, 1.0)
+    x_set = np.linspace(0.0, dimensions[0], int(curve_numbers[0]))    #get_deflected_width(deflection)
+    x_step = dimensions[0]/curve_numbers[0]
+    for i in range(int(curve_numbers[0])):
+        origin = get_arch_coord(x_step*(i+0.5), deflection, 1.0)
         for p in coords_plane_list:
             coords_list.append(p+origin)
 

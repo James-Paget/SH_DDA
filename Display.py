@@ -275,6 +275,7 @@ class DisplayObject (object):
 
             # Add new particle plot elements
             for i in range(num_particles):
+                #colours[i] = "#fc3232"
                 match shapes[i]:
                     case "sphere":
                         x, y, z = self.make_sphere_surface(args[i], positions[t, i])
@@ -378,7 +379,7 @@ class DisplayObject (object):
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 
-        ani = animation.FuncAnimation(fig, update, frames=steps, interval=100)
+        ani = animation.FuncAnimation(fig, update, frames=steps, interval=100)  #100
 
         plt.show()
 
