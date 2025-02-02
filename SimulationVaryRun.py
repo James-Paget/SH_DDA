@@ -1907,13 +1907,13 @@ def display_var(variable_type, value=None):
             case "deflections": return f" deflection = {value}"
             case _: return f"{variable_type} UNKNOWN"
 
-def get_titlelegend(variables_list, indep_name, particle_selection):
+def get_titlelegend(variables_list, indep_name, particle_selection, dimensions):
     #
     # Formats the graph title.
     # Variables that don't change are put in the graph title. Otherwise, they are recorded to go in the legend.
     # This excludes the independent variable.
     #
-    titlestr = f"Forces against {display_var(indep_name)[0]}. particle selection = {particle_selection}\n"
+    titlestr = f"Forces against {display_var(indep_name)[0]}. dimensions = {dimensions}, particle selection = {particle_selection}\n"
     legend_params = []
     newline_count = 1
     # For each variable, print it in the legend or the title.
@@ -2311,7 +2311,7 @@ match(sys.argv[1]):
         )
         
         # Format output and make legend/title strings
-        titlestr, legend_params = get_titlelegend(variables_list, indep_name)
+        titlestr, legend_params = get_titlelegend(variables_list, indep_name, "central", dimensions)
         data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
         
         xAxis_varname, xAxis_units = display_var(indep_name)
@@ -2323,27 +2323,29 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  = [1.0e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
+        dimensions  = [0.6e-6]*3 #[0.6e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
         force_filter=["Fmag", "Fx", "Fy", "Fz"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "dipole_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+        indep_name = "separations_list"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
         particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
         # Iterables
-        dipole_sizes = np.linspace(40e-9, 100e-9, 1)         
-        particle_sizes = np.linspace(0.1e-6, 0.2e-6, 10)   # e.g radius of sphere, half-width of cube
+        separations_list = [[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        ### NORMAL
+        dipole_sizes = np.linspace(40e-9, 90e-9, 1)         
+        particle_sizes = np.linspace(0.1e-6, 0.24e-6, 1)   # e.g radius of sphere, half-width of cube
+        ### DIPS FRACTIONS OF PARTICLE SIZE
         # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)   # e.g radius of sphere, half-width of cube
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
-        separations_list = [[0.0e-6, 0.0, 0.0]]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        particle_shapes = ["cube", "sphere"] 
+        particle_shapes = ["cube"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
         #====================================================================================
         
         # Run
         variables_list = {"indep_var": indep_name, "dipole_sizes": dipole_sizes,"separations_list": separations_list,"particle_sizes": particle_sizes,"particle_shapes": particle_shapes,"object_offsets": object_offsets}
-        parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False, indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
+        parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, force_terms, show_output=True    , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         
         # Format output then plot graph
-        titlestr, legend_params = get_titlelegend(variables_list, indep_name, particle_selection)
+        titlestr, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
         data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
         graphlabel_set = {"title":titlestr, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} # single quotes needed to prevent strings clashing.
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=np.repeat(["-"], len(data_set)))
