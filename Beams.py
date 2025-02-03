@@ -246,7 +246,7 @@ def make_beam(beam_type, E0, kk, kt_by_kz = 0.3, order = 0, gouy = 0, w0 = 1.2e-
 # Create the whole beam collection from the yaml configuration
 #=======================================================================
 
-def create_beam_collection(beaminfo,wavelength):
+def create_beam_collection(beaminfo,wavelength,verbosity=2):
     """
     Function to create a set of beams from the beaminfo dictionary.
     In absence of information, beam will default to Gaussian CPS,
@@ -268,7 +268,8 @@ def create_beam_collection(beaminfo,wavelength):
     i=0
     for newbeam in beaminfo:
         beam = beaminfo[newbeam]
-        print('Creating beam: ',newbeam)
+        if(verbosity >= 2):
+            print('Creating beam: ',newbeam)
         beamtypestr = getbeamoption(beam,'beamtype')
         beamtype = BeamTypes[beamtypestr]
         E0 = float(getbeamoption(beam,'E0'))

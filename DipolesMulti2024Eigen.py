@@ -538,7 +538,7 @@ def stop_particles_overlapping(array_of_positions, effective_radii, particle_nei
 
             
 
-def generate_connection_indices(array_of_positions, mode="manual", args=[]):
+def generate_connection_indices(array_of_positions, mode="manual", args=[], verbosity=2):
     """
     Return a list of matrix indices (i,j) of connected particles
     mode (args): num (num_connections), line (), dist ()
@@ -548,7 +548,8 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
     num_particles = len(array_of_positions)
     connection_indices = []
 
-    print("Generating connection indices with mode= ",mode)
+    if(verbosity >= 2):
+        print("Generating connection indices with mode= ",mode)
 
     match mode:
         case "num":
@@ -1600,7 +1601,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     BENDING   = constants["bending"]
 
     # (2) Get Connections
-    connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args)
+    connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args, verbosity=verbosity)
     # print(f"connection indices are\n{connection_indices}")
     
     # (3) Get Initial Positions
@@ -1663,7 +1664,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                         optcouple[i,j,k] = couples[j][k] + torques[j][k]
 
         if i%10 == 0:
-            print("Step ",i)
+            print(" Simulation Step: ",i)
             #print(i,optical)
 
         D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
@@ -1830,7 +1831,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
     # Read beam options and create beam collection
     #===========================================================================
-    beam_collection = Beams.create_beam_collection(beaminfo,wavelength)
+    beam_collection = Beams.create_beam_collection(beaminfo, wavelength, verbosity=verbosity)
 
     
     # Test if beam should be translated each time step (requiring new beam collections each time)
@@ -1892,7 +1893,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         for t in range(number_of_timesteps):
             for (beam_name, beam_params) in beaminfo.items():
                 beaminfo[beam_name]["translation"] = " ".join([str(x) for x in beam_translations[beam_name][t]]) # join floats to a string, translationargs untouched an no longer needed.
-            beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength))
+            beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength,verbosity=verbosity))
             
     # Else just use one collection like normal
     else:

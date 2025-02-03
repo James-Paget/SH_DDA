@@ -274,6 +274,7 @@ class DisplayObject (object):
             plots.append(textplot)
 
             # Add new particle plot elements
+            #colours[62] = "#fc3232"
             for i in range(num_particles):
                 #colours[i] = "#fc3232"
                 match shapes[i]:
@@ -285,7 +286,7 @@ class DisplayObject (object):
                         x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
                     case "cube":
                         x, y, z = self.make_cube_surface(args[i], positions[t, i])
-                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
+                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=0.5)
                 plots.append(plot)
 
             # print("positions[t]= ",positions[t])
