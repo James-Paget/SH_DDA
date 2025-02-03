@@ -454,6 +454,7 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 #=======================================================================
 
 def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None):
+    print("TRYYING BEAM ",beam)
     match beam:
         case "GAUSS_CSP":
             use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype)
