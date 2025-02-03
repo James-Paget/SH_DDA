@@ -810,7 +810,7 @@ def get_refine_cuboid(dimensions, separations, particle_size):
     particle_step = np.zeros(3)
     for i in range(3):
         if particle_numbers[i] != 1.0:
-            particle_step[i] = 2.0*particle_size + separations[i]/(particle_numbers[i]-1)                       # Step in position to each particle in each axis
+            particle_step[i] = 2.0*particle_size + separations[i]/(particle_numbers[i]-1)               # Step in position to each particle in each axis
     
     for i in range(int(particle_numbers[0])):
         for j in range(int(particle_numbers[1])):
@@ -823,9 +823,6 @@ def get_refine_arch_prism(dimensions, separations, particle_length, deflection):
     #
     # particle_size = radius of sphere OR half width of cube
     #
-    curve_numbers = np.floor((dimensions -separations)/(2.0*particle_length))
-    curve_separations = (dimensions-2.0*particle_length*curve_numbers) / (curve_numbers+1.0)    # Separation between each curve, NOT including the 2R term
-
     def get_arch_coord(x, height_factor, width_factor):
         # Sinusoidal bending
         return np.array([x, 0.0, height_factor*np.sin( (np.pi*(x/dimensions[0])/width_factor) )])
@@ -864,30 +861,24 @@ def get_refine_arch_prism(dimensions, separations, particle_length, deflection):
         # print("b_prime= ",b_prime)
         return a_prime
 
-    # Generate particle grid
-    coords_plane_list = []
-    for j in range(int(curve_numbers[1])):
-        j_coord = (j+1.0)*curve_separations[1] +(2.0*j +1.0)*particle_length
-        for k in range(int(curve_numbers[2])):
-            k_coord = (k+1.0)*curve_separations[1] +(2.0*k +1.0)*particle_length
-            #if(check_prism_bounds("circle", [j_coord -dimensions[1]/2.0, k_coord -dimensions[2]/2.0], [dimensions[1]/2.0])):
-            if(check_prism_bounds("rect", [j_coord -dimensions[1]/2.0, k_coord -dimensions[2]/2.0], [dimensions[1]/2.0, dimensions[2]/2.0])):
-                coords_plane_list.append(
-                    np.array([
-                        0.0,
-                        j_coord,
-                        k_coord
-                    ])
-                )
-
-    # Generate this grid as you move through the parameterised curve
     coords_list = []
-    x_set = np.linspace(0.0, dimensions[0], int(curve_numbers[0]))    #get_deflected_width(deflection)
-    x_step = dimensions[0]/curve_numbers[0]
-    for i in range(int(curve_numbers[0])):
-        origin = get_arch_coord(x_step*(i+0.5), deflection, 1.0)
-        for p in coords_plane_list:
-            coords_list.append(p+origin)
+
+    particle_numbers = np.floor((np.array(dimensions)-np.array(separations)) / (2.0*particle_length))     # Number of particles in each axis
+    particle_step = np.zeros(3)
+    for i in range(3):
+        if particle_numbers[i] != 1.0:
+            particle_step[i] = 2.0*particle_length# + separations[i]/(particle_numbers[i]-1)               # Step in position to each particle in each axis
+
+    for i in range(int(particle_numbers[0])):
+        for j in range(int(particle_numbers[1])):
+            for k in range(int(particle_numbers[2])):
+                coords_list.append(
+                    [
+                        i*particle_step[0] -(particle_length)*(1-particle_numbers[0]),
+                        j*particle_step[1] -(particle_length)*(1-particle_numbers[1]),
+                        k*particle_step[2] -(particle_length)*(1-particle_numbers[2])
+                    ]
+                )
 
     return coords_list
 
