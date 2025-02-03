@@ -1679,6 +1679,7 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
                 case "deflections": deflection = indep_var
         
             # Generate YAML & Run Simulation
+            #Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
             Generate_yaml.make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, frames=1, show_output=show_output, beam=beam_type)
             DM.main(YAML_name=filename, force_terms=force_terms)
 
@@ -1686,6 +1687,7 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
             # Get details needed for force calculations
             #
             number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
+            #print(" ----> PARTICLE NUMEBR= ", number_of_particles)
             
             read_parameters = []
             for p in range(number_of_particles):
@@ -1723,18 +1725,29 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
                 read_parameters, 
                 invert_output=False
             )
+            #print("read_parameters = ", read_parameters)
 
 
             #---
             # Calculate required quantities
             #
             # (0) F_mag, Fx, Fy, Fz on 0th particle
-            recorded_force = np.array([output_data[0, 0], output_data[0, 1], output_data[0, 2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
-            recorded_force_mag = np.sqrt(np.dot(recorded_force, recorded_force))                    # Calculate dep. var. to be plotted
-            forceMag_data[1][i] = recorded_force_mag
-            forceX_data[1][i] = recorded_force[0]
-            forceY_data[1][i] = recorded_force[1]
-            forceZ_data[1][i] = recorded_force[2]
+            particle_list = select_particle_indices(filename, "all", parameters_stored, read_frames, object_offsets)
+            for p_i in range(len(particle_list)):
+                # Calculate required quantities
+                recorded_force = np.array([output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
+                
+                # Store quantities
+                forceX_data[1][i] += recorded_force[0]
+                forceY_data[1][i] += recorded_force[1]
+                forceZ_data[1][i] += recorded_force[2]
+            forceMag_data[1][i] = np.sqrt(forceX_data[1][i]**2 + forceY_data[1][i]**2 + forceZ_data[1][i]**2) # Magnitude of the net force.
+            # recorded_force = np.array([output_data[0, 0], output_data[0, 1], output_data[0, 2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
+            # recorded_force_mag = np.sqrt(np.dot(recorded_force, recorded_force))                    # Calculate dep. var. to be plotted
+            # forceMag_data[1][i] = recorded_force_mag
+            # forceX_data[1][i] = recorded_force[0]
+            # forceY_data[1][i] = recorded_force[1]
+            # forceZ_data[1][i] = recorded_force[2]
 
             # (1)&(2) Get magnitude of force per dipole on central particle
             centre_force_vec = np.array(
@@ -1751,6 +1764,9 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
             # (3) Get magnitude^2 of force across full mesh
             total_force_vec = np.zeros(3)
             for p in range(0, len(output_data[0]), 3):    # Go through each particle in sets of 3 (Fx,Fy,Fz measurements)
+                #print("     -> output_data[0]      = ", output_data[0])
+                #print("     -> output_data[0, p+0] = ", output_data[0, p+0])
+                #print("p=",p)
                 total_force_vec[0] += output_data[0, p+0]
                 total_force_vec[1] += output_data[0, p+1]
                 total_force_vec[2] += output_data[0, p+2]
@@ -1854,7 +1870,7 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
 
             # Calculate what particles to sum the forces over.
             particle_list = select_particle_indices(filename, particle_selection, parameters_stored, read_frames, object_offsets)
-            read_parameters = [{"type":"F", "particle":p, "subtype":st} for p, st in it.product(particle_list, [1,2,3])]
+            read_parameters = [{"type":"F", "particle":p, "subtype":st} for p, st in it.product(particle_list, [0,1,2])]
 
             # Pull data needed from this frame, add it to another list tracking
             output_data = pull_file_data(
@@ -1864,7 +1880,12 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
                 read_parameters, 
                 invert_output=False
             )
+            #print("read_parameters = ",read_parameters)
             for p_i in range(len(particle_list)):
+                print("     -> output_data[0]      = ", output_data[0])
+                print("     -> output_data[0, 3*p_i+0] = ", output_data[0, 3*p_i+0])
+                print("p=",p_i)
+                print("3p=",3*p_i)
                 # Calculate required quantities
                 recorded_force = np.array([output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
                 
@@ -1894,6 +1915,9 @@ def filter_data_set(force_filter, data_set, data_set_params, legend_params, inde
     # Returns filtered data_set, datalabel_set
     # The label only use the variables in legend_params since others do not change so are shown in the title.
     #
+
+    print("data_set = ",data_set)
+
     i_dict = {"dipole_sizes":0, "separations_list":1, "particle_sizes":2, "particle_shapes":3, "object_offsets":4} # convert between names and list index.
     indep_val = i_dict[indep_name]
 
@@ -1930,6 +1954,15 @@ def filter_data_set(force_filter, data_set, data_set_params, legend_params, inde
         if "F_T" in force_filter:
             filtered_i.append(N*i+6)
             datalabel_set.append(f"F_T, {param_str}")
+
+        print("=============")
+        print("     params = ",params)
+        print("N == ",N)
+        print("len(datalabel_set) = ",len(datalabel_set))
+        print("(filtered_i) = ",(filtered_i))
+        print("len(data_set_params) = ",len(data_set_params))
+        print("data_set_params = ", data_set_params)
+        print("force_filter = ",force_filter)
     
     return data_set[filtered_i], datalabel_set
 
@@ -2312,23 +2345,40 @@ match(sys.argv[1]):
 
     case "refine_arch_prism":
         # Save file
-        filename = "SingleLaguerre"
+        filename = "SingleLaguerre_TESTRUN1"
 
         #-----------------------
         #-----------------------
         # Variable args
+        # show_output     = False
+        # dimensions      = np.array([1.0e-6, 0.6e-6,  0.6e-6])        # Bounding box for prism
+        # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
+        # particle_sizes  = np.linspace(0.07e-6, 0.24e-6, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        # dipole_sizes    = [50e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
+        # deflections     = [0.0e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
+        # #object_offsets  = [[1.0e-6-dimensions[0]/2.0, -dimensions[1]/2.0, -dimensions[2]/2.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
+        # object_offsets  = [[1.0e-6, 0.0, 0.0]]
+        # force_measure_point = [1e-6, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+        # force_terms     = ["optical"]
+        # particle_shapes = ["cube"]    #, 
+        # indep_vector_component = 0      # Which component to plot when dealing with vector quantities to plot (Often not used)
+        # force_filter=["Fmag", "Fcentre"] # options are ["Fmag","Fx", "Fy", "Fz", "Fcentre", "Fcentre_perDip", "F_T"]  #"Fcentre", 
+        # indep_var = "particle_sizes" #"dipole_sizes"    #"particle_sizes"
+        # beam_type = "LAGUERRE"  #GAUSS_CSP
+
         show_output     = False
-        dimensions      = np.array([2.0e-6, 1.2e-6,  1.2e-6])        # Bounding box for prism
+        dimensions      = np.array([1.0e-6, 0.6e-6,  0.6e-6])        # Bounding box for prism
         separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        particle_sizes  = np.linspace(0.75e-7, 2.4e-7, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        particle_sizes  = np.linspace(0.07e-6, 0.24e-6, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
         dipole_sizes    = [50e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
         deflections     = [0.0e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
-        object_offsets  = [[1e-6, -dimensions[1]/2.0, 0e-6]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
-        force_measure_point = [0.0, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+        #object_offsets  = [[1.0e-6-dimensions[0]/2.0, -dimensions[1]/2.0, -dimensions[2]/2.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
+        object_offsets  = [[1.0e-6, 0.0, 0.0]]
+        force_measure_point = [1e-6, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
         force_terms     = ["optical"]
         particle_shapes = ["cube"]    #, 
         indep_vector_component = 0      # Which component to plot when dealing with vector quantities to plot (Often not used)
-        force_filter=["Fx", "Fy", "Fz", "Fmag", "F_T"] # options are ["Fmag","Fx", "Fy", "Fz", "Fcentre", "Fcentre_perDip", "F_T"]  #"Fcentre", 
+        force_filter=["Fmag", "Fcentre"] # options are ["Fmag","Fx", "Fy", "Fz", "Fcentre", "Fcentre_perDip", "F_T"]  #"Fcentre", 
         indep_var = "particle_sizes" #"dipole_sizes"    #"particle_sizes"
         beam_type = "LAGUERRE"  #GAUSS_CSP
         #-----------------------
@@ -2369,7 +2419,7 @@ match(sys.argv[1]):
         
         # Format output and make legend/title strings
         titlestr, legend_params = get_titlelegend(variables_list, indep_name, "central", dimensions)
-        data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
+        data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=-10)
         
         xAxis_varname, xAxis_units = display_var(indep_name)
         graphlabel_set = {"title":titlestr, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} # single quotes needed to prevent strings clashing.
@@ -2378,7 +2428,7 @@ match(sys.argv[1]):
     case "refine_cuboid_general":
         #====================================================================================
         # Save file
-        filename = "SingleLaguerre"
+        filename = "SingleLaguerre_TESTRUN2"
         # Args
         dimensions  = [1e-6, 0.6e-6, 0.6e-6]  # [0.6e-6]*3 # Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
