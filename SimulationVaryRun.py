@@ -1168,6 +1168,39 @@ def calc_sphere_volumes(particle_total, dipole_size_range, radii):
     return volumes
 
 
+def calc_SphereOrCube_volumes(dipole_size_range, radius, isSphere):
+    # this functions returns a list of volumes for each dipole size in the range. For either a sphere of a cube (radius is half side length).
+    # dipole_size_range = [min, max, num]
+    volumes = []
+    dipole_sizes = make_array(dipole_size_range)
+    
+    for dipole_size in dipole_sizes:
+        number_of_dipoles = 0
+        dipole_diameter = 2*dipole_size
+        dd2 = dipole_diameter**2
+        sr2 = radius**2
+        num = int(2*radius/dipole_diameter)
+        nums = np.arange(-(num-1)/2,(num+1)/2,1)
+        for i in nums:
+            i2 = i*i
+            for j in nums:
+                j2 = j*j
+                for k in nums:
+                    k2 = k*k
+                    rad2 = (i2+j2+k2)*dd2
+                    if isSphere:
+                        if rad2 < sr2:
+                            number_of_dipoles += 1
+                    else:
+                        number_of_dipoles += 1
+
+        volume = number_of_dipoles * dipole_size**3
+        volumes.append(volume)
+
+    return volumes
+
+
+
 def make_array(values):
     # values can be an array, or a range [min, max, num] and will return an array
     if len(values) == 3 and isinstance(values[2], int):
@@ -1300,7 +1333,7 @@ def get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipol
         return volumes
     
 
-def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None):
+def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None, should_remove_non_extrema=False):
     # used to filter the results of "get_sphere_volumes" and "get_torus_volumes"
     # * This is so that the simulated objects have more similar volumes.
     # Finds the dipole sizes with volumes closest to the target volume (defaults to the average volume).
@@ -1308,29 +1341,47 @@ def filter_dipole_sizes(volumes, dipole_size_range, num, target_volume=None):
     if target_volume == None:
         target_volume = np.average(volumes)
 
-    dipole_sizes = np.linspace(*dipole_size_range)
-    num_sizes = dipole_size_range[2]
+    dipole_sizes =  make_array(dipole_size_range)
+    num_sizes = len(dipole_sizes)
 
     if num > num_sizes:
         sys.exit(f"filter_dipole_sizes: too many points requested, max is {num_sizes}")
+    
+    # scale = 2
+    # if num * scale < num_sizes:
+    #     original_num = num
+    #     num *= scale
+    #     isScaled = True
+    # else:
+    #     isScaled = False
 
+    print("VOL", volumes)
     # finds the <num> min values, the rest are unsorted and are sliced off.
     indices = np.argpartition(np.abs(np.array(volumes)-target_volume), num)[:num] 
     max_error = abs(volumes[indices[num-1]]-target_volume)/target_volume
+
+    # if isScaled:
+    #     # Pick ones with most different dipoles sizes
+    #     almost_filtered_dipole_sizes = np.array(dipole_sizes)[indices]
+    #     filtered_dipole_sizes = np.array([almost_filtered_dipole_sizes])
+    #     for _ in range(original_num-1): # (-1 as init with 1 elem)
+
 
     filtered_dipole_sizes = np.array(dipole_sizes)[indices]
     sort_is = np.argsort(filtered_dipole_sizes)
     final_is = list(indices[sort_is])
     print(f"Filtered dipole sizes to {num} values, with max volume error: {max_error:.02%}.")
 
+
     # In testing: keep sizes only at a max or min volume, this helps but not significantly.
-    for i in final_is:
-        if i == 0 or i == num_sizes-1:
-            pass
-        else:
-            if not( volumes[i] > volumes[i-1] != volumes[i+1] > volumes[i] ): # not (True if gradients are opposite ie max or min)
-                final_is.remove(i)
-                print(f"Removed {dipole_sizes[i]}")
+    if should_remove_non_extrema:
+        for i in final_is:
+            if i == 0 or i == num_sizes-1:
+                pass
+            else:
+                if not( volumes[i] > volumes[i-1] != volumes[i+1] > volumes[i] ): # not (True if gradients are opposite ie max or min)
+                    final_is.remove(i)
+                    print(f"Removed {dipole_sizes[i]}")
 
     return np.array(dipole_sizes)[final_is], np.array(volumes)[final_is], max_error
 
@@ -2329,32 +2380,49 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  = [0.6e-6]*3 #[0.6e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
+        dimensions  = [1e-6, 0.6e-6, 0.6e-6]  # [0.6e-6]*3 # Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
         force_filter=["Fmag", "Fx", "Fy", "Fz"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "separations_list"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+        indep_name = "particle_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
         particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
         # Iterables
-        separations_list = [[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        separations_list = [[0,0,0]] #[[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         ### NORMAL
-        dipole_sizes = np.linspace(40e-9, 90e-9, 1)         
-        particle_sizes = np.linspace(0.1e-6, 0.24e-6, 1)   # e.g radius of sphere, half-width of cube
+        dipole_sizes = np.linspace(50e-9, 90e-9, 1)         
+        particle_sizes = np.linspace(0.07e-6, 0.24e-6, 50)   # e.g radius of sphere, half-width of cube
         ### DIPS FRACTIONS OF PARTICLE SIZE
-        # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)   # e.g radius of sphere, half-width of cube
+        # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)  
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
+        ### CONSTANT VOLUMES
+        # particle_sizes = np.linspace(0.3e-6, 0.24e-6, 1) 
+        # old_dipole_sizes = np.linspace(30e-9, particle_sizes[0], 300)         
+        # volumes = calc_SphereOrCube_volumes(old_dipole_sizes, particle_sizes[0], isSphere=False)
+        # dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, old_dipole_sizes, num=5, target_volume=None)
+        # Display.plot_volumes_against_dipoleSize(old_dipole_sizes, volumes, best_sizes=dipole_sizes, best_volumes=filtered_volumes)
+
         particle_shapes = ["cube"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
         #====================================================================================
         
         # Run
         variables_list = {"indep_var": indep_name, "dipole_sizes": dipole_sizes,"separations_list": separations_list,"particle_sizes": particle_sizes,"particle_shapes": particle_shapes,"object_offsets": object_offsets}
-        parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, force_terms, show_output=True    , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
+        parameter_text, data_set, data_set_params = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         
         # Format output then plot graph
         titlestr, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
         data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
         graphlabel_set = {"title":titlestr, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} # single quotes needed to prevent strings clashing.
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=np.repeat(["-"], len(data_set)))
+
+    case "testNewVolumes":
+        # use this mode to make a new volume storage entry or to plot it.
+        dipole_sizes = np.linspace(100e-9, 30e-9, 300)
+        radius = 0.2e-6
+
+        volumes = calc_SphereOrCube_volumes(dipole_sizes, radius, isSphere=False)
+        filtered_dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, dipole_sizes, num=10, target_volume=None)
+        Display.plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=filtered_dipole_sizes, best_volumes=filtered_volumes)
+
 
     case _:
         print("Unknown run type: ",sys.argv[1]);
