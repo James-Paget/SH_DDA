@@ -2317,10 +2317,10 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
         show_output     = True
-        dimensions      = np.array([1.0e-6, 0.5e-6, 0.5e-6])        # Bounding box for prism
+        dimensions      = np.array([2.0e-6, 1.2e-6, 1.2e-6])        # Bounding box for prism
         separations_list= [[0.0, 0.0, 0.0]]
         particle_sizes  = [50e-9]                                   # Radius or half-width
-        dipole_sizes    = np.linspace(25e-9, 60e-9, 25)#[40e-9]
+        dipole_sizes    = np.linspace(50e-9, 60e-9, 20)#[40e-9]
         deflections     = [0.0e-6]                                 # Of centre in micrometres (also is deflection to centre of rod, not underside)
         object_offsets  = [[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
         force_terms     = ["optical"]   # ["optical", "spring", "bending", "buckingham"]
@@ -2374,25 +2374,25 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  = [0.6e-6]*3 #[0.6e-6, 0.6e-6, 0.6e-6] # Dimensions of each side of the cuboid
+        dimensions  = [1e-6, 0.6e-6, 0.6e-6]  # [0.6e-6]*3 # Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
         force_filter=["Fmag", "Fx", "Fy", "Fz"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "dipole_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+        indep_name = "particle_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
         particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
         # Iterables
         separations_list = [[0,0,0]] #[[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         ### NORMAL
-        # dipole_sizes = np.linspace(40e-9, 90e-9, 1)         
-        # particle_sizes = np.linspace(0.1e-6, 0.24e-6, 1)   # e.g radius of sphere, half-width of cube
+        dipole_sizes = np.linspace(50e-9, 90e-9, 1)         
+        particle_sizes = np.linspace(0.07e-6, 0.24e-6, 50)   # e.g radius of sphere, half-width of cube
         ### DIPS FRACTIONS OF PARTICLE SIZE
         # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)  
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
         ### CONSTANT VOLUMES
-        particle_sizes = np.linspace(0.3e-6, 0.24e-6, 1) 
-        old_dipole_sizes = np.linspace(30e-9, particle_sizes[0], 300)         
-        volumes = calc_SphereOrCube_volumes(old_dipole_sizes, particle_sizes[0], isSphere=False)
-        dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, old_dipole_sizes, num=5, target_volume=None)
-        Display.plot_volumes_against_dipoleSize(old_dipole_sizes, volumes, best_sizes=dipole_sizes, best_volumes=filtered_volumes)
+        # particle_sizes = np.linspace(0.3e-6, 0.24e-6, 1) 
+        # old_dipole_sizes = np.linspace(30e-9, particle_sizes[0], 300)         
+        # volumes = calc_SphereOrCube_volumes(old_dipole_sizes, particle_sizes[0], isSphere=False)
+        # dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, old_dipole_sizes, num=5, target_volume=None)
+        # Display.plot_volumes_against_dipoleSize(old_dipole_sizes, volumes, best_sizes=dipole_sizes, best_volumes=filtered_volumes)
 
         particle_shapes = ["cube"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
