@@ -538,7 +538,7 @@ def stop_particles_overlapping(array_of_positions, effective_radii, particle_nei
 
             
 
-def generate_connection_indices(array_of_positions, mode="manual", args=[]):
+def generate_connection_indices(array_of_positions, mode="manual", args=[], verbosity=2):
     """
     Return a list of matrix indices (i,j) of connected particles
     mode (args): num (num_connections), line (), dist ()
@@ -548,7 +548,8 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[]):
     num_particles = len(array_of_positions)
     connection_indices = []
 
-    print("Generating connection indices with mode= ",mode)
+    if(verbosity >= 2):
+        print("Generating connection indices with mode= ",mode)
 
     match mode:
         case "num":
@@ -1205,7 +1206,7 @@ def sphere_size(args, dipole_radius):
                     number_of_dipoles += 1
     return number_of_dipoles
 
-def sphere_positions(args, dipole_radius, number_of_dipoles_total):
+def sphere_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     #
     # With pts size known now, particles are added to this array
     #
@@ -1230,7 +1231,8 @@ def sphere_positions(args, dipole_radius, number_of_dipoles_total):
                 if rad2 < sr2:
                     pts[number_of_dipoles] = [x, y, z]
                     number_of_dipoles += 1
-    print(number_of_dipoles," dipoles generated")
+    if(verbosity >= 2):
+        print(number_of_dipoles," dipoles generated")
     # print(f"Z PTS ARE\n{np.unique(pts[:, 2])}\n\n") # test the full/half int shift.
     return pts
 
@@ -1285,7 +1287,7 @@ def torus_sector_size(args, dipole_radius):
 
     return number_of_dipoles
 
-def torus_sector_positions(args, dipole_radius, number_of_dipoles_total):
+def torus_sector_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     #
     # Only supports torus flat in XY plane
     # torus_centre_radius = distance from origin to centre of tube forming the torus
@@ -1335,7 +1337,8 @@ def torus_sector_positions(args, dipole_radius, number_of_dipoles_total):
                         pts[number_of_dipoles][1] = y+1e-20 -y_shift     #
                         pts[number_of_dipoles][2] = z
                         number_of_dipoles += 1
-    print(number_of_dipoles," dipoles generated")
+    if(verbosity >= 2):
+        print(number_of_dipoles," dipoles generated")
     return pts
 
 
@@ -1402,7 +1405,7 @@ def cylinder_size(args, dipole_radius):
 
     return number_of_dipoles
 
-def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
+def cylinder_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     #
     # Only supports torus flat in XY plane
     # torus_centre_radius = distance from origin to centre of tube forming the torus
@@ -1466,7 +1469,8 @@ def cylinder_positions(args, dipole_radius, number_of_dipoles_total):
                     pts[number_of_dipoles][1] = y+1e-20     #
                     pts[number_of_dipoles][2] = z+1e-20
                     number_of_dipoles += 1
-    print(number_of_dipoles," dipoles generated")
+    if(verbosity >= 2):
+        print(number_of_dipoles," dipoles generated")
     return pts
 
 def rotate_arbitrary(theta, v, n):
@@ -1490,10 +1494,9 @@ def cube_size(args, dipole_radius):
     cube_radius = args[0]
     num = int(2*cube_radius/dipole_diameter) # mult by 2 for half int lattices
     number_of_dipoles = num**3
-    print(number_of_dipoles," dipoles generated")
     return number_of_dipoles
 
-def cube_positions(args, dipole_radius, number_of_dipoles_total):
+def cube_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     # NOTE: cube uses int or half int lattice depending what can fit more dipoles.
     dipole_diameter = 2*dipole_radius
     cube_radius = args[0]
@@ -1510,9 +1513,11 @@ def cube_positions(args, dipole_radius, number_of_dipoles_total):
                 pts[number_of_dipoles] = [x, y, z]
                 number_of_dipoles += 1
     # print(f"Z PTS ARE\n{pts[:num, 2]}\n\n") # test the full/half int shift.
+    if(verbosity >= 2):
+        print(number_of_dipoles," dipoles generated")
     return pts
 
-def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list):
+def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
     """
     shapes = List of shape types used
     args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
@@ -1571,13 +1576,13 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     for particle_i in range(number_of_particles):
         match shapes[particle_i]:
             case "sphere":
-                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = sphere_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
+                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = sphere_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i], verbosity=verbosity)
             case "torus":
-                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = torus_sector_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
+                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = torus_sector_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i], verbosity=verbosity)
             case "cylinder":
-                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cylinder_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
+                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cylinder_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i], verbosity=verbosity)
             case "cube":
-                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cube_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i])
+                dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cube_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i], verbosity=verbosity)
     
     if excel_output==True:
         optpos = np.zeros((frames,number_of_particles,3))
@@ -1596,7 +1601,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     BENDING   = constants["bending"]
 
     # (2) Get Connections
-    connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args)
+    connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args, verbosity=verbosity)
     # print(f"connection indices are\n{connection_indices}")
     
     # (3) Get Initial Positions
@@ -1659,7 +1664,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                         optcouple[i,j,k] = couples[j][k] + torques[j][k]
 
         if i%10 == 0:
-            print("Step ",i)
+            print(" Simulation Step: ",i)
             #print(i,optical)
 
         D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
@@ -1743,7 +1748,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
 # Start of program
 ###################################################################################
 
-def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}):
+def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}, verbosity=0):
     #
     # Runs the full program
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
@@ -1752,6 +1757,17 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     # constants = list of constants that tend to be varied in the simulatiom, which can simply be adjusted for different runs of the simulation
     # force_terms = names of forces to be included in the simualtion, gathered here for convenience when running varying simulations
     #               e.g. "optical", "spring", "bending", "buckingham", "driver", "gravity", ...
+    # verbosity = Determines what information to print within the function, e.g. can be turned up or down when bug-fixing or running normally
+    #       >= 0 implies; 
+    #           Minimal prints (errors, etc)
+    #       >= 1 implies;
+    #           frame counter,
+    #           elapsed time,
+    #           ...
+    #       >= 2 implies; 
+    #           number of particles,
+    #           Particle details,
+    #           ...
     #
 
     if(YAML_name==None):
@@ -1815,7 +1831,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
     # Read beam options and create beam collection
     #===========================================================================
-    beam_collection = Beams.create_beam_collection(beaminfo,wavelength)
+    beam_collection = Beams.create_beam_collection(beaminfo, wavelength, verbosity=verbosity)
 
     
     # Test if beam should be translated each time step (requiring new beam collections each time)
@@ -1877,7 +1893,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         for t in range(number_of_timesteps):
             for (beam_name, beam_params) in beaminfo.items():
                 beaminfo[beam_name]["translation"] = " ".join([str(x) for x in beam_translations[beam_name][t]]) # join floats to a string, translationargs untouched an no longer needed.
-            beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength))
+            beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength,verbosity=verbosity))
             
     # Else just use one collection like normal
     else:
@@ -1888,7 +1904,8 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     # Read particle options and create particle collection
     #===========================================================================
     particle_collection = Particles.ParticleCollection(particleinfo)
-    print(f"Number of particles = {particle_collection.num_particles}")
+    if(verbosity >= 2):
+        print(f"Number of particles = {particle_collection.num_particles}")
     n_particles = particle_collection.num_particles
     #c = 3e8
     #n1 = 3.9
@@ -1907,8 +1924,9 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     connection_mode = particle_collection.get_connection_mode()
     connection_args = particle_collection.get_connection_args()
 
-    for i in range(n_particles):
-        print(i,particle_types[i],ref_ind[i],colors[i],shapes[i],args[i],density[i],positions[i])
+    if(verbosity >= 2):
+        for i in range(n_particles):
+            print(i,particle_types[i],ref_ind[i],colors[i],shapes[i],args[i],density[i],positions[i])
     #===========================================================================
     # Set up particle polarisabilities and other spurious options
     #===========================================================================
@@ -1923,7 +1941,6 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     gravity[:,1] = -9.81*masses
     #gravity = np.zeros(3,dtype=np.float64)
     #gravity[1] = -9.81*mass
-    print("dipole radius is:",dipole_radius,type(dipole_radius))
     water_permittivity = 80.4
     vacuum_permittivity = 1
     k = 2 * np.pi / wavelength
@@ -1954,9 +1971,10 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
 
     initialT = time.time()
-    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list)
+    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=verbosity)
     finalT = time.time()
-    print("Elapsed time: {:8.6f} s".format(finalT-initialT))
+    if(verbosity >= 1):
+        print("Elapsed time: {:8.6f} s".format(finalT-initialT))
 
     # =====================================
     # This code for matplotlib animation output and saving
