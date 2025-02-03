@@ -2,7 +2,7 @@ options:
   frames: 1
 parameters:
   wavelength: 1e-06
-  dipole_radius: 5e-08
+  dipole_radius: 3e-08
   time_step: 0.0001
 output:
   vmd_output: True
@@ -28,21 +28,3 @@ beams:
     translationargs: None
     translationtype: None
     rotation: None
-particles:
-  default_radius: 1e-07
-  default_material: FusedSilica
-  connection_mode: dist
-  connection_args: 0.0
-  particle_list:
-    part_0:
-      material: FusedSilica
-      shape: cube
-      args: 2.4e-07
-      coords: 1.24e-06 0.0 0.0
-      altcolour: True
-    part_1:
-      material: FusedSilica
-      shape: cube
-      args: 2.4e-07
-      coords: 1.7199999999999998e-06 0.0 0.0
-      altcolour: True
