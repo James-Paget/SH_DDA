@@ -237,10 +237,10 @@ def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separa
     use_beam(filename, beam)
     use_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape)
 
-def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, frames=1, show_output=False, beam="LAGUERRE", place_regime="squish"):
+def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, place_regime, prism_type, prism_args, frames=1, show_output=False, beam="LAGUERRE"):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime)
+    use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
 
 #=======================================================================
 # Particle configurations
@@ -412,11 +412,11 @@ def use_refine_cuboid(filename, dimensions, separations, object_offset, particle
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
 
-def use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape="sphere", place_regime="squish"):
+def use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape="sphere", place_regime="squish", prism_type="rect", prism_args=[1.0e-6]):
     #
     # particle_size = radius of sphere OR half width of cube
     #
-    coords_list = get_refine_arch_prism(dimensions, separations, particle_size, deflection, place_regime)
+    coords_list = get_refine_arch_prism(dimensions, separations, particle_size, deflection, place_regime, prism_type, prism_args)
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * len(coords_list)
     
@@ -818,7 +818,7 @@ def get_refine_cuboid(dimensions, separations, particle_size):
 
     return coords_list
 
-def get_refine_arch_prism(dimensions, separations, particle_size, deflection, place_regime="squish"):
+def get_refine_arch_prism(dimensions, separations, particle_size, deflection, place_regime="squish", prism_type="rect", prism_args=[1.0e-6]):
     #
     # particle_size = radius of sphere OR half width of cube
     #
@@ -904,7 +904,7 @@ def get_refine_arch_prism(dimensions, separations, particle_size, deflection, pl
         j_coord = origin[1] +j*displacement[1]
         for k in range(int(particle_number[2])):
             k_coord = origin[2] +k*displacement[2]
-            if(check_prism_bounds("rect", [j_coord, k_coord], args=[dimensions[1]/2.0, dimensions[2]/2.0])):
+            if(check_prism_bounds(prism_type, [j_coord, k_coord], args=prism_args)):
                 grid_coords.append(np.array([0.0, j_coord, k_coord]))
     # Place grids of particles along X axis
     for i in range(int(particle_number[0])):
