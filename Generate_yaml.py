@@ -867,7 +867,7 @@ def get_refine_arch_prism(dimensions, separations, particle_length, deflection):
     particle_step = np.zeros(3)
     for i in range(3):
         if particle_numbers[i] != 1.0:
-            particle_step[i] = 2.0*particle_length# + separations[i]/(particle_numbers[i]-1)               # Step in position to each particle in each axis
+            particle_step[i] = 2.0*particle_length + separations[i]/(particle_numbers[i]-1)               # Step in position to each particle in each axis
 
     for i in range(int(particle_numbers[0])):
         for j in range(int(particle_numbers[1])):

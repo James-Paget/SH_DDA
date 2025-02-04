@@ -1930,30 +1930,30 @@ def filter_data_set(force_filter, data_set, data_set_params, legend_params, inde
         for key, value in i_dict.items():
             if value > indep_val: value -= 1 # params DOESN'T include the indep var so the indices in i_dict beyond the indep var must be shifted (-1) to fill the gap.
             if key in legend_params:
-                param_str += f"{display_var(key, params[value])} "
+                param_str += f", {display_var(key, params[value])}"
 
         # Pick what forces to plot and create the legend string.
         if "Fmag" in force_filter:
             filtered_i.append(N*i)
-            datalabel_set.append(f"F Mag, {param_str}")
+            datalabel_set.append(f"F Mag{param_str}")
         if "Fx" in force_filter:
             filtered_i.append(N*i+1)
-            datalabel_set.append(f"Fx, {param_str}")
+            datalabel_set.append(f"Fx{param_str}")
         if "Fy" in force_filter:
             filtered_i.append(N*i+2)
-            datalabel_set.append(f"Fy, {param_str}")
+            datalabel_set.append(f"Fy{param_str}")
         if "Fz" in force_filter:
             filtered_i.append(N*i+3)
-            datalabel_set.append(f"Fz, {param_str}")
+            datalabel_set.append(f"Fz{param_str}")
         if "Fcentre" in force_filter:
             filtered_i.append(N*i+4)
-            datalabel_set.append(f"Fcentre, {param_str}")
+            datalabel_set.append(f"Fcentre{param_str}")
         if "Fcentre_perDip" in force_filter:
             filtered_i.append(N*i+5)
-            datalabel_set.append(f"Fcentre_perDip, {param_str}")
+            datalabel_set.append(f"Fcentre_perDip{param_str}")
         if "F_T" in force_filter:
             filtered_i.append(N*i+6)
-            datalabel_set.append(f"F_T, {param_str}")
+            datalabel_set.append(f"F_T{param_str}")
 
         print("=============")
         print("     params = ",params)
@@ -1977,7 +1977,7 @@ def display_var(variable_type, value=None):
             case "dipole_sizes": return "dipole size", "/m"
             case "separations_list": return "separation", "/m"
             case "particle_sizes": return "particle size", "/m"
-            case "particle_shapes": return " particle shape"
+            case "particle_shapes": return " particle shape", ""
             case "object_offsets": return "offset", "/m"
             case "deflections": return "deflection", "/m"
             case _: return f"{variable_type} UNKNOWN", "UNITS"
@@ -2014,6 +2014,67 @@ def get_titlelegend(variables_list, indep_name, particle_selection, dimensions):
             legend_params.append(key)
     return titlestr, legend_params
 
+def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/2+x/2, 0, 1-x)):
+    # Makes linestyle_set, data_colour_set
+    # linestyle_var can be "dipole_sizes", "separations_list", "particle_sizes", "particle_shapes", "object_offsets" or "deflections"
+    # If None, it will be set automatically
+    # cgrad determines the colour tuples.
+
+    line_options = ["solid", "dashed", "dotted", "dashdot"] # Note, more could be added or some could be repeated.
+    num_line_options = len(line_options)
+
+    # print("legend params", legend_params)
+    if linestyle_var == None and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
+        for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "deflections"]:
+            # print("### trying ", vars)
+            # print("len", len(variables_list[vars]))
+            if vars in legend_params and len(variables_list[vars]) < num_line_options:
+                linestyle_var = vars
+                break
+    # print("linevar is ", linestyle_var)
+
+    linestyle_var_str = display_var(linestyle_var)[0] # e.g. dipole_size -> dipole size
+    # print("linestyle_var_str", linestyle_var_str)
+    linestyle_set = []
+    data_colour_set = []
+    # record params seen before, and get their index, else create new entry.
+    linestyle_var_list = []
+    other_var_list = []
+
+    for label in datalabel_set:
+        pieces = label.split(", ") # split label into piece of each param it contains.
+
+        linestyle_var_piece = None # find the linestyle_var piece to compare if it has changed.
+        for piece in pieces:
+            if linestyle_var_str in piece:
+                linestyle_var_piece = piece
+                break
+        if linestyle_var_piece == None: print(f"WARNING, could not find '{linestyle_var_str}' in pieces: {pieces}")
+
+        if linestyle_var_piece not in linestyle_var_list:
+            linestyle_var_list.append(linestyle_var_piece)
+
+        pieces.remove(linestyle_var_piece)
+        pieces_str = " ".join(pieces)
+        if pieces_str not in other_var_list:
+            other_var_list.append(pieces_str)
+
+        linestyle_count = linestyle_var_list.index(linestyle_var_piece)
+        colour_count = other_var_list.index(pieces_str)
+
+        linestyle_set.append(line_options[linestyle_count % num_line_options])
+        data_colour_set.append(colour_count)
+
+    # print("line", linestyle_var_list)
+    # print("other var", other_var_list)
+
+    data_colour_set = np.array(data_colour_set, dtype=object)
+    if np.max(data_colour_set) != 0:
+        data_colour_set = data_colour_set/np.max(data_colour_set) # normalise
+    for i in range(len(data_colour_set)):
+        data_colour_set[i] =  cgrad(data_colour_set[i]) # turn into colours
+
+    return linestyle_set, data_colour_set
 
 
 #=================#
@@ -2345,7 +2406,7 @@ match(sys.argv[1]):
 
     case "refine_arch_prism":
         # Save file
-        filename = "SingleLaguerre_TESTRUN1"
+        filename = "SingleLaguerre"
 
         #-----------------------
         #-----------------------
@@ -2428,29 +2489,28 @@ match(sys.argv[1]):
     case "refine_cuboid_general":
         #====================================================================================
         # Save file
-        filename = "SingleLaguerre_TESTRUN2"
+        filename = "SingleLaguerre"
         # Args
-        dimensions  = [1e-6, 0.6e-6, 0.6e-6]  # [0.6e-6]*3 # Dimensions of each side of the cuboid
+        dimensions  = [0.8e-6, 0.8e-6, 0.8e-6]  # [0.6e-6]*3 # Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
-        force_filter=["Fmag", "Fx", "Fy", "Fz"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "particle_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
-        particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
+        force_filter=["Fmag"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
+        indep_name = "separations_list"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+        particle_selection = "central"          # Options are "all", "central" or a list of ints (manual)
         # Iterables
-        separations_list = [[0,0,0]] #[[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        separations_list = [[0,0,0], [1e-7,1e-7,1e-7]] #[[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         ### NORMAL
-        dipole_sizes = np.linspace(50e-9, 90e-9, 1)         
-        particle_sizes = np.linspace(0.07e-6, 0.24e-6, 50)   # e.g radius of sphere, half-width of cube
+        # dipole_sizes = np.linspace(40e-9, 90e-9, 1)         
+        # particle_sizes = np.linspace(0.04e-6, 0.055e-6, 10)   # e.g radius of sphere, half-width of cube
         ### DIPS FRACTIONS OF PARTICLE SIZE
         # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)  
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
-        ### CONSTANT VOLUMES
-        # particle_sizes = np.linspace(0.3e-6, 0.24e-6, 1) 
-        # old_dipole_sizes = np.linspace(30e-9, particle_sizes[0], 300)         
-        # volumes = calc_SphereOrCube_volumes(old_dipole_sizes, particle_sizes[0], isSphere=False)
-        # dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, old_dipole_sizes, num=5, target_volume=None)
-        # Display.plot_volumes_against_dipoleSize(old_dipole_sizes, volumes, best_sizes=dipole_sizes, best_volumes=filtered_volumes)
-
-        particle_shapes = ["cube"] 
+        ###
+        
+        separations_list = [[s, s, s] for s in np.linspace(0, 0.3e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        ### NORMAL
+        dipole_sizes = np.linspace(40e-9, 50e-9, 2)         
+        particle_sizes = np.linspace(0.1e-6, 0.2e-6, 3)
+        particle_shapes = ["cube", "sphere"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
         #====================================================================================
         
@@ -2461,17 +2521,14 @@ match(sys.argv[1]):
         # Format output then plot graph
         titlestr, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
         data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/2+x/2, 0, 1-x))
         graphlabel_set = {"title":titlestr, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} # single quotes needed to prevent strings clashing.
-        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=np.repeat(["-"], len(data_set)))
+        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
 
-    case "testNewVolumes":
-        # use this mode to make a new volume storage entry or to plot it.
-        dipole_sizes = np.linspace(100e-9, 30e-9, 300)
-        radius = 0.2e-6
-
-        volumes = calc_SphereOrCube_volumes(dipole_sizes, radius, isSphere=False)
-        filtered_dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, dipole_sizes, num=10, target_volume=None)
-        Display.plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=filtered_dipole_sizes, best_volumes=filtered_volumes)
+        # Can be used to filter the dipole sizes: (Should change to filter for maxs/mins)
+        # volumes = calc_SphereOrCube_volumes(dipole_sizes, particle_sizes[0], isSphere=False) # particle_size is 0th!
+        # filtered_dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, dipole_sizes, num=10, target_volume=None)
+        # Display.plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=filtered_dipole_sizes, best_volumes=filtered_volumes)
 
 
     case _:
