@@ -699,9 +699,15 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
         if( len(datalabel_set) > i ):
             label = datalabel_set[i]
         if(len(datacolor_set) < len(data_set)):
-            ax.plot(data_set[i,0], data_set[i,1], label=label)
+            if linestyle_set != None:
+                ax.plot(data_set[i,0], data_set[i,1], label=label, linestyle=linestyle_set[i])
+            else:
+                ax.plot(data_set[i,0], data_set[i,1], label=label)
         else:
-            ax.plot(data_set[i,0], data_set[i,1], label=label, color=datacolor_set[i])
+            if linestyle_set != None:
+                ax.plot(data_set[i,0], data_set[i,1], label=label, color=datacolor_set[i], linestyle=linestyle_set[i])
+            else:
+                ax.plot(data_set[i,0], data_set[i,1], label=label, color=datacolor_set[i])
 
     plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
