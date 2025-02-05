@@ -57,7 +57,7 @@ void compute_fields(double xx, double yy, double zz, BEAM *thisbeam, double *EE)
     // compute field components
     //
     switch (thisbeam->beamtype) {
-        case _PLANE:
+        case BEAMTYPE_PLANE:
             //std::cout << "plane wave" << std::endl;
             plane_wave_fields(x, y, z, thisbeam, Epxyz);
             break;
