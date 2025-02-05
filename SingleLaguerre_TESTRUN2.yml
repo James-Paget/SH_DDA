@@ -38,11 +38,5 @@ particles:
       material: FusedSilica
       shape: cube
       args: 2.4e-07
-      coords: 7.399999999999999e-07 -6.000000000000001e-08 -6.000000000000001e-08
-      altcolour: True
-    part_1:
-      material: FusedSilica
-      shape: cube
-      args: 2.4e-07
-      coords: 1.22e-06 -6.000000000000001e-08 -6.000000000000001e-08
+      coords: 8.4e-07 -1.6e-07 -1.6e-07
       altcolour: True
