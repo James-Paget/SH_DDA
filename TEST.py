@@ -1,4 +1,6 @@
 import numpy as np
+import itertools as it
+
 
 def get_refine_cuboid(dimensions, separations, particle_size):
     #
@@ -21,4 +23,8 @@ def get_refine_cuboid(dimensions, separations, particle_size):
 
     return coords_list
 
-print(len(get_refine_cuboid(dimensions=[1,1,2], separations=[0,0,0], particle_size=0.25)))
+# print(len(get_refine_cuboid(dimensions=[1,1,2], separations=[0,0,0], particle_size=0.25)))
+
+r = lambda n: np.arange(0,n,1)
+X = list(it.product(r(4), r(3), r(2)))
+print(X)

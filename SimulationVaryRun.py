@@ -1882,10 +1882,10 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
             )
             #print("read_parameters = ",read_parameters)
             for p_i in range(len(particle_list)):
-                print("     -> output_data[0]      = ", output_data[0])
-                print("     -> output_data[0, 3*p_i+0] = ", output_data[0, 3*p_i+0])
-                print("p=",p_i)
-                print("3p=",3*p_i)
+                # print("     -> output_data[0]      = ", output_data[0])
+                # print("     -> output_data[0, 3*p_i+0] = ", output_data[0, 3*p_i+0])
+                # print("p=",p_i)
+                # print("3p=",3*p_i)
                 # Calculate required quantities
                 recorded_force = np.array([output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
                 
@@ -1983,13 +1983,14 @@ def display_var(variable_type, value=None):
             case _: return f"{variable_type} UNKNOWN", "UNITS"
     
     else:
+        mkstr = lambda s: "0.0" if s==0 else f"{s:.2e}"
         match variable_type:
-            case "dipole_sizes": return f"dipole size = {value}m"
-            case "separations_list": return f"separation = [{value[0]},{value[1]},{value[2]}]m"
-            case "particle_sizes": return f"particle size = {value}m"
+            case "dipole_sizes": return f"dipole size = {value:.2e}m"
+            case "separations_list": return f"separation = [{mkstr(value[0])},{mkstr(value[1])},{mkstr(value[2])}]m"
+            case "particle_sizes": return f"particle size = {value:.2e}m"
             case "particle_shapes": return f" particle shape = {value}"
-            case "object_offsets": return f"offset = [{value[0]},{value[1]},{value[2]}]m"
-            case "deflections": return f" deflection = {value}"
+            case "object_offsets": return f"offset = [{mkstr(value[0])},{mkstr(value[1])},{mkstr(value[2])}]m"
+            case "deflections": return f" deflection = {value:.2e}"
             case _: return f"{variable_type} UNKNOWN"
 
 def get_titlelegend(variables_list, indep_name, particle_selection, dimensions):
@@ -2026,47 +2027,47 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
     # print("legend params", legend_params)
     if linestyle_var == None and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
         for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "deflections"]:
-            # print("### trying ", vars)
-            # print("len", len(variables_list[vars]))
             if vars in legend_params and len(variables_list[vars]) < num_line_options:
                 linestyle_var = vars
                 break
     # print("linevar is ", linestyle_var)
 
-    linestyle_var_str = display_var(linestyle_var)[0] # e.g. dipole_size -> dipole size
-    # print("linestyle_var_str", linestyle_var_str)
-    linestyle_set = []
-    data_colour_set = []
-    # record params seen before, and get their index, else create new entry.
-    linestyle_var_list = []
-    other_var_list = []
+    if linestyle_var == None: # Set to defaults if no changes in linestyle needed.
+        linestyle_set = ["solid" for _ in range(len(datalabel_set))]
+        data_colour_set = [i for i in range(len(datalabel_set))]
 
-    for label in datalabel_set:
-        pieces = label.split(", ") # split label into piece of each param it contains.
+    else:
+        linestyle_var_str = display_var(linestyle_var)[0] # e.g. dipole_size -> dipole size
+        # print("linestyle_var_str", linestyle_var_str)
+        linestyle_set = []
+        data_colour_set = []
+        # record params seen before, and get their index, else create new entry.
+        linestyle_var_list = []
+        other_var_list = []
 
-        linestyle_var_piece = None # find the linestyle_var piece to compare if it has changed.
-        for piece in pieces:
-            if linestyle_var_str in piece:
-                linestyle_var_piece = piece
-                break
-        if linestyle_var_piece == None: print(f"WARNING, could not find '{linestyle_var_str}' in pieces: {pieces}")
+        for label in datalabel_set:
+            pieces = label.split(", ") # split label into piece of each param it contains.
 
-        if linestyle_var_piece not in linestyle_var_list:
-            linestyle_var_list.append(linestyle_var_piece)
+            linestyle_var_piece = None # find the linestyle_var piece to compare if it has changed.
+            for piece in pieces:
+                if linestyle_var_str in piece:
+                    linestyle_var_piece = piece
+                    break
+            if linestyle_var_piece == None: print(f"WARNING, could not find '{linestyle_var_str}' in pieces: {pieces}")
 
-        pieces.remove(linestyle_var_piece)
-        pieces_str = " ".join(pieces)
-        if pieces_str not in other_var_list:
-            other_var_list.append(pieces_str)
+            if linestyle_var_piece not in linestyle_var_list:
+                linestyle_var_list.append(linestyle_var_piece)
 
-        linestyle_count = linestyle_var_list.index(linestyle_var_piece)
-        colour_count = other_var_list.index(pieces_str)
+            pieces.remove(linestyle_var_piece)
+            pieces_str = " ".join(pieces)
+            if pieces_str not in other_var_list:
+                other_var_list.append(pieces_str)
 
-        linestyle_set.append(line_options[linestyle_count % num_line_options])
-        data_colour_set.append(colour_count)
+            linestyle_count = linestyle_var_list.index(linestyle_var_piece)
+            colour_count = other_var_list.index(pieces_str)
 
-    # print("line", linestyle_var_list)
-    # print("other var", other_var_list)
+            linestyle_set.append(line_options[linestyle_count % num_line_options])
+            data_colour_set.append(colour_count)
 
     data_colour_set = np.array(data_colour_set, dtype=object)
     if np.max(data_colour_set) != 0:
@@ -2491,7 +2492,7 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  = [0.8e-6, 0.8e-6, 0.8e-6]  # [0.6e-6]*3 # Dimensions of each side of the cuboid
+        dimensions  =  [1.0e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  ## Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
         force_filter=["Fmag"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
         indep_name = "separations_list"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
@@ -2506,11 +2507,12 @@ match(sys.argv[1]):
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
         ###
         
-        separations_list = [[s, s, s] for s in np.linspace(0, 0.3e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         ### NORMAL
-        dipole_sizes = np.linspace(40e-9, 50e-9, 2)         
-        particle_sizes = np.linspace(0.1e-6, 0.2e-6, 3)
-        particle_shapes = ["cube", "sphere"] 
+        separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        dipole_sizes = np.linspace(40e-9, 50e-9, 1)         
+        particle_sizes = np.linspace(0.1e-6, 0.15e-6, 10)
+
+        particle_shapes = ["cube"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
         #====================================================================================
         
@@ -2521,7 +2523,7 @@ match(sys.argv[1]):
         # Format output then plot graph
         titlestr, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
         data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/2+x/2, 0, 1-x))
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
         graphlabel_set = {"title":titlestr, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} # single quotes needed to prevent strings clashing.
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
 
