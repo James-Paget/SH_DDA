@@ -2407,13 +2407,32 @@ match(sys.argv[1]):
         #-----------------------
         #-----------------------
         # Variable args
+        # show_output     = False
+        # dimensions      = np.array([2.0e-6, 0.5e-6,  0.5e-6])        # Bounding box for prism
+        # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
+        # particle_sizes  = np.linspace(0.05e-6, 0.25e-6, 75)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        # dipole_sizes    = [40e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
+        # deflections     = [0.0e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
+        # object_offsets  = [[-dimensions[0]/2.0, -dimensions[1]/2.0, 0.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
+        # #object_offsets  = [[0.0e-6, 0.0, 0.0]]
+        # force_measure_point = [0.0, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+        # force_terms     = ["optical"]
+        # particle_shapes = ["sphere"]
+        # indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
+        # force_filter=["Fmag", "Fpoint"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+        # indep_var = "particle_sizes" #"dipole_sizes"    #"particle_sizes"
+        # beam_type = "GAUSS_CSP"  #LAGUERRE
+        # place_regime = "spaced"   # Format to place particles within the overall rod; "squish", "spaced", ...
+        # prism_type   = "rect"   # Prism generation to use; "circle", "rect", ...
+        # prism_args   = [dimensions[1]/2.0, dimensions[2]/2.0]   #[dimensions[1]/2.0]      #"circle" => [radius], "rect" => [half-Y dim, half-Z dim]
+
         show_output     = False
         dimensions      = np.array([2.0e-6, 0.5e-6,  0.5e-6])        # Bounding box for prism
         separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        particle_sizes  = np.linspace(0.05e-6, 0.25e-6, 75)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        particle_sizes  = np.linspace(0.05e-6, 0.25e-6, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
         dipole_sizes    = [40e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
-        deflections     = [0.0e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
-        #object_offsets  = [[1.0e-6-dimensions[0]/2.0, -dimensions[1]/2.0, -dimensions[2]/2.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
+        deflections     = [0.5e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
+        #object_offsets  = [[-dimensions[0]/2.0, -dimensions[1]/2.0, 0.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
         object_offsets  = [[0.0e-6, 0.0, 0.0]]
         force_measure_point = [0.0, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
         force_terms     = ["optical"]
