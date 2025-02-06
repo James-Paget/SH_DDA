@@ -1517,7 +1517,101 @@ def cube_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
         print(number_of_dipoles," dipoles generated")
     return pts
 
-def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, include_dipoleforces=False, verbosity=2):
+
+def plot_T_M_integrand(beam_collection):
+    # !! function code made quickly so may not be working as intended!!
+    R = 1e-6
+    z_offset = 0
+    num =  100
+    mode = 3
+    if mode == 1: # all forces for a single zenith angle
+        zenith_angle = -2 # z spherical angle
+        thetas = np.linspace(0, 2*np.pi, num)
+        rs = np.array([(R*np.cos(theta), R*np.sin(theta), z_offset) for theta in thetas])
+        ns = np.array([(np.cos(theta)*np.sin(zenith_angle), np.sin(theta)*np.sin(zenith_angle), np.cos(zenith_angle)) for theta in thetas]) # normals for a (~torus) ring
+        results = np.zeros((num,3))
+        mag_dS = 1
+
+        for i in range(num):
+            r = rs[i]
+            E = np.zeros(3,dtype=np.complex128)
+            Beams.all_incident_fields((r[0], r[1], r[2]), beam_collection, E)
+            e0 = 8.854e-12
+
+            # Note, for H=0
+            T_M = 0.5*e0 * ( np.outer(E, E.conj()) - 0.5 * np.dot(E, E.conj()) * np.identity(3)).real
+            T_M_dot_dS = np.dot(T_M, ns[i]) * mag_dS
+            results[i] = T_M_dot_dS
+
+        results /= abs(results[0,0]*np.cos(thetas[0]) + results[0,1]*np.sin(thetas[0]))
+        
+        plt.plot(thetas, results[:,0], label="x")
+        plt.plot(thetas, results[:,1], label="y")
+        plt.plot(thetas, results[:,2], label="z")
+        plt.plot(thetas, [results[i,0]*np.cos(thetas[i]) + results[i,1]*np.sin(thetas[i]) for i in range(num)], label="r")
+        plt.plot(thetas, [-results[i,0]*np.sin(thetas[i]) + results[i,1]*np.cos(thetas[i]) for i in range(num)], label=f"theta, zenith_ang={zenith_angle}")
+        plt.title("F integrand: T_M dot dS assuming x-y radial surface normals")
+        plt.xlabel("Theta")
+        plt.ylabel("integrand value /arb scale")
+
+    elif mode == 2: # theta integrands for zenith angles
+        for zenith_angle in np.linspace(0, 2*np.pi, 7+1)[:-1]:
+            thetas = np.linspace(0, 2*np.pi, num)
+            rs = np.array([(R*np.cos(theta), R*np.sin(theta), z_offset) for theta in thetas])
+            ns = np.array([(np.cos(theta)*np.sin(zenith_angle), np.sin(theta)*np.sin(zenith_angle), np.cos(zenith_angle)) for theta in thetas]) # normals for a (~torus) ring
+            results = np.zeros((num,3))
+            mag_dS = 1 # (unused as normalised later)
+
+            for i in range(num):
+                r = rs[i]
+                E = np.zeros(3,dtype=np.complex128)
+                Beams.all_incident_fields((r[0], r[1], r[2]), beam_collection, E)
+                e0 = 8.854e-12
+
+                # Note, for H=0
+                T_M = 0.5*e0 * ( np.outer(E, E.conj()) - 0.5 * np.dot(E, E.conj()) * np.identity(3)).real
+                T_M_dot_dS = np.dot(T_M, ns[i]) * mag_dS
+                results[i] = T_M_dot_dS
+
+            plt.plot(thetas, [-results[i,0]*np.sin(thetas[i]) + results[i,1]*np.cos(thetas[i]) for i in range(num)], label=f"theta, zenith_ang={zenith_angle}")
+            plt.title("F integrand: T_M dot dS assuming x-y radial surface normals")
+            plt.xlabel("Theta")
+            plt.ylabel("integrand value /arb scale")
+
+
+
+    if mode == 3: # sum over zenith angles, as num sum increased
+        num=30
+        thetas = np.linspace(0, 2*np.pi, num)
+        rs = np.array([(R*np.cos(theta), R*np.sin(theta), z_offset) for theta in thetas])
+        results = np.zeros((num,3))
+        Ns = np.linspace(5, 100, 10)
+        for N in Ns:
+            for zenith_angle in np.linspace(0, 2*np.pi, int(N)+1)[:-1]:
+                ns = np.array([(np.cos(theta)*np.sin(zenith_angle), np.sin(theta)*np.sin(zenith_angle), np.cos(zenith_angle)) for theta in thetas]) # normals for a (~torus) ring
+                mag_dS = 1/N # SA proportional to 1/N
+
+                for i in range(num):
+                    r = rs[i]
+                    E = np.zeros(3,dtype=np.complex128)
+                    Beams.all_incident_fields((r[0], r[1], r[2]), beam_collection, E)
+                    e0 = 8.854e-12
+
+                    # Note, for H=0
+                    T_M = 0.5*e0 * ( np.outer(E, E.conj()) - 0.5 * np.dot(E, E.conj()) * np.identity(3)).real
+                    T_M_dot_dS = np.dot(T_M, ns[i]) * mag_dS
+                    results[i] += T_M_dot_dS
+
+            plt.plot(thetas, [-results[i,0]*np.sin(thetas[i]) + results[i,1]*np.cos(thetas[i]) for i in range(num)], label=f"theta, N zeniths={N}")
+
+    plt.title("F integrand: T_M dot dS assuming x-y radial surface normals")
+    plt.xlabel("Phi")
+    plt.ylabel("integrand value /arb scale")
+    plt.legend()
+    plt.show()
+
+
+def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
     """
     shapes = List of shape types used
     args   = List of arguments about system and particles; [dipole_radius, particle_parameters]

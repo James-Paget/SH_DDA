@@ -235,12 +235,14 @@ def make_yaml_fibre_2d_cylinder_shelllayers(filename, time_step=1e-4, frames=1, 
 def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE"):
     use_default_options(filename, frames, show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    use_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape)
+    num_particles = use_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape)
+    return num_particles
 
 def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, place_regime, prism_type, prism_args, frames=1, show_output=False, beam="LAGUERRE"):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
+    num_particles = use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
+    return num_particles
 
 #=======================================================================
 # Particle configurations
@@ -407,20 +409,25 @@ def use_refine_cuboid(filename, dimensions, separations, object_offset, particle
     # particle_size = radius of sphere OR half width of cube
     #
     coords_list = get_refine_cuboid(dimensions, separations, particle_size)
+    num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
-    args_list = [[particle_size]] * len(coords_list)
+    args_list = [[particle_size]] * num_particles
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    return num_particles
 
 def use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape="sphere", place_regime="squish", prism_type="rect", prism_args=[1.0e-6]):
     #
     # particle_size = radius of sphere OR half width of cube
     #
     coords_list = get_refine_arch_prism(dimensions, separations, particle_size, deflection, place_regime, prism_type, prism_args)
+    num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
-    args_list = [[particle_size]] * len(coords_list)
+    args_list = [[particle_size]] * num_particles
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    return num_particles
+
 
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
 #     # makes a row of separated cylinders
@@ -454,6 +461,7 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 #=======================================================================
 
 def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None):
+    print("USING BEAM ",beam)
     match beam:
         case "GAUSS_CSP":
             use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype)
