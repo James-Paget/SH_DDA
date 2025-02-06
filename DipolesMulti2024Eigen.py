@@ -1604,8 +1604,6 @@ def plot_T_M_integrand(beam_collection):
 
             plt.plot(thetas, [-results[i,0]*np.sin(thetas[i]) + results[i,1]*np.cos(thetas[i]) for i in range(num)], label=f"theta, N zeniths={N}")
 
-
-
     plt.title("F integrand: T_M dot dS assuming x-y radial surface normals")
     plt.xlabel("Phi")
     plt.ylabel("integrand value /arb scale")
@@ -1638,8 +1636,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
     temp[3] = 1e-8
     temp[4] = 0e-8
     number_of_timesteps = frames
-    number_of_dipoles = len(position_vectors)
-    mean = np.zeros(number_of_dipoles * 3)
+    #number_of_dipoles = len(position_vectors)  #<--- Old definition, when particles were all 1 dipoles only
+    mean = np.zeros(number_of_particles * 3)
     vectors_list = []
     vectors_array = np.zeros(number_of_timesteps, dtype=object)
     temp_array1 = np.zeros(number_of_timesteps, dtype=object)
@@ -1667,7 +1665,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
         sys.exit(f"Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap. (Search This Error)")
 
     # Get dipole primitive positions for each particle
-    dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   #Flattened 1D list of all dipoles for all particles
+    dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   # Flattened 1D list of all dipoles for all particles
     dpn_start_indices = np.append(0, np.cumsum(dipole_primitive_num[:-1]))
     for particle_i in range(number_of_particles):
         match shapes[particle_i]:
@@ -1681,8 +1679,10 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 dipole_primitives[dpn_start_indices[particle_i]: dpn_start_indices[particle_i]+dipole_primitive_num[particle_i]] = cube_positions(args[particle_i], dipole_radius, dipole_primitive_num[particle_i], verbosity=verbosity)
     
     if excel_output==True:
+        dipoptpos = np.zeros((frames,dipole_primitive_num_total,3))
         optpos = np.zeros((frames,number_of_particles,3))
         if include_force==True:
+            dipoptforce = np.zeros((frames,dipole_primitive_num_total,3))
             optforce = np.zeros((frames,number_of_particles,3))
             totforces = np.zeros((frames,number_of_particles,3))
         else:
@@ -1742,11 +1742,24 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
             beam_collection = beam_collection_list[i]
 
 
-        optical, torques, couples = Dipoles.py_optical_force_torque_array(position_vectors, np.asarray(dipole_primitive_num), dipole_radius, dipole_primitives, inverse_polarizability, beam_collection)
+        dipoles_optical, optical, torques, couples = Dipoles.py_optical_force_torque_array(position_vectors, np.asarray(dipole_primitive_num), dipole_radius, dipole_primitives, inverse_polarizability, beam_collection)
 
         #couples = None
         #include_couple==False
         if excel_output==True:
+            ####
+            ## ADD IF WANTED ARG TO ALL
+            ####
+            if include_dipoleforces:
+                cumulative_counter=0
+                for p in range(number_of_particles):
+                    for j in range(dipole_primitive_num[p]):
+                        for k in range(3):
+                            dipoptpos[i,cumulative_counter+j,k] = dipole_primitives[cumulative_counter+j][k] +position_vectors[p][k]
+                            if include_force==True:
+                                dipoptforce[i,cumulative_counter+j,k] = dipoles_optical[cumulative_counter+j][k]
+                    cumulative_counter += dipole_primitive_num[p]
+
             for j in range(number_of_particles):
                 for k in range(3):
                     optpos[i,j,k] = position_vectors[j][k]
@@ -1786,20 +1799,6 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
                 case "gravity":
                     gravity = gravity_force_array(position_vectors, effective_radii[0])
                     total_force_array += gravity
-        ##
-        ## LEGACY METHOD
-        ##
-        # gravity = gravity_force_array(position_vectors, effective_radii[0])
-        # buckingham = buckingham_force_array(position_vectors, effective_radii, particle_neighbours)
-        # driver = driving_force_array(position_vectors, "stretch", args={"driver_magnitude":3.0e-12, "axes":["y"], "influence_distance":1e-10, "initial_positions":initial_shape})      # USED with python DipolesMulti2024Eigen.py 7  
-        # driver = driving_force_array(position_vectors, "osc_circ_push", args={"driver_magnitude":1.0e-12, "influence_radius":1.1e-6, "current_frame":i, "frame_period":30})
-        # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":1.6e-6, "current_frame":i, "cutoff_frame":10})
-        # driver = driving_force_array(position_vectors, "timed_circ_push", args={"driver_magnitude":5.0e-12, "influence_radius":0.5e-6, "current_frame":i, "cutoff_frame":10})
-        # bending = bending_force_array(position_vectors, ijkangles, BENDING)
-        # NOTE; Initial shape stored earlier before any timesteps are taken
-        # spring = spring_force_array(position_vectors, connection_indices, initial_shape, stiffness_spec={"type":"", "default_value":stiffness})
-        # total_force_array = bending + spring + optical #+ buckingham# + driver#+ gravity #
-
 
         # Record total forces too if required
         if include_force==True:
@@ -1818,8 +1817,8 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
         #        print("%6.4g" % new_positions[0], "%6.4g" % F[0],"%6.4g" % F[1],"%6.4g" % F[2],"%6.4g" % F[3],"%6.4g" % F[4],"%6.4g" % F[5], sep=', ', file=MyFileObject)
 
 ##        print(new_positions)
-        new_positions_list = np.hsplit(new_positions, number_of_dipoles)
-        new_positions_array = np.zeros((number_of_dipoles,3), dtype=np.float64)
+        new_positions_list = np.hsplit(new_positions, number_of_particles)
+        new_positions_array = np.zeros((number_of_particles,3), dtype=np.float64)
         for j in range(len(new_positions_list)):
             new_positions_array[j] = new_positions_list[j]
         position_vectors = new_positions_array
@@ -1836,7 +1835,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
 
     xyz_list1 = np.vsplit(np.vstack(temp_array1).T, number_of_particles)
 
-    return xyz_list1,optpos,optforce,optcouple,totforces,connection_indices
+    return xyz_list1, dipoptpos, optpos, dipoptforce, optforce, optcouple, totforces, connection_indices
 
 
 
@@ -1844,7 +1843,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
 # Start of program
 ###################################################################################
 
-def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}, verbosity=0):
+def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}, include_dipoleforces=False, verbosity=0):
     #
     # Runs the full program
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
@@ -1891,6 +1890,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
 
     filename_vtf = filestem+".vtf"
     filename_xl = filestem+".xlsx"
+    filename_dipoles_xl = filestem+"_dipoles.xlsx"
     filename_yaml = filestem+".yml"
 
     sys_params = ReadYAML.load_yaml(filename_yaml)
@@ -2067,7 +2067,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
 
     initialT = time.time()
-    particles,optpos, optforces,optcouples,totforces,connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=verbosity)
+    particles, dipoptpos, optpos, dipoptforces, optforces, optcouples, totforces, connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, include_dipoleforces=include_dipoleforces, verbosity=verbosity)
     finalT = time.time()
     if(verbosity >= 1):
         print("Elapsed time: {:8.6f} s".format(finalT-initialT))
@@ -2111,10 +2111,14 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         #Output.make_vmd_file(filename_vtf,n_particles,frames,timestep,particles,optpos,beam_collection,finalT-initialT,radius,dipole_radius,z_offset,particle_types,vtfcolors)
 
     if excel_output==True:
-        Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples)
+        number_of_dipoles = len(dipoptforces[0])
+        Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples)    # Output for main data
+        if(include_dipoleforces):
+            print("Writing dipole forces XLSX...")
+            Output.make_excel_file_dipoles(filename_dipoles_xl,number_of_dipoles,frames,timestep,dipoptpos,dipoptforces)   # Output for just dipole data
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6})
+    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, include_dipoleforces=True)
     ##
     ## STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
     ##

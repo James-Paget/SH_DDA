@@ -59,10 +59,10 @@ extern "C"
 EXPORT_SYMBOL void grad_E_cc(double *position, double *polarisation, double kvec, double *gradEE);
 
 extern "C"
-EXPORT_SYMBOL void optical_force_array(double *array_of_particles,int number_of_particles, double dipole_radius, double* dipole_primitives, long* dipole_primitive_num, double* inv_polar, BEAM_COLLECTION* beam_collection, double* final_optical_forces);
+EXPORT_SYMBOL void optical_force_array(double *array_of_particles, int number_of_particles, double dipole_radius, double* dipole_primitives, long* dipole_primitive_num, double* inv_polar, BEAM_COLLECTION* beam_collection, double* final_optical_forces);
 
 extern "C"
-EXPORT_SYMBOL void optical_force_torque_array(double *array_of_particles,int number_of_particles, double dipole_radius, double* dipole_primitives, long* dipole_primitive_num, double* inv_polar, BEAM_COLLECTION* beam_collection, double* final_optical_forces, double* final_optical_torques, double* final_optical_couples);
+EXPORT_SYMBOL void optical_force_torque_array(double *array_of_particles, int number_of_particles, double dipole_radius, double* dipole_primitives, long* dipole_primitive_num, double* inv_polar, BEAM_COLLECTION* beam_collection, double* final_optical_dipole_forces, double* final_optical_forces, double* final_optical_torques, double* final_optical_couples);
 
 
 Eigen::MatrixXcd dipole_moment_array(Eigen::MatrixXd array_of_positions, int number_of_dipoles, double dipole_radius, int number_of_particles, long* dipole_primitive_num, Eigen::VectorXcd inverse_polars, BEAM_COLLECTION* beam_collection);

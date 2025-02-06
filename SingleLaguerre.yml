@@ -2,7 +2,7 @@ options:
   frames: 1
 parameters:
   wavelength: 1e-06
-  dipole_radius: 5e-08
+  dipole_radius: 4e-08
   time_step: 0.0001
 output:
   vmd_output: True
@@ -19,10 +19,10 @@ display:
   z_offset: 0.0
 beams:
   beam_0:
-    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
-    E0: 300
+    beamtype: BEAMTYPE_GAUSS_CSP
+    E0: 15000000.0
     order: 3
-    w0: 0.6
+    w0: 0.4
     jones: POLARISATION_LCP
     translation: None
     translationargs: None
@@ -36,13 +36,25 @@ particles:
   particle_list:
     part_0:
       material: FusedSilica
-      shape: cube
-      args: 2.4e-07
-      coords: 1.24e-06 0.0 0.0
+      shape: sphere
+      args: 2.5e-07
+      coords: -8.46e-07 2.5e-07 4.374477734215019e-07
       altcolour: True
     part_1:
       material: FusedSilica
-      shape: cube
-      args: 2.4e-07
-      coords: 1.7199999999999998e-06 0.0 0.0
+      shape: sphere
+      args: 2.5e-07
+      coords: -2.9800000000000005e-07 2.5e-07 7.06962678069461e-07
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 2.5e-07
+      coords: 2.4999999999999994e-07 2.5e-07 7.195792499437139e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 2.5e-07
+      coords: 7.979999999999998e-07 2.5e-07 4.682046203366712e-07
       altcolour: True

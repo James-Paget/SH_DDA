@@ -89,13 +89,16 @@ def py_optical_force_torque_array(array_of_particles, dipole_primitive_num, dipo
     # NOTE; dipole_primitives NOT using float64, just float
     #
     num_particles = len(array_of_particles)
+    num_dipoles = len(dipole_primitives)
+    dipole_forces = np.zeros((num_dipoles,3),dtype=np.float64)
     forces = np.zeros((num_particles,3),dtype=np.float64)
     torques = np.zeros((num_particles,3),dtype=np.float64)
     couples = np.zeros((num_particles,3),dtype=np.float64)
     inv_polar_unwrap = inverse_polarisation.view(dtype=np.float64).reshape((num_particles*2,1)).flatten()
     #print(inv_polar_unwrap)
-    Dipoles.optical_force_torque_array(array_of_particles, num_particles, dipole_radius, dipole_primitives, dipole_primitive_num, inv_polar_unwrap, beam_collection, forces, torques, couples)
-    return forces, torques, couples
+    Dipoles.optical_force_torque_array(array_of_particles, num_particles, dipole_radius, dipole_primitives, dipole_primitive_num, inv_polar_unwrap, beam_collection, dipole_forces, forces, torques, couples)
+    
+    return dipole_forces, forces, torques, couples
 #
 # General dipole function interfaces
 #
@@ -114,7 +117,7 @@ optical_force_array.argtypes = [ND_POINTER_2,ctypes.c_int,ctypes.c_double,ND_POI
 #optical_force_array.restype = ctypes.POINTER(ctypes.c_double)
 optical_force_torque_array = Dipoles.optical_force_torque_array
 
-optical_force_torque_array.argtypes = [ND_POINTER_2,ctypes.c_int,ctypes.c_double,ND_POINTER_2, ND_POINTER_1_INT, ND_POINTER_1,ctypes.POINTER(Beams.BEAM_COLLECTION),ND_POINTER_2,ND_POINTER_2,ND_POINTER_2]
+optical_force_torque_array.argtypes = [ND_POINTER_2,ctypes.c_int,ctypes.c_double,ND_POINTER_2, ND_POINTER_1_INT, ND_POINTER_1,ctypes.POINTER(Beams.BEAM_COLLECTION),ND_POINTER_2,ND_POINTER_2,ND_POINTER_2,ND_POINTER_2]
 #optical_force_torque_array.argtypes = [ND_POINTER_2,ctypes.c_int,ctypes.c_double,ND_POINTER_2,ctypes.c_int, ND_POINTER_1,ctypes.POINTER(Beams.BEAM_COLLECTION),ND_POINTER_2,ND_POINTER_2,ND_POINTER_2]
 #
 #

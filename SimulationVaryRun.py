@@ -487,23 +487,23 @@ def select_particle_indices(filename, particle_selection, parameters_stored, rea
         case "central":
             # Sum force on particle closest to object_offset (the centre)
             number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
-            read_parameters_central = []
+            read_parameters_point = []
             for p in range(number_of_particles):
-                read_parameters_central.append({"type":"X", "particle":p, "subtype":0})
-                read_parameters_central.append({"type":"X", "particle":p, "subtype":1})
-                read_parameters_central.append({"type":"X", "particle":p, "subtype":2})
+                read_parameters_point.append({"type":"X", "particle":p, "subtype":0})
+                read_parameters_point.append({"type":"X", "particle":p, "subtype":1})
+                read_parameters_point.append({"type":"X", "particle":p, "subtype":2})
             
-            central_particle_number = get_closest_particle(     # Measure forces on central particle for all systems
+            point_particle_number = get_closest_particle(     # Measure forces on central particle for all systems
                 np.array(object_offsets),
                 output_data = pull_file_data(
                     filename, 
                     parameters_stored, 
                     read_frames, 
-                    read_parameters_central, 
+                    read_parameters_point, 
                     invert_output=False
                 )
             )
-            particle_list = [central_particle_number]
+            particle_list = [point_particle_number]
         case _:
             # Manual index specification
             particle_list = particle_selection
@@ -1592,7 +1592,7 @@ def simulations_refine_cuboid(dimensions, dipole_size, separations, particle_siz
     )
     return parameter_text, np.array(data_set)
 
-def simulations_refine_arch_prism(dimensions, variables_list, separations_list, particle_sizes, dipole_sizes, deflections, object_offsets, force_terms, particle_shapes, beam_type, force_measure_point=[0.0, 0.0, 0.0], show_output=True, indep_vector_component=2):
+def simulations_refine_arch_prism(dimensions, variables_list, separations_list, particle_sizes, dipole_sizes, deflections, object_offsets, force_terms, particle_shapes, place_regime, prism_type, prism_args, beam_type, force_measure_point=[0.0, 0.0, 0.0], show_output=True, indep_vector_component=2):
     #
     # Consider a prism of given parameters, calculate the path it should be located on when deflected by some amount
     #
@@ -1685,7 +1685,7 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
         
             # Generate YAML & Run Simulation
             #Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
-            particle_num = Generate_yaml.make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, frames=1, show_output=show_output, beam=beam_type)
+            particle_num = Generate_yaml.make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, place_regime, prism_type, prism_args, frames=1, show_output=show_output, beam=beam_type)
             DM.main(YAML_name=filename, force_terms=force_terms)
 
             match particle_shape:
@@ -1697,30 +1697,29 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
             # Get details needed for force calculations
             #
             number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
-            #print(" ----> PARTICLE NUMEBR= ", number_of_particles)
-            
+
             read_parameters = []
             for p in range(number_of_particles):
                 read_parameters.append({"type":"F", "particle":p, "subtype":0})
                 read_parameters.append({"type":"F", "particle":p, "subtype":1})
                 read_parameters.append({"type":"F", "particle":p, "subtype":2})
-            read_parameters_central = []
+            read_parameters_point = []
             for p in range(number_of_particles):
-                read_parameters_central.append({"type":"X", "particle":p, "subtype":0})
-                read_parameters_central.append({"type":"X", "particle":p, "subtype":1})
-                read_parameters_central.append({"type":"X", "particle":p, "subtype":2})
-            central_particle_number = get_closest_particle(     # Measure forces on central particle for all systems
+                read_parameters_point.append({"type":"X", "particle":p, "subtype":0})
+                read_parameters_point.append({"type":"X", "particle":p, "subtype":1})
+                read_parameters_point.append({"type":"X", "particle":p, "subtype":2})
+            point_particle_number = get_closest_particle(     # Measure forces on central particle for all systems
                 np.array(force_measure_point),
                 output_data = pull_file_data(
                     filename, 
                     parameters_stored, 
                     read_frames, 
-                    read_parameters_central, 
+                    read_parameters_point, 
                     invert_output=False
                 )
             )
             centre_dipoles = DM.sphere_size([particle_size], dipole_size)   # Number of dipoles of centre particle (ALL HAVE SAME NUMBER)
-            #print("central_particle_number = ",central_particle_number)
+            #print("point_particle_number = ",point_particle_number)
             #print("centre_dipoles          = ",centre_dipoles)
             #
             # Get details needed for force calculations
@@ -1760,14 +1759,14 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
             # forceZ_data[1][i] = recorded_force[2]
 
             # (1)&(2) Get magnitude of force per dipole on central particle
-            centre_force_vec = np.array(
+            point_force_vec = np.array(
                 [
-                    output_data[0, 3*central_particle_number +0],
-                    output_data[0, 3*central_particle_number +1],
-                    output_data[0, 3*central_particle_number +2]
+                    output_data[0, 3*point_particle_number +0],
+                    output_data[0, 3*point_particle_number +1],
+                    output_data[0, 3*point_particle_number +2]
                 ]
             )
-            centre_force = np.sqrt(np.dot(centre_force_vec, centre_force_vec))  # Finding |F| for centre particle
+            centre_force = np.sqrt(np.dot(point_force_vec, point_force_vec))  # Finding |F| for centre particle
             data_vary_dipoleSize_F[1][i] = abs(centre_force)
             data_vary_dipoleSize_FperDip[1][i] = abs(centre_force/centre_dipoles)
 
@@ -1955,7 +1954,6 @@ def filter_data_set(force_filter, data_set, data_set_params, legend_params, inde
     # Returns filtered data_set, datalabel_set
     # The label only use the variables in legend_params since others do not change so are shown in the title.
     #
-
     print("data_set = ",data_set)
     filtered_i = []
     datalabel_set = []
@@ -1977,24 +1975,24 @@ def filter_data_set(force_filter, data_set, data_set_params, legend_params, inde
         if "Fz" in force_filter:
             filtered_i.append(N*i+3)
             datalabel_set.append(f"Fz{param_str}")
-        if "Fcentre" in force_filter:
+        if "Fpoint" in force_filter:
             filtered_i.append(N*i+4)
-            datalabel_set.append(f"Fcentre{param_str}")
-        if "Fcentre_perDip" in force_filter:
+            datalabel_set.append(f"Fpoint{param_str}")
+        if "Fpoint_perDip" in force_filter:
             filtered_i.append(N*i+5)
-            datalabel_set.append(f"Fcentre_perDip{param_str}")
+            datalabel_set.append(f"Fpoint_perDip{param_str}")
         if "F_T" in force_filter:
             filtered_i.append(N*i+6)
             datalabel_set.append(f"F_T{param_str}")
 
-        print("=============")
+        # print("===")
         # print("     params = ",params)
-        print("N == ",N)
-        print("len(datalabel_set) = ",len(datalabel_set))
-        print("(filtered_i) = ",(filtered_i))
-        print("len(data_set_params) = ",len(data_set_params))
-        print("data_set_params = ", data_set_params)
-        print("force_filter = ",force_filter)
+        # print("N == ",N)
+        # print("len(datalabel_set) = ",len(datalabel_set))
+        # print("(filtered_i) = ",(filtered_i))
+        # print("len(data_set_params) = ",len(data_set_params))
+        # print("data_set_params = ", data_set_params)
+        # print("force_filter = ",force_filter)
     
     return data_set[filtered_i], datalabel_set, filtered_i
 
@@ -2445,36 +2443,42 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
         # show_output     = False
-        # dimensions      = np.array([1.0e-6, 0.6e-6,  0.6e-6])        # Bounding box for prism
+        # dimensions      = np.array([2.0e-6, 0.5e-6,  0.5e-6])        # Bounding box for prism
         # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        # particle_sizes  = np.linspace(0.07e-6, 0.24e-6, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
-        # dipole_sizes    = [50e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
+        # particle_sizes  = np.linspace(0.05e-6, 0.25e-6, 75)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        # dipole_sizes    = [40e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
         # deflections     = [0.0e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
-        # #object_offsets  = [[1.0e-6-dimensions[0]/2.0, -dimensions[1]/2.0, -dimensions[2]/2.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
-        # object_offsets  = [[1.0e-6, 0.0, 0.0]]
-        # force_measure_point = [1e-6, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+        # object_offsets  = [[-dimensions[0]/2.0, -dimensions[1]/2.0, 0.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
+        # #object_offsets  = [[0.0e-6, 0.0, 0.0]]
+        # force_measure_point = [0.0, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
         # force_terms     = ["optical"]
-        # particle_shapes = ["cube"]    #, 
-        # indep_vector_component = 0      # Which component to plot when dealing with vector quantities to plot (Often not used)
-        # force_filter=["Fmag", "Fcentre"] # options are ["Fmag","Fx", "Fy", "Fz", "Fcentre", "Fcentre_perDip", "F_T"]  #"Fcentre", 
+        # particle_shapes = ["sphere"]
+        # indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
+        # force_filter=["Fmag", "Fpoint"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
         # indep_var = "particle_sizes" #"dipole_sizes"    #"particle_sizes"
-        # beam_type = "LAGUERRE"  #GAUSS_CSP
+        # beam_type = "GAUSS_CSP"  #LAGUERRE
+        # place_regime = "spaced"   # Format to place particles within the overall rod; "squish", "spaced", ...
+        # prism_type   = "rect"   # Prism generation to use; "circle", "rect", ...
+        # prism_args   = [dimensions[1]/2.0, dimensions[2]/2.0]   #[dimensions[1]/2.0]      #"circle" => [radius], "rect" => [half-Y dim, half-Z dim]
 
         show_output     = False
-        dimensions      = np.array([1.0e-6, 0.6e-6,  0.6e-6])        # Bounding box for prism
+        dimensions      = np.array([2.0e-6, 0.5e-6,  0.5e-6])        # Bounding box for prism
         separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        particle_sizes  = np.linspace(0.07e-6, 0.24e-6, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
-        dipole_sizes    = [50e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
-        deflections     = [0.0e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
-        #object_offsets  = [[1.0e-6-dimensions[0]/2.0, -dimensions[1]/2.0, -dimensions[2]/2.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
-        object_offsets  = [[1.0e-6, 0.0, 0.0]]
-        force_measure_point = [1e-6, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+        particle_sizes  = np.linspace(0.05e-6, 0.25e-6, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        dipole_sizes    = [40e-9]#[30e-9, 40e-9]#np.linspace(40e-9, 60e-9, 15)#[30e-9, 40e-9, 50e-9]
+        deflections     = [0.5e-6]                                  # Of centre in micrometres (also is deflection to centre of rod, not underside)
+        #object_offsets  = [[-dimensions[0]/2.0, -dimensions[1]/2.0, 0.0]]#[[-dimensions[0]/2.0, -dimensions[1]/2.0, 0e-6]]  # Offset the whole object
+        object_offsets  = [[0.0e-6, 0.0, 0.0]]
+        force_measure_point = [0.0, 0.0, 0.0] # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
         force_terms     = ["optical"]
-        particle_shapes = ["cube"]    #, 
-        indep_vector_component = 0      # Which component to plot when dealing with vector quantities to plot (Often not used)
-        force_filter=["Fmag", "Fcentre"] # options are ["Fmag","Fx", "Fy", "Fz", "Fcentre", "Fcentre_perDip", "F_T"]  #"Fcentre", 
+        particle_shapes = ["sphere"]
+        indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
+        force_filter=["Fmag", "Fpoint"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
         indep_var = "particle_sizes" #"dipole_sizes"    #"particle_sizes"
-        beam_type = "LAGUERRE"  #GAUSS_CSP
+        beam_type = "GAUSS_CSP"  #LAGUERRE
+        place_regime = "spaced"   # Format to place particles within the overall rod; "squish", "spaced", ...
+        prism_type   = "rect"   # Prism generation to use; "circle", "rect", ...
+        prism_args   = [dimensions[1]/2.0, dimensions[2]/2.0]   #[dimensions[1]/2.0]      #"circle" => [radius], "rect" => [half-Y dim, half-Z dim]
         #-----------------------
         #-----------------------
 
@@ -2505,6 +2509,9 @@ match(sys.argv[1]):
             object_offsets, 
             force_terms, 
             particle_shapes, 
+            place_regime,
+            prism_type,
+            prism_args,
             beam_type,
             force_measure_point=force_measure_point,
             show_output=show_output,
