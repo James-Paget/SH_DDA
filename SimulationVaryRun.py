@@ -1645,6 +1645,8 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
     print("Performing refinement calculation for cuboid")
     data_set = []
     data_set_params = []
+    particle_nums_set = []
+    dpp_nums_set = []
     num_indep = len(indep_axis_list)
     forceMag_data = np.array([ indep_axis_list, np.zeros(num_indep) ])  
     forceX_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
@@ -1653,7 +1655,10 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
     data_vary_dipoleSize_F       = np.array([ indep_axis_list, np.zeros(num_indep) ])
     data_vary_dipoleSize_FperDip = np.array([ indep_axis_list, np.zeros(num_indep) ])
     data_vary_dipoleSize_modF2   = np.array([ indep_axis_list, np.zeros(num_indep) ])   #[ [dipole_sizes], [recorded_data]-> e.g. force magnitude ]
-    
+    particle_nums = np.array([ indep_axis_list, np.zeros(num_indep) ])
+    dpp_nums = np.array([ indep_axis_list, np.zeros(num_indep) ])
+
+
     # Iterate though every combination of variables that are varied across the lines of the graph.
     var_set_length = len(indep_list)
     for i in line_vars:
@@ -1680,8 +1685,13 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
         
             # Generate YAML & Run Simulation
             #Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
-            Generate_yaml.make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, frames=1, show_output=show_output, beam=beam_type)
+            particle_num = Generate_yaml.make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, frames=1, show_output=show_output, beam=beam_type)
             DM.main(YAML_name=filename, force_terms=force_terms)
+
+            match particle_shape:
+                case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
+                case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
+                case _: sys.exit("UNIMPLEMENTED SHAPE")
 
             #---
             # Get details needed for force calculations
@@ -1772,6 +1782,8 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
                 total_force_vec[2] += output_data[0, p+2]
             total_force = np.sqrt(np.dot(total_force_vec, total_force_vec))  # Finding |F|
             data_vary_dipoleSize_modF2[1][i] = total_force
+            particle_nums[1][i] = particle_num
+            dpp_nums[1][i] = dpp_num
             #
             # Calculate required quantities
             #---
@@ -1784,10 +1796,12 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
         data_set.append(np.array(data_vary_dipoleSize_FperDip))
         data_set.append(np.array(data_vary_dipoleSize_modF2))
         data_set_params.append(params)
+        particle_nums_set.append(np.array(particle_nums))
+        dpp_nums_set.append(np.array(dpp_nums))
 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     parameter_text = "" #### LEGACY ####
-    return parameter_text, np.array(data_set), data_set_params
+    return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
 
 def simulations_refine_general(dimensions, variables_list, force_terms, time_step=1e-4, show_output=False, indep_vector_component=2, particle_selection="all"):
     #
@@ -2019,7 +2033,7 @@ def get_titlelegend(variables_list, indep_name, particle_selection, dimensions):
     #
     titlestr = f" against {display_var(indep_name)[0]}. dimensions = {dimensions}, particle selection = {particle_selection}\n"
     legend_params = []
-    newline_count = 2
+    newline_count = 0
     # For each variable, print it in the legend or the title.
     for key, value in variables_list.items():
         if key == indep_name or key == "indep_var": 
@@ -2481,7 +2495,7 @@ match(sys.argv[1]):
         else: indep_vector_component = 0
 
         # Run
-        parameter_text, data_set, data_set_params = simulations_refine_arch_prism(
+        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_arch_prism(
             dimensions, 
             variables_list,
             separations_list, 
@@ -2498,12 +2512,24 @@ match(sys.argv[1]):
         )
         
         # Format output and make legend/title strings
-        titlestr, legend_params = get_titlelegend(variables_list, indep_name, "central", dimensions)
-        data_set, datalabel_set = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=-10)
-        
+        titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "central", dimensions)
+        data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+
         xAxis_varname, xAxis_units = display_var(indep_name)
-        graphlabel_set = {"title":titlestr, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} # single quotes needed to prevent strings clashing.
-        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set)
+        graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} 
+        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
+
+        # Plot particle number and dipoles per particle against the independent variable.
+        pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
+        particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
+        Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
+        dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
+        Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
+
+
+
+
 
     case "refine_cuboid_general":
         #====================================================================================
@@ -2542,7 +2568,7 @@ match(sys.argv[1]):
         graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
         
-        # Can plot particle number and dipoles per particle against the independent variable.
+        # Plot particle number and dipoles per particle against the independent variable.
         pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
         particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
         Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
