@@ -11,7 +11,7 @@
 # System options
 #============================================================================================
 options:
-  frames: 10
+  frames: 1
 #============================================================================================
 # System parameters
 #============================================================================================
@@ -57,22 +57,22 @@ particles:
   default_radius: 200e-9
   default_material: FusedSilica
   particle_list:
-    part_1:
-      material: FusedSilica
-      #radius: 500e-9
-      coords: 1e-6 0.0 0.0
-      altcolour: True
-    part_2:
-      material: FusedSilica
-      radius: 200e-9
-      coords: 0.5e-6 0.866e-6 0.0
-      altcolour: False
-    part_3:
-      coords: -0.5e-6 0.866e-6 0.0
-    part_4:
-      coords: -1e-6 0.0 0.0
-    part_5:
-      coords: -0.5e-6 -0.866e-6 0.0
-    part_6:
-      coords: 0.5e-6 -0.866e-6 0.0
+    # part_1:
+    #   material: FusedSilica
+    #   #radius: 500e-9
+    #   coords: 1e-6 0.0 0.0
+    #   altcolour: True
+    # part_2:
+    #   material: FusedSilica
+    #   radius: 200e-9
+    #   coords: 0.5e-6 0.866e-6 0.0
+    #   altcolour: False
+    # part_3:
+    #   coords: -0.5e-6 0.866e-6 0.0
+    # part_4:
+    #   coords: -1e-6 0.0 0.0
+    # part_5:
+    #   coords: -0.5e-6 -0.866e-6 0.0
+    # part_6:
+    #   coords: 0.5e-6 -0.866e-6 0.0
 
