@@ -2,7 +2,7 @@ options:
   frames: 1
 parameters:
   wavelength: 1e-06
-  dipole_radius: 4e-08
+  dipole_radius: 7e-08
   time_step: 0.0001
 output:
   vmd_output: True
@@ -19,10 +19,10 @@ display:
   z_offset: 0.0
 beams:
   beam_0:
-    beamtype: BEAMTYPE_GAUSS_CSP
-    E0: 15000000.0
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
     order: 3
-    w0: 0.4
+    w0: 0.6
     jones: POLARISATION_LCP
     translation: None
     translationargs: None
