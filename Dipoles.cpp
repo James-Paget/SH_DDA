@@ -400,7 +400,7 @@ void optical_force_array(double *array_of_particles, int number_of_particles, do
 }
 
 //======================================================================================
-void optical_force_torque_array(double *array_of_particles, int number_of_particles, double dipole_radius, double* dipole_primitives, long* dipole_primitive_num, double* inv_polar, BEAM_COLLECTION* beam_collection, double* final_optical_dipole_forces, double* final_optical_forces, double* final_optical_torques, double* final_optical_couples){
+void optical_force_torque_array(double *array_of_particles, int number_of_particles, double dipole_radius, double* dipole_primitives, long* dipole_primitive_num, double* inv_polar, BEAM_COLLECTION* beam_collection, double* final_optical_dipole_forces, double* final_optical_forces, double* final_optical_torques, double* final_optical_couples, int include_dipole_forces){
     //
     // This version returns the optical torques as well as forces, splitting them into the r X F contribution
     // and the p X E contributions.
@@ -547,15 +547,17 @@ void optical_force_torque_array(double *array_of_particles, int number_of_partic
     //
     // Get forces for each dipole across all particles, raw unsummed
     //
-    cumulative_counter = 0;
-    for (i=0; i<number_of_particles; i++){
-        for (j=0; j<dipole_primitive_num[i]; j++){
-            //dipoleIndex=cumulative_counter+j
-            final_optical_dipole_forces[3*(cumulative_counter +j)+0] = optical_force_array(cumulative_counter +j,0);
-            final_optical_dipole_forces[3*(cumulative_counter +j)+1] = optical_force_array(cumulative_counter +j,1);
-            final_optical_dipole_forces[3*(cumulative_counter +j)+2] = optical_force_array(cumulative_counter +j,2);
+    if(include_dipole_forces!=0) {     // Can optionally stop this calculation if not needed -> may want to add other force selection modes in future (e.g. only dipole forces, disclude others)
+        cumulative_counter = 0;
+        for (i=0; i<number_of_particles; i++){
+            for (j=0; j<dipole_primitive_num[i]; j++){
+                //dipoleIndex=cumulative_counter+j
+                final_optical_dipole_forces[3*(cumulative_counter +j)+0] = optical_force_array(cumulative_counter +j,0);
+                final_optical_dipole_forces[3*(cumulative_counter +j)+1] = optical_force_array(cumulative_counter +j,1);
+                final_optical_dipole_forces[3*(cumulative_counter +j)+2] = optical_force_array(cumulative_counter +j,2);
+            }
+            cumulative_counter += dipole_primitive_num[i];
         }
-        cumulative_counter += dipole_primitive_num[i];
     }
 
     //

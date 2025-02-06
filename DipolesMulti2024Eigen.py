@@ -1611,7 +1611,7 @@ def plot_T_M_integrand(beam_collection):
     plt.show()
 
 
-def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2, include_dipoleforces=False):
+def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
     """
     shapes = List of shape types used
     args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
@@ -1750,7 +1750,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
             ####
             ## ADD IF WANTED ARG TO ALL
             ####
-            if include_dipoleforces:
+            if include_dipole_forces:
                 cumulative_counter=0
                 for p in range(number_of_particles):
                     for j in range(dipole_primitive_num[p]):
@@ -1843,7 +1843,7 @@ def simulation(frames, dipole_radius, excel_output, include_force, include_coupl
 # Start of program
 ###################################################################################
 
-def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}, include_dipoleforces=False, verbosity=0):
+def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}, include_dipole_forces=False, verbosity=0):
     #
     # Runs the full program
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
@@ -2067,7 +2067,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
 
     initialT = time.time()
-    particles, dipoptpos, optpos, dipoptforces, optforces, optcouples, totforces, connection_indices = simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, include_dipoleforces=include_dipoleforces, verbosity=verbosity)
+    particles, dipoptpos, optpos, dipoptforces, optforces, optcouples, totforces, connection_indices = simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=verbosity)
     finalT = time.time()
     if(verbosity >= 1):
         print("Elapsed time: {:8.6f} s".format(finalT-initialT))
@@ -2113,12 +2113,12 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     if excel_output==True:
         number_of_dipoles = len(dipoptforces[0])
         Output.make_excel_file(filename_xl,n_particles,frames,timestep,particles,optpos,include_force,optforces,totforces,include_couple,optcouples)    # Output for main data
-        if(include_dipoleforces):
+        if(include_dipole_forces):
             print("Writing dipole forces XLSX...")
             Output.make_excel_file_dipoles(filename_dipoles_xl,number_of_dipoles,frames,timestep,dipoptpos,dipoptforces)   # Output for just dipole data
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, include_dipoleforces=True)
+    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, include_dipole_forces=False)
     ##
     ## STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
     ##
