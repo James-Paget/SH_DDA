@@ -958,7 +958,8 @@ def get_refine_sphere(dimension, separations, particle_size, place_regime="squis
         #
         # Checks whether a point is within the spherical bounds
         #
-        return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
+        #return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
+        return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
 
     coords_list = []
     # Get number of particles to place in each axis

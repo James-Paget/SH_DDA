@@ -286,7 +286,7 @@ class DisplayObject (object):
                         x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
                     case "cube":
                         x, y, z = self.make_cube_surface(args[i], positions[t, i])
-                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=0.1)    #1.0
+                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=0.7)    #1.0
                 plots.append(plot)
 
             # print("positions[t]= ",positions[t])
