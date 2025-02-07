@@ -1585,7 +1585,7 @@ def plot_T_M_integrand(beam_collection):
         thetas = np.linspace(0, 2*np.pi, num)
         rs = np.array([(R*np.cos(theta), R*np.sin(theta), z_offset) for theta in thetas])
         results = np.zeros((num,3))
-        Ns = np.linspace(5, 100, 10)
+        Ns = np.arange(5, 100, 10)
         for N in Ns:
             for zenith_angle in np.linspace(0, 2*np.pi, int(N)+1)[:-1]:
                 ns = np.array([(np.cos(theta)*np.sin(zenith_angle), np.sin(theta)*np.sin(zenith_angle), np.cos(zenith_angle)) for theta in thetas]) # normals for a (~torus) ring
@@ -1610,6 +1610,44 @@ def plot_T_M_integrand(beam_collection):
     plt.legend()
     plt.show()
 
+def plot_T_M_integrand_torus(beam_collection):
+    # Constants
+    inner_radius = 1e-6 # ~phi
+    tube_radius = 0.2e-6 # ~theta
+    num_phi = 8
+    num_theta  = 40
+
+    # Initialise
+    phis = np.linspace(0, 2*np.pi, num_phi+1)[:-1]
+    thetas = np.linspace(0, 2*np.pi, num_theta)
+    total_num = num_phi * num_theta
+    results = np.zeros((6,total_num)) # X, Y, Z, Fx, Fy, Fz
+    dS_scale = 1/(total_num)
+    e0 = 8.854e-12
+    i = 0
+
+    for phi in phis:
+        for theta in thetas:
+            r = ( (tube_radius*np.cos(theta) + inner_radius)*np.cos(phi), (tube_radius*np.cos(theta) + inner_radius)*np.sin(phi), tube_radius*np.sin(theta))
+            n = ( np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta))
+            E = np.zeros(3,dtype=np.complex128)
+            Beams.all_incident_fields((r[0], r[1], r[2]), beam_collection, E)
+            T_M = 0.5*e0 * ( np.outer(E, E.conj()) - 0.5 * np.dot(E, E.conj()) * np.identity(3)).real # Note, for H=0
+            T_M_dot_dS = np.dot(T_M, n) * dS_scale
+            results[:3,i] = r
+            results[3:,i] = T_M_dot_dS
+            i += 1
+
+    ax = plt.figure().add_subplot(projection='3d', zlim=(-0.5e-6, 0.5e-6))
+    ax.quiver(results[0], results[1], results[2], results[3], results[4], results[5], length=0.2e-6, normalize=True)
+    plt.title("Quiver plot of force densities on a torus surface")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.ylabel("z")
+    plt.legend()
+
+    ax.set_aspect("equal")
+    plt.show()
 
 def simulation(frames, dipole_radius, excel_output, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2, include_dipoleforces=False):
     """
@@ -1995,6 +2033,8 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     else:
         beam_collection_list = None
             
+    plot_T_M_integrand_torus(beam_collection)
+
     #n_beams = len(beam_collection)
     #===========================================================================
     # Read particle options and create particle collection
