@@ -1610,12 +1610,12 @@ def plot_T_M_integrand(beam_collection):
     plt.legend()
     plt.show()
 
-def plot_T_M_integrand_torus(beam_collection):
+def plot_T_M_integrand_torus(beam_collection, display):
     # Constants
-    inner_radius = 1e-6 # ~phi
+    inner_radius = 1.13e-6 # ~phi
     tube_radius = 0.2e-6 # ~theta
-    num_phi = 100
-    num_theta  = 100
+    num_phi = 12
+    num_theta  = 15
 
     # Initialise
     phis = np.linspace(0, 2*np.pi, num_phi+1)[:-1]
@@ -1625,8 +1625,10 @@ def plot_T_M_integrand_torus(beam_collection):
     dS_scale = (4*np.pi**2*inner_radius*tube_radius)/(total_num)
     e0 = 8.854e-12
     i = 0
+    force_per_phi = []
 
     for phi in phis:
+        force_per_phi_sum = np.zeros(3)
         for theta in thetas:
             r = ( (tube_radius*np.cos(theta) + inner_radius)*np.cos(phi), (tube_radius*np.cos(theta) + inner_radius)*np.sin(phi), tube_radius*np.sin(theta))
             n = ( np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta))
@@ -1635,6 +1637,10 @@ def plot_T_M_integrand_torus(beam_collection):
             T_M = 0.5*e0 * ( np.outer(E, E.conj()) - 0.5 * np.dot(E, E.conj()) * np.identity(3) ).real # Note, for H=0
             force_density = np.dot(T_M, n) * dS_scale
 
+            ignore_Fz = False
+            if ignore_Fz:
+                force_density[2] = 0
+
             results[:3,i] = r
             results[3:6,i] = force_density
 
@@ -1642,20 +1648,34 @@ def plot_T_M_integrand_torus(beam_collection):
             results[6:9,i] = torque_density
 
             i += 1
+            force_per_phi_sum += force_density
+        
+        force_per_phi.append(force_per_phi_sum)
+
+    force_per_phi = np.array(force_per_phi)
+    plt.plot(phis, force_per_phi[:,0], label="x")
+    plt.plot(phis, force_per_phi[:,1], label="y")
+    plt.plot(phis, force_per_phi[:,2], label="z")
+    plt.plot(phis, [force_per_phi[i,0]*np.cos(phis[i]) + force_per_phi[i,1]*np.sin(phis[i]) for i in range(num_phi)], label="r")
+    plt.plot(phis, [-force_per_phi[i,0]*np.sin(phis[i]) + force_per_phi[i,1]*np.cos(phis[i]) for i in range(num_phi)], label=f"phi")
+    plt.legend()
 
     # calculate torques about the z axis
     total_torque = np.sum(np.swapaxes(results[6:9,:],0,1), axis=0)
-    print(f"x,y,z torques are {total_torque[0]}, {total_torque[1]}, {total_torque[2]}")
+    print(f"\n===> x,y,z torques are {total_torque[0]}, {total_torque[1]}, {total_torque[2]} \n")
 
-    # ax = plt.figure().add_subplot(projection='3d', zlim=(-0.5e-6, 0.5e-6))
-    # ax.quiver(results[0], results[1], results[2], results[3], results[4], results[5], length=0.2e-6, normalize=True)
-    # plt.title("Quiver plot of force densities on a torus surface")
-    # plt.xlabel("x")
-    # plt.ylabel("y")
-    # plt.ylabel("z")
-    # plt.legend()
-    # ax.set_aspect("equal")
-    # plt.show()
+    show_beam = True
+    if show_beam:
+        fig, ax = display.plot_intensity3d(beam_collection)
+    else:  
+        ax = plt.figure().add_subplot(projection='3d', zlim=(-0.5e-6, 0.5e-6))
+    F_plot_scale = 3e4
+    ax.quiver(results[0], results[1], results[2], F_plot_scale*results[3], F_plot_scale*results[4], F_plot_scale*results[5], normalize=False)
+    plt.title("Quiver plot of force densities on a torus surface")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    ax.set_aspect("equal")
+    plt.show()
 
 def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
     """
@@ -2041,7 +2061,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     else:
         beam_collection_list = None
             
-    plot_T_M_integrand_torus(beam_collection)
+    plot_T_M_integrand_torus(beam_collection, display)
 
     #n_beams = len(beam_collection)
     #===========================================================================
