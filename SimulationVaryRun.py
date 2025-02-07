@@ -2758,15 +2758,15 @@ match(sys.argv[1]):
         show_output     = False
         dimension       = 2.0*200e-9    # Radius of the total spherical mesh
         separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        particle_sizes  = [0.04e-6]#np.linspace(0.02e-6, 0.1e-6, 50)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
-        dipole_sizes    = np.linspace(15e-9, 40e-9, 20)#[30e-9, 40e-9, 50e-9]
-        object_offsets  = [[1.15e-6, 0.0, 0.0]]      # Offset the whole object
+        particle_sizes  = np.linspace(0.0125e-6, 0.025e-6, 15)#np.linspace(0.04e-6, 0.1e-6, 25)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        dipole_sizes    = [10e-9]#np.linspace(15e-9, 40e-9, 20)#[30e-9, 40e-9, 50e-9]
+        object_offsets  = [[1.15e-6, 0.0, 1.0e-6]]      # Offset the whole object
         force_measure_point = [1.15e-6, 0.0, 0.0]       # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
         force_terms     = ["optical"]
-        particle_shapes = ["sphere", "cube"]
+        particle_shapes = ["cube"]
         indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
         force_filter=["Fx", "Fy", "Fmag"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
-        indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
+        indep_var = "particle_sizes"    #"dipole_sizes"    #"particle_sizes"
         beam_type = "LAGUERRE"          #"GAUSS_CSP"
         place_regime = "spaced"             # Format to place particles within the overall rod; "squish", "spaced", ...
         include_dipole_forces = False
@@ -2809,7 +2809,7 @@ match(sys.argv[1]):
         # Format output and make legend/title strings
         titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "", [2.0*dimension, 2.0*dimension, 2.0*dimension])
         data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var="particle_shapes", cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var="dipole_sizes", cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
 
         xAxis_varname, xAxis_units = display_var(indep_name)
         graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} 

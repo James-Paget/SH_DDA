@@ -982,9 +982,11 @@ def get_refine_sphere(dimension, separations, particle_size, place_regime="squis
     for i in range(3):
         match place_regime:
             case "squish":
-                origin[i] = -(particle_number[i]*displacement[i])/2.0 +particle_size
+                if(particle_number[i] > 1):
+                    origin[i] = -(particle_number[i]*displacement[i])/2.0 +particle_size
             case "spaced":
-                origin[i] = -(particle_number[i]*displacement[i])/2.0 +particle_size
+                if(particle_number[i] > 1):
+                    origin[i] = -(particle_number[i]*displacement[i])/2.0 +particle_size
             case "ends":
                 pass
             case _:
