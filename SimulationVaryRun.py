@@ -2139,6 +2139,141 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
     parameter_text = ""
     return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
 
+def simulations_single_dipole(filename, read_parameters, beam_type, polarisability_type, test_type, test_args, dipole_size, object_offset, force_terms, time_step=1e-4, frames=1, show_output=False):
+    #
+    # Test the forces experience by single dipole systems in different setups
+    #
+    ####
+    #### ADD POLARISABILITY TO MAIN -> OR MAKE PART OF YAML WHICH IS THEN READ FROM
+    ####    --> YAML APPROACH PROBABLY BETTER
+    ####
+
+    # Fixed values initialised
+    invalidArgs=False
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+    read_frames = [
+        0
+    ]
+
+    data_set        = []
+    data_set_labels = []
+    graphlabel_set  = {"title":"", "xAxis":"", "yAxis":""}
+    match test_type:
+        case "single":
+            if(len(test_args)==3):
+                graphlabel_set  = {"title":"Single Dipole", "xAxis":"X Offset(m)", "yAxis":"Force(N)"}
+                data_set_Fx = [[], []]
+                data_set_Fy = [[], []]
+                data_set_Fz = [[], []]
+
+                offset_lower, offset_upper, offset_number = test_args
+
+                object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
+                for offset in object_offset_set:
+                    # Setup and run simulation
+                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, frames=frames, show_output=show_output, beam=beam_type)
+                    DM.main(YAML_name=filename, force_terms=force_terms)
+
+                    # Pull forces found
+                    output_data = pull_file_data(
+                        filename, 
+                        parameters_stored, 
+                        read_frames, 
+                        read_parameters, 
+                        invert_output=False
+                    )[0]    # NOTE; ...[0] To immediately get the 0th frame from results
+
+                    # Populate data set to visualise
+                    data_set_Fx[0].append(offset) # X-axis
+                    data_set_Fx[1].append(output_data[0]) # Y-axis
+
+                    data_set_Fy[0].append(offset) # X-axis
+                    data_set_Fy[1].append(output_data[1]) # Y-axis
+
+                    data_set_Fz[0].append(offset) # X-axis
+                    data_set_Fz[1].append(output_data[2]) # Y-axis
+
+                data_set.append(data_set_Fx)
+                data_set_labels.append("Fx")
+
+                data_set.append(data_set_Fy)
+                data_set_labels.append("Fy")
+                
+                data_set.append(data_set_Fz)
+                data_set_labels.append("Fz")
+            else:invalidArgs=True
+
+        case "multi_separated":
+            if(len(test_args)==2):
+                # Setup and run simulation
+                Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=object_offset, time_step=time_step, frames=frames, show_output=show_output, beam=beam_type)
+                DM.main(YAML_name=filename, force_terms=force_terms)
+
+                # Pull forces found
+                output_data = pull_file_data(
+                    filename, 
+                    parameters_stored, 
+                    read_frames, 
+                    read_parameters, 
+                    invert_output=False
+                )[0]    # NOTE; ...[0] To immediately get the 0th frame from results
+            else:invalidArgs=True
+
+        case _:
+            print("Invalid test_type: ",test_type)
+    if(invalidArgs):
+        print("Invalid test_args: "+str(test_type)+", "+str(test_args))
+
+    # Format and return data to be plotted
+    return np.array(data_set), data_set_labels, graphlabel_set
+
+
+def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape, beam="LAGUERRE", show_output=True, time_step=1e-4):
+    # Get the forces, particle number, and dipoles per particle for a single set of parameters for either a cuboid or sphere object.
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+    read_frames = [
+        0
+    ]
+    
+    match object_shape:
+        case "sphere": particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimensions[0], separations, particle_size, dipole_size, object_offset, particle_shape, place_regime="squish", frames=1, show_output=show_output, beam=beam)
+        case "cube": particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam=beam)
+        case _: sys.exit("UNIMPLEMENTED SHAPE object_shape")
+    
+    # Run simulation
+    DM.main(YAML_name=filename, force_terms=force_terms)
+    match particle_shape:
+        case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size) # get dipoles per particle.
+        case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
+        case _: sys.exit("UNIMPLEMENTED SHAPE particle_shape")
+
+    read_parameters = [{"type":"F", "particle":p, "subtype":st} for p, st in it.product(range(particle_num), [0,1,2])]
+
+    # Pull data needed from this frame, add it to another list tracking
+    output_data = pull_file_data(
+        filename, 
+        parameters_stored, 
+        read_frames, 
+        read_parameters, 
+        invert_output=False
+    )
+    forces = np.zeros((particle_num,3))
+    for p_i in range(particle_num):
+        forces[p_i] = [output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]] # 0th frame data.
+    
+    return forces, particle_num, dpp_num
+
+
 def make_param_strs(data_set_params, legend_params, indep_name):
     param_strs = []
     i_dict = {"dipole_sizes":0, "separations_list":1, "particle_sizes":2, "particle_shapes":3, "object_offsets":4} # convert between names and list index.
@@ -2757,11 +2892,6 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
 
-        ##
-        ## DO CUBE FROM CUBES DIP vary
-        ## CUBE FROM SPHERES
-        ##
-
         show_output     = False
         dimension       = 200e-9    # Radius of the total spherical mesh
         separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
@@ -2852,17 +2982,26 @@ match(sys.argv[1]):
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
         
         ### NORMAL
+<<<<<<< HEAD
+        separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        dipole_sizes = np.linspace(40e-9, 70e-9, 5)         
+        particle_sizes = np.linspace(0.1e-6, 0.15e-6, 1) # NOTE; diameter is *2
+
+        particle_shapes = ["cube"] 
+        object_offsets = [[0.5e-6, 0e-6, 0e-6]]
+=======
         # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         dipole_sizes = np.linspace(10e-9, 40e-9, 4)         
         particle_sizes = np.linspace(0.05e-6, 0.1e-6, 30)
 
         particle_shapes = ["sphere"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
+>>>>>>> main
         #====================================================================================
         
         # Run
         variables_list = {"indep_var": indep_name, "dipole_sizes": dipole_sizes,"separations_list": separations_list,"particle_sizes": particle_sizes,"particle_shapes": particle_shapes,"object_offsets": object_offsets}
-        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
+        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_general(dimensions, variables_list, force_terms, show_output=True , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         
         # Format output then plot graph
         titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
@@ -2884,6 +3023,105 @@ match(sys.argv[1]):
         # Display.plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=filtered_dipole_sizes, best_volumes=filtered_volumes)
 
 
+    case "single_dipole_exp":
+        #
+        # Considers the force on single dipoles / sets of single dipoles using different polarisability prescriptions
+        # and in different fields
+        #
+
+        # Save file
+        filename = "SingleLaguerre"
+
+        #-----------------------
+        #-----------------------
+        # Variable args
+
+        show_output = False
+        time_step = 1e-4
+        frames = 1
+        beam_type = "LAGUERRE"          # Which beam to use
+        polarisability_type = "RR"      # Which polarisability to test
+        dipole_size = 40e-9         # Half-width/radius of dipole
+        object_offset = [0.0, 0.0, 0.0]
+        force_terms = ["optical"]
+
+        # Test parameters
+        test_type = "single"  # Particle setup to test
+        match test_type:
+            case "single":
+                test_args = [0.0, 1.5e-6, 50]  # [offset_lower, offset_upper, offset_number]
+
+                # Read forces on the only dipole present
+                read_parameters = [
+                    {"type":"F", "particle":0, "subtype":0},
+                    {"type":"F", "particle":0, "subtype":1},
+                    {"type":"F", "particle":0, "subtype":2},
+
+                    {"type":"F", "particle":1, "subtype":0},
+                    {"type":"F", "particle":1, "subtype":1},
+                    {"type":"F", "particle":1, "subtype":2},
+
+                    {"type":"F", "particle":2, "subtype":0},
+                    {"type":"F", "particle":2, "subtype":1},
+                    {"type":"F", "particle":2, "subtype":2},
+
+                    {"type":"F", "particle":3, "subtype":0},
+                    {"type":"F", "particle":3, "subtype":1},
+                    {"type":"F", "particle":3, "subtype":2},
+
+                    {"type":"F", "particle":4, "subtype":0},
+                    {"type":"F", "particle":4, "subtype":1},
+                    {"type":"F", "particle":4, "subtype":2},
+
+                    {"type":"F", "particle":5, "subtype":0},
+                    {"type":"F", "particle":5, "subtype":1},
+                    {"type":"F", "particle":5, "subtype":2},
+
+                    {"type":"F", "particle":6, "subtype":0},
+                    {"type":"F", "particle":6, "subtype":1},
+                    {"type":"F", "particle":6, "subtype":2},
+                ]
+            case "multi_separated":
+                test_args = [4, dipole_size*3.0]  # [particle_number, particle_separation]
+
+                # Read forces from all dipoles
+                read_parameters=[]
+                for p in range(test_args[0]):
+                    read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":2})
+            case _:
+                test_args=[]
+                read_parameters=[]
+
+    case "surface_stresses":
+        #
+        # Simple 3D plot of the forces on each dipole relative to the average force to show how it would deform relative to the centre of mass.
+        # Uses quiver_setting=2 in Display.animate_system3d
+        #
+        #====================================================================================
+        # Save file
+        filename = "SingleLaguerre"
+        force_terms=["optical"]              # ["optical", "spring", "bending", "buckingham"]
+        # Args
+        dimensions  =  [1.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
+        object_shape = "sphere" # cube or sphere
+        particle_shape = "sphere" # cube or sphere
+        separations = [0,0,0]
+        dipole_size = 40e-9
+        num_particles_in_diameter = 3
+        particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
+        # particle_size = 0.15e-6 # NOTE *2 for diameter
+        object_offset = [0.5e-6, 0e-6, 0e-6]
+        #====================================================================================
+        
+        # Run
+        print(f"\nSimulation for 1 frame of a {object_shape} object with {particle_shape} particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
+        simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape, beam="LAGUERRE", show_output=True)
+        
+
+
+
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize', 'testVolumes', 'connected_sphereGrid', 'connected_sphereShell'")
+        # print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize', 'testVolumes', 'connected_sphereGrid', 'connected_sphereShell'")
