@@ -2166,7 +2166,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
             Output.make_excel_file_dipoles(filename_dipoles_xl,number_of_dipoles,frames,timestep,dipoptpos,dipoptforces)   # Output for just dipole data
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, include_dipole_forces=False)
+    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, include_dipole_forces=False, verbosity=2)
     ##
     ## STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
     ##

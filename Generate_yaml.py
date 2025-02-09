@@ -244,6 +244,12 @@ def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, pa
     num_particles = use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
     return num_particles
 
+def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE"):
+    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+    use_beam(filename, beam)
+    num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime)
+    return num_particles
+
 #=======================================================================
 # Particle configurations
 #=======================================================================
@@ -421,6 +427,18 @@ def use_refine_arch_prism(filename, dimensions, separations, deflection, object_
     # particle_size = radius of sphere OR half width of cube
     #
     coords_list = get_refine_arch_prism(dimensions, separations, particle_size, deflection, place_regime, prism_type, prism_args)
+    num_particles = len(coords_list)
+    coords_list = np.array(coords_list) + object_offset
+    args_list = [[particle_size]] * num_particles
+    
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    return num_particles
+
+def use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape="sphere", place_regime="squish"):
+    #
+    # particle_size = radius of sphere OR half width of cube
+    #
+    coords_list = get_refine_sphere(dimension, separations, particle_size, place_regime)
     num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * num_particles
@@ -928,6 +946,70 @@ def get_refine_arch_prism(dimensions, separations, particle_size, deflection, pl
     # print("====")
     # print("particle_number = ", particle_number)
     # print("grid_coords = ", grid_coords)
+    # print("coords_list = ", coords_list)
+    return coords_list
+
+def get_refine_sphere(dimension, separations, particle_size, place_regime="squish"):
+    #
+    # particle_size = radius of sphere OR half width of cube
+    #
+
+    def check_bounds(point, radius):
+        #
+        # Checks whether a point is within the spherical bounds
+        #
+        #return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
+        return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
+
+    coords_list = []
+    # Get number of particles to place in each axis
+    particle_number = np.floor((dimension-np.array(separations)) / (2.0*particle_size))
+
+    # Get particle displacement in each axis [X,Y,Z]
+    displacement = np.array([0.0, 0.0, 0.0])
+    for i in range(3):
+        if(particle_number[i] != 1.0):
+            match place_regime:
+                case "squish":
+                    displacement[i] = 2.0*particle_size +separations[i]/(particle_number[i]-1.0)
+                case "spaced":
+                    displacement[i] = 2.0*particle_size +separations[i]/(particle_number[i]-1.0) +(dimension-separations[i]-particle_number[i]*2.0*particle_size)/(particle_number[i]+1)
+                case "ends":
+                    pass
+                case _:
+                    print("--Unrecgonised place_regime: "+str(place_regime)+"--")
+    # Get particle origin -> Location of 0th particle to iterate from
+    origin = np.array([0.0, 0.0, 0.0])
+    for i in range(3):
+        match place_regime:
+            case "squish":
+                if(particle_number[i] > 1):
+                    origin[i] = -(particle_number[i]*displacement[i])/2.0 +particle_size
+            case "spaced":
+                if(particle_number[i] > 1):
+                    origin[i] = -(particle_number[i]*displacement[i])/2.0 +particle_size
+            case "ends":
+                pass
+            case _:
+                print("--Unrecgonised place_regime: "+str(place_regime)+"--")
+    # Generate grids in the YZ plane
+    for i in range(int(particle_number[0])):
+        i_coord = origin[0] +i*displacement[1]
+        for j in range(int(particle_number[1])):
+            j_coord = origin[1] +j*displacement[1]
+            for k in range(int(particle_number[2])):
+                k_coord = origin[2] +k*displacement[2]
+                if(check_bounds([i_coord, j_coord, k_coord], dimension/2.0)):
+                    coords_list.append( 
+                        [
+                            i_coord,
+                            j_coord,
+                            k_coord
+                        ] 
+                    )
+
+    # print("====")
+    # print("particle_number = ", particle_number)
     # print("coords_list = ", coords_list)
     return coords_list
 
