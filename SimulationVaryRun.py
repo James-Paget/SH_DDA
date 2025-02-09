@@ -2398,7 +2398,7 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
     line_options = ["solid", "dashed", "dotted", "dashdot"] # Note, more could be added or some could be repeated.
     num_line_options = len(line_options)
 
-    if linestyle_var == None and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
+    if (linestyle_var == None or linestyle_var not in legend_params) and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
         for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "deflections"]:
             if vars in legend_params and len(variables_list[vars]) < num_line_options:
                 linestyle_var = vars
@@ -2443,10 +2443,18 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
     data_colour_set = np.array(data_colour_set, dtype=object)
     if np.max(data_colour_set) != 0:
         data_colour_set = data_colour_set/np.max(data_colour_set) # normalise
+    colours = cgrad(len(other_var_list))
     for i in range(len(data_colour_set)):
-        data_colour_set[i] =  cgrad(data_colour_set[i]) # turn into colours
+        data_colour_set[i] =  colours(data_colour_set[i]) # turn into colours
 
     return linestyle_set, np.array(data_colour_set)
+
+def get_cgrad(num_tot):
+    clist = [(0.12, 0.47, 0.71), (0.89, 0.29, 0.20), (0.20, 0.63, 0.17), (1.0, 0.50, 0.17),  (0.58, 0.40, 0.74), (0.26, 0.66, 0.79), (0.55, 0.55, 0.55), (0.93, 0.33, 0.63), (0.17, 0.50, 0.36), (0.70, 0.35, 0.24)]
+    if num_tot <= len(clist):
+        return lambda x: clist[int(x*num_tot)]
+    else:
+        return lambda x: (1/4+3/4*x, x/3, 1-x)
 
 
 #=================#
@@ -2961,25 +2969,34 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  =  [1.0e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  ## Dimensions of each side of the cuboid
+        dimensions  =  [0.2e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
-        force_filter=["Fmag"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "separations_list"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
-        particle_selection = "central"          # Options are "all", "central" or a list of ints (manual)
+        force_filter=["Fmag", "Fy", "Fx"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
+        indep_name = "particle_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+        particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
         # Iterables
-        # separations_list = [[0,0,0], [1e-7,1e-7,1e-7]] #[[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        separations_list = [[0,0,0]] # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         
         ### DIPS FRACTIONS OF PARTICLE SIZE
         # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)  
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
         
         ### NORMAL
+<<<<<<< HEAD
         separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         dipole_sizes = np.linspace(40e-9, 70e-9, 5)         
         particle_sizes = np.linspace(0.1e-6, 0.15e-6, 1) # NOTE; diameter is *2
 
         particle_shapes = ["cube"] 
         object_offsets = [[0.5e-6, 0e-6, 0e-6]]
+=======
+        # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        dipole_sizes = np.linspace(10e-9, 40e-9, 4)         
+        particle_sizes = np.linspace(0.05e-6, 0.1e-6, 30)
+
+        particle_shapes = ["sphere"] 
+        object_offsets = [[1e-6, 0e-6, 0e-6]]
+>>>>>>> main
         #====================================================================================
         
         # Run
@@ -2989,7 +3006,7 @@ match(sys.argv[1]):
         # Format output then plot graph
         titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
         data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var="dipole_sizes", cgrad=get_cgrad)
         graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
         
