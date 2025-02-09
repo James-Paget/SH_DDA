@@ -2,7 +2,7 @@ options:
   frames: 1
 parameters:
   wavelength: 1e-06
-  dipole_radius: 7e-08
+  dipole_radius: 4e-08
   time_step: 0.0001
 output:
   vmd_output: True
@@ -37,24 +37,6 @@ particles:
     part_0:
       material: FusedSilica
       shape: sphere
-      args: 2.5e-07
-      coords: -7.5e-07 2.5e-07 4.4134171618254485e-07
-      altcolour: True
-    part_1:
-      material: FusedSilica
-      shape: sphere
-      args: 2.5e-07
-      coords: -2.5000000000000004e-07 2.5e-07 7.119397662556434e-07
-      altcolour: True
-    part_2:
-      material: FusedSilica
-      shape: sphere
-      args: 2.5e-07
-      coords: 2.4999999999999994e-07 2.5e-07 7.119397662556434e-07
-      altcolour: True
-    part_3:
-      material: FusedSilica
-      shape: sphere
-      args: 2.5e-07
-      coords: 7.5e-07 2.5e-07 4.4134171618254495e-07
+      args: 1e-07
+      coords: 1e-06 0.0 0.0
       altcolour: True

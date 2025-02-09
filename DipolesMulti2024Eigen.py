@@ -1909,7 +1909,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
 # Start of program
 ###################################################################################
 
-def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":...}, include_dipole_forces=False, verbosity=0):
+def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":0}, include_dipole_forces=False, verbosity=0):
     #
     # Runs the full program
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
@@ -2061,7 +2061,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     else:
         beam_collection_list = None
             
-    plot_T_M_integrand_torus(beam_collection, display)
+    # plot_T_M_integrand_torus(beam_collection, display)
 
     #n_beams = len(beam_collection)
     #===========================================================================
