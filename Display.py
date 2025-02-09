@@ -253,13 +253,14 @@ class DisplayObject (object):
         return np.array(x), np.array(y), np.array(z)
     
 
-    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, include_connections=True, quiver_scale=6e5, beam_collection_list=None):
+    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], quiver_setting=0, include_tracer=True, include_connections=True, quiver_scale=6e5, beam_collection_list=None):
         #
         # Plots particles with optional quiver (force forces) and tracer (for positions) plots too
         # NOTE; If a quiver plot is wanted, a list of forces must be provided as well (in the format of optforces)
         # 
         # ignore_coords = list of coordinates to ignore force components for in the quiver plot, e.g. 'X', 'Y', 'Z'
         # quiver_scale  = Scale the force arrows to be visible; Default=3e5
+        # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
         #
         
         # Animation function
@@ -311,7 +312,7 @@ class DisplayObject (object):
                         plots.append(line)
             
             # Add new quiver plot elements
-            if(include_quiver):
+            if (quiver_setting!=0):
                 if( len(forces) == 0 ):
                     print("!! No forces provided, Unable to plot quiver plot !!")
                 else:
@@ -325,8 +326,21 @@ class DisplayObject (object):
                                 force_y = np.zeros(force_y.shape)
                             case "Z":
                                 force_z = np.zeros(force_z.shape)
-                    quiver = ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
-                    plots.append(quiver)
+                    
+                    if quiver_setting == 1: # As normal: forces on each particle
+                        quiver = ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
+                        plots.append(quiver)
+
+                    elif quiver_setting == 2:
+                        force_x_avg = np.average(force_x)
+                        force_y_avg = np.average(force_y)
+                        force_z_avg = np.average(force_z)
+
+                        quiver = ax.quiver(pos_x, pos_y, pos_z, force_x-force_x_avg, force_y-force_y_avg, force_z-force_z_avg)
+                        plots.append(quiver)
+                        # CoM F_tot
+                        quiver_tot = ax.quiver(np.average(pos_x), np.average(pos_y), np.average(pos_z), np.average(force_x), np.average(force_y), np.average(force_z), color="r")
+                        plots.append(quiver_tot)
             
             # Plot tracers
             if(include_tracer):
