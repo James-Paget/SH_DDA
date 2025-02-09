@@ -250,6 +250,12 @@ def make_yaml_refine_sphere(filename, time_step, dimension, separations, particl
     num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime)
     return num_particles
 
+def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, frames=1, show_output=False, beam="LAGUERRE"):
+    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+    use_beam(filename, beam)
+    num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset)
+    return num_particles
+
 #=======================================================================
 # Particle configurations
 #=======================================================================
@@ -446,6 +452,20 @@ def use_refine_sphere(filename, dimension, separations, object_offset, particle_
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
     return num_particles
 
+def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=[0.0, 0.0, 0.0]):
+    #
+    # Sets up particles for a given test and arguements supplied
+    # Experiments consdiered here concern single dipoles being setup in various systems to test how radiation forces vary and if problems will occur with single dipoles
+    # Since individual dipoles will be considered, all particle primitives will cubes to reflect this
+    #
+    coords_list = get_single_dipole_exp(test_type, test_args, dipole_size)
+    num_particles = len(coords_list)
+    coords_list = np.array(coords_list) + object_offset
+    args_list = [[dipole_size]] * num_particles
+    
+    use_default_particles(filename, "cube", args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    return num_particles
+
 
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
 #     # makes a row of separated cylinders
@@ -479,7 +499,6 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 #=======================================================================
 
 def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None):
-    print("USING BEAM ",beam)
     match beam:
         case "GAUSS_CSP":
             use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype)
@@ -1019,89 +1038,33 @@ def get_NsphereShell_points(radii, numbers_per_shell):
         coords_list.extend(get_sunflower_points(numbers_per_shell[i], radii[i]))
     return coords_list
 
+def get_single_dipole_exp(test_type, test_args, dipole_size):
+    coords_List = []
+    invalidArgs = False
+    match test_type:
+        case "single":
+            if( len(test_args) == 3 ):
+                coords_List.append([0.0, 0.0, 0.0])
 
+                coords_List.append([-2.0*dipole_size, 0.0, 0.0])
+                coords_List.append([ 2.0*dipole_size, 0.0, 0.0])
+                coords_List.append([0.0, -2.0*dipole_size, 0.0])
+                coords_List.append([0.0,  2.0*dipole_size, 0.0])
+                coords_List.append([0.0, 0.0, -2.0*dipole_size])
+                coords_List.append([0.0, 0.0,  2.0*dipole_size])
+            else:
+                invalidArgs=True
 
-
-
-
-####
-## OLD FORMATION METHOD -> HAS BROKEN SPACING AND ALIGNMENT FOR 1 PARTICLE
-##      --> CAN BE REMOVED
-####
-# def get_refine_arch_prism(dimensions, separations, particle_size, deflection, place_regime="squish", prism_type="rect", prism_args=[1.0e-6]):
-#     #
-#     # particle_size = radius of sphere OR half width of cube
-#     #
-#     curve_numbers = np.floor((dimensions -separations)/(2.0*particle_size))
-#     curve_separations = (dimensions-2.0*particle_size*curve_numbers) / (curve_numbers+1.0)    # Separation between each curve, NOT including the 2R term
-
-#     def get_arch_coord(x, height_factor, width_factor):
-#         # Sinusoidal bending
-#         return np.array([x, 0.0, height_factor*np.sin( (np.pi*(x/dimensions[0])/width_factor) )])
-
-#     def check_prism_bounds(prism_type, point, args):
-#         #
-#         # Checks whether a point is within the bounds for a given prism
-#         #
-#         withinBounds=False
-#         match prism_type:
-#             case "circle":
-#                 # args = [radius]
-#                 withinBounds = np.sqrt( pow(point[0],2) + pow(point[1],2) ) <= args[0]
-#             case "rect":
-#                 # args = [half_width, half_height]
-#                 withinBounds = ( (-args[0] <= point[0]) and (point[0] < args[0]) ) and ( (-args[1] <= point[1]) and (point[1] < args[1]) )
-#             case "triangle":
-#                 pass
-#         return withinBounds
-    
-#     def get_deflected_width(b_prime):
-#         # Works best for low eccentricity -> Close to circle in plane
-
-#         a = dimensions[0]#2.0e-6      # Width (original, to conserve)
-#         b = 0.01e-6#1.0e-6     # Deflection (original, to conserve)
-#         #b_prime = 0.01e-6   # Deflection (New)
-#         c = (3.0/2.0)*(a+b) -np.sqrt(a*b)
-#         d = b_prime -(c*(2.0/3.0))
-#         a_tild = (np.sqrt(b_prime)/3.0) +np.sqrt(-d +(b_prime/9.0))
-#         a_prime = pow(a_tild, 2)    # Width (New)
-
-#         # print("===")
-#         # print("a= ",a)
-#         # print("b= ",b)
-#         # print("a_prime= ",a_prime)
-#         # print("b_prime= ",b_prime)
-#         return a_prime
-
-#     # Generate particle grid
-#     coords_plane_list = []
-#     for j in range(int(curve_numbers[1])):
-#         j_coord = (j+1.0)*curve_separations[1] +(2.0*j +1.0)*particle_size
-#         for k in range(int(curve_numbers[2])):
-#             k_coord = (k+1.0)*curve_separations[1] +(2.0*k +1.0)*particle_size
-#             #if(check_prism_bounds("circle", [j_coord -dimensions[1]/2.0, k_coord -dimensions[2]/2.0], [dimensions[1]/2.0])):
-#             if(check_prism_bounds("rect", [j_coord -dimensions[1]/2.0, k_coord -dimensions[2]/2.0], [dimensions[1]/2.0, dimensions[2]/2.0])):
-#                 coords_plane_list.append(
-#                     np.array([
-#                         0.0,
-#                         j_coord,
-#                         k_coord
-#                     ])
-#                 )
-
-#     # Generate this grid as you move through the parameterised curve
-#     coords_list = []
-#     x_set = np.linspace(0.0, dimensions[0], int(curve_numbers[0]))    #get_deflected_width(deflection)
-#     x_step = dimensions[0]/curve_numbers[0]
-#     for i in range(int(curve_numbers[0])):
-#         origin = get_arch_coord(x_step*(i+0.5), deflection, 1.0)
-#         for p in coords_plane_list:
-#             coords_list.append(p+origin)
-
-#     print("=====")
-#     print("=== OLD")
-#     print("=====")
-#     print("coords_plane_list = ", coords_plane_list)
-#     print("coords_list = ", coords_list)
-
-#     return coords_list
+        case "multi_separated":
+            if( len(test_args) == 2 ):
+                particle_number, particle_separation = test_args
+                total_width = (particle_number-1)*particle_separation
+                for i in range(particle_number):
+                    coords_List.append([i*particle_separation -total_width/2.0, 0.0, 0.0])
+            else:
+                invalidArgs=True
+        case _:
+            print("Invalid test_type: ",test_type)
+    if(invalidArgs):
+        print("Invalid test_args: "+str(test_type)+", "+str(test_args))
+    return coords_List

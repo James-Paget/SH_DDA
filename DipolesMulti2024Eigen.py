@@ -2041,7 +2041,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     else:
         beam_collection_list = None
             
-    plot_T_M_integrand_torus(beam_collection)
+    #plot_T_M_integrand_torus(beam_collection)
 
     #n_beams = len(beam_collection)
     #===========================================================================
@@ -2096,8 +2096,21 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
     #aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
     #a = a0
-    polarizability = a#a*np.ones(n_particles)
-    inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
+    
+    polarizability_type = "CM"
+    match polarizability_type:
+        case "CM":
+            polarizability = a0
+        case "RR":
+            polarizability = a#a*np.ones(n_particles)
+        case _:
+            polarizability = a
+            print("polarizability not recognised, defaulting to RR: "+str(polarizability_type))
+    print("polarizability = ",polarizability)
+    #polarizability = np.ones(n_particles)
+    print("polarizability = ",polarizability)
+    #inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
+    inverse_polarizability = (1.0+0j)/polarizability
     E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
 
     k_B = 1.38e-23
