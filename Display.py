@@ -253,13 +253,13 @@ class DisplayObject (object):
         return np.array(x), np.array(y), np.array(z)
     
 
-    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, include_connections=True, quiver_scale=3e5, beam_collection_list=None):
+    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_quiver=False, include_tracer=True, include_connections=True, quiver_scale=6e5, beam_collection_list=None):
         #
         # Plots particles with optional quiver (force forces) and tracer (for positions) plots too
         # NOTE; If a quiver plot is wanted, a list of forces must be provided as well (in the format of optforces)
         # 
         # ignore_coords = list of coordinates to ignore force components for in the quiver plot, e.g. 'X', 'Y', 'Z'
-        # quiver_scale  = Scale the force arrows to be visible
+        # quiver_scale  = Scale the force arrows to be visible; Default=3e5
         #
         
         # Animation function
@@ -286,7 +286,7 @@ class DisplayObject (object):
                         x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
                     case "cube":
                         x, y, z = self.make_cube_surface(args[i], positions[t, i])
-                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=0.5)
+                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=0.7)    #1.0
                 plots.append(plot)
 
             # print("positions[t]= ",positions[t])
