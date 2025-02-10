@@ -2257,7 +2257,7 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
         case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
         case _: sys.exit("UNIMPLEMENTED SHAPE particle_shape")
 
-    read_parameters = [{"type":"F", "particle":p, "subtype":st} for p, st in it.product(range(particle_num), [0,1,2])]
+    read_parameters = [{"type":{t}, "particle":p, "subtype":st} for t, p, st in it.product(["X","F"], range(particle_num), [0,1,2])]
 
     # Pull data needed from this frame, add it to another list tracking
     output_data = pull_file_data(
@@ -2267,11 +2267,13 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
         read_parameters, 
         invert_output=False
     )
+    positions = np.zeros((particle_num,3))
     forces = np.zeros((particle_num,3))
     for p_i in range(particle_num):
-        forces[p_i] = [output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]] # 0th frame data.
+        positions[p_i] = [output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]] # 0th frame data.
+        forces[p_i] = [output_data[0, 3*p_i+3], output_data[0, 3*p_i+4], output_data[0, 3*p_i+5]] # 0th frame data.
     
-    return forces, particle_num, dpp_num
+    return positions, forces, particle_num, dpp_num
 
 
 def make_param_strs(data_set_params, legend_params, indep_name):
@@ -2982,21 +2984,12 @@ match(sys.argv[1]):
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
         
         ### NORMAL
-<<<<<<< HEAD
-        separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        dipole_sizes = np.linspace(40e-9, 70e-9, 5)         
-        particle_sizes = np.linspace(0.1e-6, 0.15e-6, 1) # NOTE; diameter is *2
-
-        particle_shapes = ["cube"] 
-        object_offsets = [[0.5e-6, 0e-6, 0e-6]]
-=======
         # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         dipole_sizes = np.linspace(10e-9, 40e-9, 4)         
         particle_sizes = np.linspace(0.05e-6, 0.1e-6, 30)
 
         particle_shapes = ["sphere"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
->>>>>>> main
         #====================================================================================
         
         # Run
@@ -3105,11 +3098,11 @@ match(sys.argv[1]):
         force_terms=["optical"]              # ["optical", "spring", "bending", "buckingham"]
         # Args
         dimensions  =  [1.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
-        object_shape = "sphere" # cube or sphere
-        particle_shape = "sphere" # cube or sphere
+        object_shape = "cube" # cube or sphere
+        particle_shape = "cube" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
-        num_particles_in_diameter = 3
+        num_particles_in_diameter = 5
         particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
         # particle_size = 0.15e-6 # NOTE *2 for diameter
         object_offset = [0.5e-6, 0e-6, 0e-6]
@@ -3117,9 +3110,8 @@ match(sys.argv[1]):
         
         # Run
         print(f"\nSimulation for 1 frame of a {object_shape} object with {particle_shape} particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
-        simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape, beam="LAGUERRE", show_output=True)
-        
-
+        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape, beam="LAGUERRE", show_output=True)
+    
 
 
     case _:
