@@ -2177,7 +2177,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 for offset in object_offset_set:
                     # Setup and run simulation
                     Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, frames=frames, show_output=show_output, beam=beam_type)
-                    DM.main(YAML_name=filename, force_terms=force_terms)
+                    DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
 
                     # Pull forces found
                     output_data = pull_file_data(
@@ -2186,7 +2186,51 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                         read_frames, 
                         read_parameters, 
                         invert_output=False
-                    )[0]    # NOTE; ...[0] To immediately get the 0th frame from results
+                    )[0]    # NOTE; [0] To immediately get the 0th frame from results
+
+                    # Populate data set to visualise
+                    data_set_Fx[0].append(offset) # X-axis
+                    data_set_Fx[1].append(output_data[0]) # Y-axis
+
+                    data_set_Fy[0].append(offset) # X-axis
+                    data_set_Fy[1].append(output_data[1]) # Y-axis
+
+                    data_set_Fz[0].append(offset) # X-axis
+                    data_set_Fz[1].append(output_data[2]) # Y-axis
+
+                data_set.append(data_set_Fx)
+                data_set_labels.append("Fx")
+
+                data_set.append(data_set_Fy)
+                data_set_labels.append("Fy")
+                
+                data_set.append(data_set_Fz)
+                data_set_labels.append("Fz")
+            else:invalidArgs=True
+        
+        case "7shell":
+            if(len(test_args)==3):
+                graphlabel_set  = {"title":"Single Dipole", "xAxis":"X Offset(m)", "yAxis":"Force(N)"}
+                data_set_Fx = [[], []]
+                data_set_Fy = [[], []]
+                data_set_Fz = [[], []]
+
+                offset_lower, offset_upper, offset_number = test_args
+
+                object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
+                for offset in object_offset_set:
+                    # Setup and run simulation
+                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, frames=frames, show_output=show_output, beam=beam_type)
+                    DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
+
+                    # Pull forces found
+                    output_data = pull_file_data(
+                        filename, 
+                        parameters_stored, 
+                        read_frames, 
+                        read_parameters, 
+                        invert_output=False
+                    )[0]    # NOTE; [0] To immediately get the 0th frame from results
 
                     # Populate data set to visualise
                     data_set_Fx[0].append(offset) # X-axis
@@ -2208,11 +2252,69 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 data_set_labels.append("Fz")
             else:invalidArgs=True
 
+        case "7shell_difference":
+            if(len(test_args)==4):
+                offset_lower, offset_upper, offset_number, polarisabilities = test_args
+
+                graphlabel_set  = {"title":"Single Dipole Difference"+str(polarisabilities), "xAxis":"X Offset(m)", "yAxis":"Force(N)"}
+
+                object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
+                for polarisability in polarisabilities:
+                    data_set_Fx = [[], []]
+                    data_set_Fy = [[], []]
+                    data_set_Fz = [[], []]
+                    for offset in object_offset_set:
+                        # Setup and run simulation
+                        Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, frames=frames, show_output=show_output, beam=beam_type)
+                        DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability)
+
+                        # Pull forces found
+                        output_data = pull_file_data(
+                            filename, 
+                            parameters_stored, 
+                            read_frames, 
+                            read_parameters, 
+                            invert_output=False
+                        )[0]    # NOTE; [0] To immediately get the 0th frame from results
+
+                        # Populate data set to visualise
+                        data_set_Fx[0].append(offset) # X-axis
+                        data_set_Fx[1].append(output_data[0]) # Y-axis
+                        data_set_Fy[0].append(offset) # X-axis
+                        data_set_Fy[1].append(output_data[1]) # Y-axis
+                        data_set_Fz[0].append(offset) # X-axis
+                        data_set_Fz[1].append(output_data[2]) # Y-axis
+
+                    data_set.append(data_set_Fx)
+                    data_set_labels.append("Fx-"+polarisability)
+                    data_set.append(data_set_Fy)
+                    data_set_labels.append("Fy="+polarisability)
+                    data_set.append(data_set_Fz)
+                    data_set_labels.append("Fz-"+polarisability)
+                # Calculate and add difference plot
+                data_set_FxDiff=[[],[]]
+                data_set_FyDiff=[[],[]]
+                data_set_FzDiff=[[],[]]
+                for offset_ind in range(len(object_offset_set)):
+                    data_set_FxDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                    data_set_FxDiff[1].append(data_set[0][1][offset_ind] -data_set[3+0][1][offset_ind]) # Y-axis
+                    data_set_FyDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                    data_set_FyDiff[1].append(data_set[1][1][offset_ind] -data_set[3+1][1][offset_ind]) # Y-axis
+                    data_set_FzDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                    data_set_FzDiff[1].append(data_set[2][1][offset_ind] -data_set[3+2][1][offset_ind]) # Y-axis
+                data_set.append(data_set_FxDiff)
+                data_set_labels.append("Fx-Difference")
+                data_set.append(data_set_FyDiff)
+                data_set_labels.append("Fy-Difference")
+                data_set.append(data_set_FzDiff)
+                data_set_labels.append("Fz-Difference")
+            else:invalidArgs=True
+
         case "multi_separated":
             if(len(test_args)==2):
                 # Setup and run simulation
                 Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=object_offset, time_step=time_step, frames=frames, show_output=show_output, beam=beam_type)
-                DM.main(YAML_name=filename, force_terms=force_terms)
+                DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
 
                 # Pull forces found
                 output_data = pull_file_data(
@@ -2971,6 +3073,14 @@ match(sys.argv[1]):
         # and in different fields
         #
 
+        ###
+        ### (3) MAKE POLARISBAILITY ABLE TO BE PARSED INTO MAIN FUNCTION
+        ### (4) DO SEPARATION TESTS
+        ### (5) TEST LDR
+        ###
+        ### (6) MAY NEED TO CONSIDER A BETTER WAY TO ACTUALLY ISOLATE THIS SPECIFIC PROBLEM RATHER THAN JUST COMPARE ALL -> HARD TO DISTININGUIDH POLARIABILITY VALID CHANGES vs FORCES ARE GONE FOR WRONG REASONS
+        ###
+
         # Save file
         filename = "SingleLaguerre"
 
@@ -2981,14 +3091,15 @@ match(sys.argv[1]):
         show_output = False
         time_step = 1e-4
         frames = 1
-        beam_type = "LAGUERRE"          # Which beam to use
+        beam_type = "BESSEL"          # Which beam to use
         polarisability_type = "RR"      # Which polarisability to test
-        dipole_size = 40e-9         # Half-width/radius of dipole
+        dipole_size = 100e-9         # Half-width/radius of dipole
         object_offset = [0.0, 0.0, 0.0]
         force_terms = ["optical"]
+        test_type = "single"  # Particle setup to test
+        linestyle_set = None
 
         # Test parameters
-        test_type = "single"  # Particle setup to test
         match test_type:
             case "single":
                 test_args = [0.0, 1.5e-6, 50]  # [offset_lower, offset_upper, offset_number]
@@ -2997,32 +3108,31 @@ match(sys.argv[1]):
                 read_parameters = [
                     {"type":"F", "particle":0, "subtype":0},
                     {"type":"F", "particle":0, "subtype":1},
-                    {"type":"F", "particle":0, "subtype":2},
-
-                    {"type":"F", "particle":1, "subtype":0},
-                    {"type":"F", "particle":1, "subtype":1},
-                    {"type":"F", "particle":1, "subtype":2},
-
-                    {"type":"F", "particle":2, "subtype":0},
-                    {"type":"F", "particle":2, "subtype":1},
-                    {"type":"F", "particle":2, "subtype":2},
-
-                    {"type":"F", "particle":3, "subtype":0},
-                    {"type":"F", "particle":3, "subtype":1},
-                    {"type":"F", "particle":3, "subtype":2},
-
-                    {"type":"F", "particle":4, "subtype":0},
-                    {"type":"F", "particle":4, "subtype":1},
-                    {"type":"F", "particle":4, "subtype":2},
-
-                    {"type":"F", "particle":5, "subtype":0},
-                    {"type":"F", "particle":5, "subtype":1},
-                    {"type":"F", "particle":5, "subtype":2},
-
-                    {"type":"F", "particle":6, "subtype":0},
-                    {"type":"F", "particle":6, "subtype":1},
-                    {"type":"F", "particle":6, "subtype":2},
+                    {"type":"F", "particle":0, "subtype":2}
                 ]
+
+            case "7shell":
+                test_args = [0.0, 1.5e-6, 50]  # [offset_lower, offset_upper, offset_number]
+
+                # Read forces on the only dipole present
+                read_parameters = []
+                for p in range(7):
+                    read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":2})
+            
+            case "7shell_difference":
+                test_args = [0.0, 1.5e-6, 50, ["CM", "RR"]]  # [offset_lower, offset_upper, offset_number]
+
+                # Read forces on the only dipole present
+                read_parameters = []
+                for p in range(7):
+                    read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":2})
+
+                linestyle_set=["dotted","dotted","dotted", "dashed","dashed","dashed", "solid","solid","solid"]
+            
             case "multi_separated":
                 test_args = [4, dipole_size*3.0]  # [particle_number, particle_separation]
 
@@ -3032,6 +3142,7 @@ match(sys.argv[1]):
                     read_parameters.append({"type":"F", "particle":p, "subtype":0})
                     read_parameters.append({"type":"F", "particle":p, "subtype":1})
                     read_parameters.append({"type":"F", "particle":p, "subtype":2})
+
             case _:
                 test_args=[]
                 read_parameters=[]
@@ -3041,7 +3152,7 @@ match(sys.argv[1]):
 
         # Run simulation
         data_set, data_set_labels, graphlabel_set = simulations_single_dipole(filename, read_parameters, beam_type, polarisability_type, test_type, test_args, dipole_size, object_offset, force_terms, time_step=time_step, frames=frames, show_output=show_output)
-        Display.plot_multi_data(data_set, data_set_labels, graphlabel_set=graphlabel_set) 
+        Display.plot_multi_data(data_set, data_set_labels, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)
 
     case _:
         print("Unknown run type: ",sys.argv[1]);

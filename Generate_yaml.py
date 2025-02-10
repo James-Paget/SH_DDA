@@ -1045,6 +1045,25 @@ def get_single_dipole_exp(test_type, test_args, dipole_size):
         case "single":
             if( len(test_args) == 3 ):
                 coords_List.append([0.0, 0.0, 0.0])
+            else:
+                invalidArgs=True
+
+        case "7shell":
+            if( len(test_args) == 3 ):
+                coords_List.append([0.0, 0.0, 0.0])
+
+                coords_List.append([-2.0*dipole_size, 0.0, 0.0])
+                coords_List.append([ 2.0*dipole_size, 0.0, 0.0])
+                coords_List.append([0.0, -2.0*dipole_size, 0.0])
+                coords_List.append([0.0,  2.0*dipole_size, 0.0])
+                coords_List.append([0.0, 0.0, -2.0*dipole_size])
+                coords_List.append([0.0, 0.0,  2.0*dipole_size])
+            else:
+                invalidArgs=True
+
+        case "7shell_difference":
+            if( len(test_args) == 4 ):
+                coords_List.append([0.0, 0.0, 0.0])
 
                 coords_List.append([-2.0*dipole_size, 0.0, 0.0])
                 coords_List.append([ 2.0*dipole_size, 0.0, 0.0])
