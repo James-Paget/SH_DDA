@@ -1909,7 +1909,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
 # Start of program
 ###################################################################################
 
-def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":0}, include_dipole_forces=False, verbosity=0):
+def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":0}, polarizability_type="RR", include_dipole_forces=False, verbosity=0):
     #
     # Runs the full program
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
@@ -2117,16 +2117,25 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
     #a = a0
     
+    # print("======")
+    # print("ref_ind = ",ref_ind)
+    # print("ep1 = ",ep1)
+    # print("a0 = ",a0)
+    # print("a = ",a)
+    # polarizability_type = "RR"
     polarizability_type = "RR"
     match polarizability_type:
         case "CM":
             polarizability = a0
         case "RR":
-            polarizability = a#a*np.ones(n_particles)
-        case _:
             polarizability = a
+        case _:
+            polarizability = np.ones(n_particles)
             print("polarizability not recognised, defaulting to RR: "+str(polarizability_type))
-    # print("polarizability = ",polarizability)
+
+    if(verbosity >= 1):
+        print("polarizability: "+str(polarizability_type)+", "+str(polarizability))
+      
     #polarizability = np.ones(n_particles)
     #inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
     inverse_polarizability = (1.0+0j)/polarizability
@@ -2199,7 +2208,10 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
             Output.make_excel_file_dipoles(filename_dipoles_xl,number_of_dipoles,frames,timestep,dipoptpos,dipoptforces)   # Output for just dipole data
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, include_dipole_forces=False, verbosity=2)
-    ##
-    ## STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
-    ##
+    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, polarizability_type="RR", include_dipole_forces=False, verbosity=2)
+    ####
+    #### STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
+    ####
+    #### ADD POLARISABILITY TO MAIN -> OR MAKE PART OF YAML WHICH IS THEN READ FROM
+    ####    --> YAML APPROACH PROBABLY BETTER
+    ####
