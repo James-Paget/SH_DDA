@@ -6,8 +6,11 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.animation as animation
 import pandas as pd
+import sys
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 import Beams
+
 
 class DisplayObject (object):
     defaults = {"show_output":'True',
@@ -237,18 +240,25 @@ class DisplayObject (object):
         y2 = centre[1] + radius
         z1 = centre[2] - radius
         z2 = centre[2] + radius
+        # bottom, top, left, right, back front
 
-        x = [[x1, x2, x2, x1, x1],  
-            [x1, x2, x2, x1, x1],  
-            [x1, x2, x2, x1, x1],  
-            [x1, x2, x2, x1, x1]]  
-        y = [[y1, y1, y2, y2, y1],  
+        x = [[x1, x2, x2, x1, x1],
+            [x1, x2, x2, x1, x1],
+            [x1, x2, x2, x1, x1],
+            [x1, x2, x2, x1, x1],
+            [x1, x1, x1, x1, x1],
+            [x2, x2, x2, x2, x2]]
+        y = [[y1, y1, y2, y2, y1],
             [y1, y1, y2, y2, y1],  
-            [y1, y1, y1, y1, y1],          
-            [y2, y2, y2, y2, y2]]   
-        z = [[z1, z1, z1, z1, z1],                       
-            [z2, z2, z2, z2, z1],   
-            [z1, z1, z2, z2, z1],               
+            [y1, y1, y1, y1, y1],  
+            [y2, y2, y2, y2, y2],  
+            [y1, y2, y2, y1, y1],  
+            [y1, y2, y2, y1, y1]]   
+        z = [[z1, z1, z1, z1, z1],
+            [z2, z2, z2, z2, z2], 
+            [z1, z1, z2, z2, z1], 
+            [z1, z1, z2, z2, z1], 
+            [z1, z1, z2, z2, z1], 
             [z1, z1, z2, z2, z1]]               
         return np.array(x), np.array(y), np.array(z)
     
@@ -398,6 +408,78 @@ class DisplayObject (object):
 
         plt.show()
 
+
+    def plot_stresses(self, positions, forces, shapes, all_args, beam_collection, include_quiver=True):
+        # For cube particles, and for 1 frame.
+
+        for shape in shapes:
+            if shape != "cube": print("WARNING: plot_stresses plots all particles as cubes")
+
+        particle_radius = all_args[0][0] # for cubic particles
+        positions = np.array(positions)
+        forces = np.array(forces)
+        num_particles = len(positions)
+        cube_corners = np.array([[-1,-1,-1],[-1,-1,1],[-1,1,-1],[-1,1,1],[1,-1,-1],[1,-1,1],[1,1,-1],[1,1,1]])*particle_radius
+        cube_faces = [
+            [cube_corners[i] for i in [0, 1, 3, 2]],  # Back
+            [cube_corners[i] for i in [4, 5, 7, 6]],  # Front
+            [cube_corners[i] for i in [0, 1, 5, 4]],  # Left
+            [cube_corners[i] for i in [2, 3, 7, 6]],  # Right
+            [cube_corners[i] for i in [0, 2, 6, 4]],  # Bottom 
+            [cube_corners[i] for i in [1, 3, 7, 5]],  # Top
+        ]
+
+        # Initialise figure
+        fig = plt.figure()
+        upper = self.max_size
+        lower = -upper
+        zlower = -2e-6
+        zupper = 2e-6
+        ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
+        ax.set_aspect('equal','box')
+        ax.set_xlabel("x (m)")
+        ax.set_ylabel("y (m)")
+
+        # Plot beam
+        X, Y, Z, I, I0 = self.get_intensity_points(beam_collection, n=61)
+        ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.25)
+
+        # Shift forces to be relative to the net force on the object.
+        shifted_forces = forces[0] - np.average(forces[0], axis=0)
+
+        # Scale forces to [0,1] for the cmap.
+        maximum = np.max(shifted_forces, axis=0)
+        minimum = np.min(shifted_forces, axis=0)
+        scaled_forces = np.zeros((num_particles, 3))
+        for i in range(3):
+            # negative shifted forces mapped to [-1,0], posititives to [0,1]
+            print(minimum[i], maximum[i])
+            scaled_forces[:,i] = shifted_forces[:,i]/np.array([maximum[i] if x[i]>=0 else -minimum[i] for x in shifted_forces]) # -min as min only used when x[i]<0, then want to keep the vals -ve so div by +ve.
+        scaled_forces = scaled_forces/2 + 0.5 # /2 and +1 so scaled force range is [0,1] with 0 force at 0.5 - midpoint of the cmap.
+        
+        for p_i in range(num_particles): # XXX could chance this loop to select planes of the object - 0.1 alpha to fade out the other parts?
+            pos = positions[p_i]
+            faces = cube_faces + pos
+            
+            cols = [
+                cm.coolwarm(1 - scaled_forces[p_i][0]), # Back # 1-... as normal in the negative direction.
+                cm.coolwarm(scaled_forces[p_i][0]),     # Front
+                cm.coolwarm(1 - scaled_forces[p_i][1]), # Left
+                cm.coolwarm(scaled_forces[p_i][1]),     # Right
+                cm.coolwarm(1 - scaled_forces[p_i][2]), # Bottom
+                cm.coolwarm(scaled_forces[p_i][2]),     # Top
+            ]
+
+            ax.add_collection3d(Poly3DCollection(faces, facecolors=cols, linewidths=0, alpha=1.0))
+            if include_quiver:
+                # XXX could add feature to only plot arrows from the object surface
+                quiver_scale = 1e-7/(4*particle_radius**2)# /area as stress = Force/Area
+                ax.quiver(pos[0], pos[1], pos[2], shifted_forces[p_i,0]*quiver_scale, shifted_forces[p_i,1]*quiver_scale, shifted_forces[p_i,2]*quiver_scale)
+
+        plt.show()
+
+
+# End of display object.
 
 #
 # A series of plots for analysis of forces on particles being brought close together
