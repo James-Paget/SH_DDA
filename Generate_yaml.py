@@ -884,23 +884,23 @@ def get_refine_arch_prism(dimensions, separations, particle_size, deflection, pl
                 pass
         return withinBounds
     
-    def get_deflected_width(b_prime):
-        # Works best for low eccentricity -> Close to circle in plane
+    # def get_deflected_width(b_prime):
+    #     # Works best for low eccentricity -> Close to circle in plane
 
-        a = dimensions[0]#2.0e-6      # Width (original, to conserve)
-        b = 0.01e-6#1.0e-6     # Deflection (original, to conserve)
-        #b_prime = 0.01e-6   # Deflection (New)
-        c = (3.0/2.0)*(a+b) -np.sqrt(a*b)
-        d = b_prime -(c*(2.0/3.0))
-        a_tild = (np.sqrt(b_prime)/3.0) +np.sqrt(-d +(b_prime/9.0))
-        a_prime = pow(a_tild, 2)    # Width (New)
+    #     a = dimensions[0]#2.0e-6      # Width (original, to conserve)
+    #     b = 0.01e-6#1.0e-6     # Deflection (original, to conserve)
+    #     #b_prime = 0.01e-6   # Deflection (New)
+    #     c = (3.0/2.0)*(a+b) -np.sqrt(a*b)
+    #     d = b_prime -(c*(2.0/3.0))
+    #     a_tild = (np.sqrt(b_prime)/3.0) +np.sqrt(-d +(b_prime/9.0))
+    #     a_prime = pow(a_tild, 2)    # Width (New)
 
-        # print("===")
-        # print("a= ",a)
-        # print("b= ",b)
-        # print("a_prime= ",a_prime)
-        # print("b_prime= ",b_prime)
-        return a_prime
+    #     # print("===")
+    #     # print("a= ",a)
+    #     # print("b= ",b)
+    #     # print("a_prime= ",a_prime)
+    #     # print("b_prime= ",b_prime)
+    #     return a_prime
 
     def get_deflection_offset(x, deflection, dimension):
         #
@@ -977,8 +977,8 @@ def get_refine_sphere(dimension, separations, particle_size, place_regime="squis
         #
         # Checks whether a point is within the spherical bounds
         #
-        #return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
-        return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
+        return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
+        # return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
 
     coords_list = []
     # Get number of particles to place in each axis

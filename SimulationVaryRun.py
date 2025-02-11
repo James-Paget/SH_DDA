@@ -2355,6 +2355,49 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
     return np.array(data_set), data_set_labels, graphlabel_set
 
 
+def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape, beam="LAGUERRE", show_output=True, time_step=1e-4):
+    # Get the forces, particle number, and dipoles per particle for a single set of parameters for either a cuboid or sphere object.
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+    read_frames = [
+        0
+    ]
+    
+    match object_shape:
+        case "sphere": particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimensions[0], separations, particle_size, dipole_size, object_offset, particle_shape, place_regime="squish", frames=1, show_output=show_output, beam=beam)
+        case "cube": particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam=beam)
+        case _: sys.exit("UNIMPLEMENTED SHAPE object_shape")
+    
+    # Run simulation
+    DM.main(YAML_name=filename, force_terms=force_terms)
+    match particle_shape:
+        case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size) # get dipoles per particle.
+        case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
+        case _: sys.exit("UNIMPLEMENTED SHAPE particle_shape")
+
+    read_parameters = [{"type":{t}, "particle":p, "subtype":st} for t, p, st in it.product(["X","F"], range(particle_num), [0,1,2])]
+
+    # Pull data needed from this frame, add it to another list tracking
+    output_data = pull_file_data(
+        filename, 
+        parameters_stored, 
+        read_frames, 
+        read_parameters, 
+        invert_output=False
+    )
+    positions = np.zeros((particle_num,3))
+    forces = np.zeros((particle_num,3))
+    for p_i in range(particle_num):
+        positions[p_i] = [output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]] # 0th frame data.
+        forces[p_i] = [output_data[0, 3*p_i+3], output_data[0, 3*p_i+4], output_data[0, 3*p_i+5]] # 0th frame data.
+    
+    return positions, forces, particle_num, dpp_num
+
+
 def make_param_strs(data_set_params, legend_params, indep_name):
     param_strs = []
     i_dict = {"dipole_sizes":0, "separations_list":1, "particle_sizes":2, "particle_shapes":3, "object_offsets":4} # convert between names and list index.
@@ -2479,7 +2522,7 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
     line_options = ["solid", "dashed", "dotted", "dashdot"] # Note, more could be added or some could be repeated.
     num_line_options = len(line_options)
 
-    if linestyle_var == None and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
+    if (linestyle_var == None or linestyle_var not in legend_params) and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
         for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "deflections"]:
             if vars in legend_params and len(variables_list[vars]) < num_line_options:
                 linestyle_var = vars
@@ -2524,10 +2567,18 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
     data_colour_set = np.array(data_colour_set, dtype=object)
     if np.max(data_colour_set) != 0:
         data_colour_set = data_colour_set/np.max(data_colour_set) # normalise
+    colours = cgrad(len(other_var_list))
     for i in range(len(data_colour_set)):
-        data_colour_set[i] =  cgrad(data_colour_set[i]) # turn into colours
+        data_colour_set[i] =  colours(data_colour_set[i]) # turn into colours
 
     return linestyle_set, np.array(data_colour_set)
+
+def get_cgrad(num_tot):
+    clist = [(0.12, 0.47, 0.71), (0.89, 0.29, 0.20), (0.20, 0.63, 0.17), (1.0, 0.50, 0.17),  (0.58, 0.40, 0.74), (0.26, 0.66, 0.79), (0.55, 0.55, 0.55), (0.93, 0.33, 0.63), (0.17, 0.50, 0.36), (0.70, 0.35, 0.24)]
+    if num_tot <= len(clist):
+        return lambda x: clist[int(x*num_tot)]
+    else:
+        return lambda x: (1/4+3/4*x, x/3, 1-x)
 
 
 #=================#
@@ -3042,35 +3093,35 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  =  [1.0e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  ## Dimensions of each side of the cuboid
+        dimensions  =  [0.2e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
-        force_filter=["Fmag"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "separations_list"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
-        particle_selection = "central"          # Options are "all", "central" or a list of ints (manual)
+        force_filter=["Fmag", "Fy", "Fx"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
+        indep_name = "particle_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+        particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
         # Iterables
-        # separations_list = [[0,0,0], [1e-7,1e-7,1e-7]] #[[s, s, s] for s in np.linspace(0, 0.3e-6, 40)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        separations_list = [[0,0,0]] # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         
         ### DIPS FRACTIONS OF PARTICLE SIZE
         # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)  
         # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
         
         ### NORMAL
-        separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        dipole_sizes = np.linspace(40e-9, 70e-9, 5)         
-        particle_sizes = np.linspace(0.2e-6, 0.15e-6, 1)
+        # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+        dipole_sizes = np.linspace(10e-9, 40e-9, 4)         
+        particle_sizes = np.linspace(0.05e-6, 0.1e-6, 30)
 
-        particle_shapes = ["cube"] 
+        particle_shapes = ["sphere"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
         #====================================================================================
         
         # Run
         variables_list = {"indep_var": indep_name, "dipole_sizes": dipole_sizes,"separations_list": separations_list,"particle_sizes": particle_sizes,"particle_shapes": particle_shapes,"object_offsets": object_offsets}
-        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
+        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_general(dimensions, variables_list, force_terms, show_output=True , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         
         # Format output then plot graph
         titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
         data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var="dipole_sizes", cgrad=get_cgrad)
         graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
         
@@ -3167,13 +3218,41 @@ match(sys.argv[1]):
                 test_args=[]
                 read_parameters=[]
 
-        #-----------------------
-        #-----------------------
-
         # Run simulation
         data_set, data_set_labels, graphlabel_set = simulations_single_dipole(filename, read_parameters, beam_type, polarisability_type, test_type, test_args, dipole_size, object_offset, force_terms, time_step=time_step, frames=frames, show_output=show_output)
         Display.plot_multi_data(data_set, data_set_labels, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)
 
+
+    case "surface_stresses":
+        #
+        # Simple 3D plot of the forces on each dipole relative to the average force to show how it would deform relative to the centre of mass.
+        # Uses quiver_setting=2 in Display.animate_system3d
+        #
+        #====================================================================================
+        # Save file
+        filename = "SingleLaguerre"
+        force_terms=["optical"]              # ["optical", "spring", "bending", "buckingham"]
+        # Args
+        dimensions  =  [1.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
+        object_shape = "cube" # cube or sphere
+        separations = [0,0,0]
+        dipole_size = 40e-9
+        num_particles_in_diameter = 5
+        particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
+        # particle_size = 0.15e-6 # NOTE *2 for diameter
+        object_offset = [0.5e-6, 0e-6, 0e-6]
+        #====================================================================================
+        
+        # Run
+        if particle_size < dipole_size: 
+            dipole_size = particle_size
+            print(f"WARNING: particle size smaller than dipoles size, setting dipole size to particle size ({particle_size})")
+        print(f"\nSimulation for 1 frame of a {object_shape} object with cube particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
+        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape="cube", beam="LAGUERRE", show_output=False)
+    
+
+
+
     case _:
         print("Unknown run type: ",sys.argv[1]);
-        print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize', 'testVolumes', 'connected_sphereGrid', 'connected_sphereShell'")
+        # print("Allowed run types are; 'spheresInCircle', 'torusInCircle', 'torusInCircleFixedPhi', 'spheresInCircleSlider', 'spheresInCircleDipoleSize', 'torusInCircleDipoleSize', 'testVolumes', 'connected_sphereGrid', 'connected_sphereShell'")
