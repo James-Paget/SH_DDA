@@ -2184,6 +2184,9 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
 
 if __name__ == "__main__":  # To prevent running when imported in other files
     main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, polarizability_type="RR", include_dipole_forces=False, verbosity=2)
-    ##
-    ## STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
-    ##
+    ####
+    #### STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
+    ####
+    #### ADD POLARISABILITY TO MAIN -> OR MAKE PART OF YAML WHICH IS THEN READ FROM
+    ####    --> YAML APPROACH PROBABLY BETTER
+    ####

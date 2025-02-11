@@ -2143,10 +2143,6 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
     #
     # Test the forces experience by single dipole systems in different setups
     #
-    ####
-    #### ADD POLARISABILITY TO MAIN -> OR MAKE PART OF YAML WHICH IS THEN READ FROM
-    ####    --> YAML APPROACH PROBABLY BETTER
-    ####
 
     # Fixed values initialised
     invalidArgs=False
@@ -2311,19 +2307,43 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
             else:invalidArgs=True
 
         case "multi_separated":
-            if(len(test_args)==2):
-                # Setup and run simulation
-                Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=object_offset, time_step=time_step, frames=frames, show_output=show_output, beam=beam_type)
-                DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
+            if(len(test_args)==4):
+                particle_number, lower_separation, upper_separation, separation_number = test_args
 
-                # Pull forces found
-                output_data = pull_file_data(
-                    filename, 
-                    parameters_stored, 
-                    read_frames, 
-                    read_parameters, 
-                    invert_output=False
-                )[0]    # NOTE; ...[0] To immediately get the 0th frame from results
+                graphlabel_set  = {"title":str(particle_number)+" dipoles separated in X axis", "xAxis":"X Dipole Center Separation(m)", "yAxis":"Force(N)"}
+                data_set_Fx = [[], []]
+                data_set_Fy = [[], []]
+                data_set_Fz = [[], []]
+                
+                separations = np.linspace(lower_separation, upper_separation, separation_number)
+                for separation in separations:
+                    # Setup and run simulation
+                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=object_offset, time_step=time_step, frames=frames, show_output=show_output, beam=beam_type, extra_args=[separation])
+                    DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
+
+                    # Pull forces found
+                    output_data = pull_file_data(
+                        filename, 
+                        parameters_stored, 
+                        read_frames, 
+                        read_parameters, 
+                        invert_output=False
+                    )[0]    # NOTE; [0] To immediately get the 0th frame from results
+
+                    # Populate data set to visualise
+                    data_set_Fx[0].append(separation) # X-axis
+                    data_set_Fx[1].append(output_data[0]) # Y-axis
+                    data_set_Fy[0].append(separation) # X-axis
+                    data_set_Fy[1].append(output_data[1]) # Y-axis
+                    data_set_Fz[0].append(separation) # X-axis
+                    data_set_Fz[1].append(output_data[2]) # Y-axis
+
+                data_set.append(data_set_Fx)
+                data_set_labels.append("Fx")
+                data_set.append(data_set_Fy)
+                data_set_labels.append("Fy")
+                data_set.append(data_set_Fz)
+                data_set_labels.append("Fz")
             else:invalidArgs=True
 
         case _:
@@ -3092,11 +3112,11 @@ match(sys.argv[1]):
         time_step = 1e-4
         frames = 1
         beam_type = "BESSEL"          # Which beam to use
-        polarisability_type = "RR"      # Which polarisability to test
+        polarisability_type = "CM"      # Which polarisability to test
         dipole_size = 100e-9         # Half-width/radius of dipole
         object_offset = [0.0, 0.0, 0.0]
         force_terms = ["optical"]
-        test_type = "single"  # Particle setup to test
+        test_type = "multi_separated"  # Particle setup to test
         linestyle_set = None
 
         # Test parameters
@@ -3134,7 +3154,7 @@ match(sys.argv[1]):
                 linestyle_set=["dotted","dotted","dotted", "dashed","dashed","dashed", "solid","solid","solid"]
             
             case "multi_separated":
-                test_args = [4, dipole_size*3.0]  # [particle_number, particle_separation]
+                test_args = [15, dipole_size*2.0, dipole_size*10.0, 50]  # [particle_number, lower_separation, upper_separation, separation_number]
 
                 # Read forces from all dipoles
                 read_parameters=[]

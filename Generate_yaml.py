@@ -250,10 +250,10 @@ def make_yaml_refine_sphere(filename, time_step, dimension, separations, particl
     num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime)
     return num_particles
 
-def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, frames=1, show_output=False, beam="LAGUERRE"):
+def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, frames=1, show_output=False, beam="LAGUERRE", extra_args=[]):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset)
+    num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset, extra_args=extra_args)
     return num_particles
 
 #=======================================================================
@@ -452,13 +452,13 @@ def use_refine_sphere(filename, dimension, separations, object_offset, particle_
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
     return num_particles
 
-def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=[0.0, 0.0, 0.0]):
+def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=[0.0, 0.0, 0.0], extra_args=[]):
     #
     # Sets up particles for a given test and arguements supplied
     # Experiments consdiered here concern single dipoles being setup in various systems to test how radiation forces vary and if problems will occur with single dipoles
     # Since individual dipoles will be considered, all particle primitives will cubes to reflect this
     #
-    coords_list = get_single_dipole_exp(test_type, test_args, dipole_size)
+    coords_list = get_single_dipole_exp(test_type, test_args, dipole_size, extra_args)
     num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
     args_list = [[dipole_size]] * num_particles
@@ -1038,7 +1038,7 @@ def get_NsphereShell_points(radii, numbers_per_shell):
         coords_list.extend(get_sunflower_points(numbers_per_shell[i], radii[i]))
     return coords_list
 
-def get_single_dipole_exp(test_type, test_args, dipole_size):
+def get_single_dipole_exp(test_type, test_args, dipole_size, extra_args):
     coords_List = []
     invalidArgs = False
     match test_type:
@@ -1075,8 +1075,9 @@ def get_single_dipole_exp(test_type, test_args, dipole_size):
                 invalidArgs=True
 
         case "multi_separated":
-            if( len(test_args) == 2 ):
-                particle_number, particle_separation = test_args
+            if( len(test_args) == 4 ):
+                particle_separation = extra_args[0]
+                particle_number = test_args[0]
                 total_width = (particle_number-1)*particle_separation
                 for i in range(particle_number):
                     coords_List.append([i*particle_separation -total_width/2.0, 0.0, 0.0])
