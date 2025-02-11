@@ -3099,7 +3099,6 @@ match(sys.argv[1]):
         # Args
         dimensions  =  [1.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
         object_shape = "cube" # cube or sphere
-        particle_shape = "cube" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
         num_particles_in_diameter = 5
@@ -3109,8 +3108,11 @@ match(sys.argv[1]):
         #====================================================================================
         
         # Run
-        print(f"\nSimulation for 1 frame of a {object_shape} object with {particle_shape} particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
-        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape, beam="LAGUERRE", show_output=True)
+        if particle_size < dipole_size: 
+            dipole_size = particle_size
+            print(f"WARNING: particle size smaller than dipoles size, setting dipole size to particle size ({particle_size})")
+        print(f"\nSimulation for 1 frame of a {object_shape} object with cube particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
+        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape="cube", beam="LAGUERRE", show_output=False)
     
 
 
