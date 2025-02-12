@@ -1677,6 +1677,31 @@ def plot_T_M_integrand_torus(beam_collection, display):
     ax.set_aspect("equal")
     plt.show()
 
+def get_propagation_vector(rotation):
+    #
+    # Converts the 'rotation' arguement of a beam into a propagation vector
+    #
+    rot = rotation.split()
+    v = [0,0,1]
+    if(rotation != "None"):
+        v = rotate_arbitrary(float(rot[0])*2.0*np.pi/360.0, v, [1,0,0])     # X rotation
+        v = rotate_arbitrary(float(rot[1])*2.0*np.pi/360.0, v, [0,1,0])     # Y rotation
+        v = rotate_arbitrary(float(rot[2])*2.0*np.pi/360.0, v, [0,0,1])     # Z rotation
+    return np.array(v)
+def get_polarisation_vector(jones):
+    #
+    # Converts the 'jones' argument of a beam into a polarisation vector
+    #
+    pol = [0.0, 0.0, 0.0]
+    match jones:
+        case "POLARISATION_LCP":
+            pol = [1j/np.sqrt(2), -1j/np.sqrt(2), 0.0]
+        case "POLARISATION_RCP":
+            pol = [1j/np.sqrt(2),  1j/np.sqrt(2), 0.0]
+        case _:
+            print("--- Unknown polarisation, please update 'get_polarisation_vector()' or change the polarisation used. Defaulting to [0,0,0] polarisation vector ---")
+    return np.array(pol)
+
 def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
     """
     shapes = List of shape types used
@@ -2111,24 +2136,32 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     epm = 1.333 # water
     #a0 = (4 * np.pi * 8.85e-12) * (radius ** 3) * ((ep1 - 1) / (ep1 + 2))
     #a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - 1) / (ep1 + 2))
-    a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))
     #a0a = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1a - 1) / (ep1a + 2))
-    a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
     #aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
     #a = a0
-    
-    # print("======")
-    # print("ref_ind = ",ref_ind)
-    # print("ep1 = ",ep1)
-    # print("a0 = ",a0)
-    # print("a = ",a)
-    # polarizability_type = "RR"
-    polarizability_type = "RR"
+
+    a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))  
+    polarizability_type="LDR"  
     match polarizability_type:
         case "CM":
             polarizability = a0
         case "RR":
-            polarizability = a
+            #a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
+            polarizability = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
+        case "LDR":
+            # From ADDA Manual; https://github.com/adda-team/adda/blob/master/doc/manual.pdf
+            # Works best for lower imaginary refractive index components
+            # NOTE; Currently assumes only 1 beam present
+            b1=1.8915316
+            b2=-0.1648469
+            b3=1.7700004
+            n = ref_ind[0]      # NOTE; Assumes all particles have the same material
+            d = dipole_radius   # dipole separation
+            for beamname in beaminfo.keys():    # Read propagation and polarisation for a single beam (will default ot reading last beam, should only use with 1 beam)
+                beam_prop = beaminfo[beamname]["rotation"]
+                beam_pol  = beaminfo[beamname]["jones"]
+            S = np.dot(get_propagation_vector(beam_prop), get_polarisation_vector(beam_pol))     # a=Propagation direction, e=Polarisation vector (for beam), calculating sum(a_j*e_j)=a.e
+            polarizability = a0 / ( 1.0 - ((b1 +b2*np.dot(n, n) +b3*S*np.dot(n, n))*((k**2) / d) +((2 / 3) * 1j * k ** 3))*(a0/(4*np.pi*8.85e-12)) )
         case _:
             polarizability = np.ones(n_particles)
             print("polarizability not recognised, defaulting to RR: "+str(polarizability_type))
@@ -2173,7 +2206,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
         display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=2, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
 
-    # display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=True)
+        display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=True)
 
 
     # writer = animation.PillowWriter(fps=30)

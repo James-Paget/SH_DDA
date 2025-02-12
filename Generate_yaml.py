@@ -250,9 +250,9 @@ def make_yaml_refine_sphere(filename, time_step, dimension, separations, particl
     num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube)
     return num_particles
 
-def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, frames=1, show_output=False, beam="LAGUERRE", extra_args=[]):
+def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, rotation=None, frames=1, show_output=False, beam="LAGUERRE", extra_args=[]):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
-    use_beam(filename, beam)
+    use_beam(filename, beam, rotation=rotation)
     num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset, extra_args=extra_args)
     return num_particles
 
@@ -498,36 +498,36 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 # Beam configurations
 #=======================================================================
 
-def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None):
+def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None):
     match beam:
         case "GAUSS_CSP":
-            use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype)
+            use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype, rotation=rotation)
         case "LAGUERRE":
-            use_laguerre3_beam(filename,translation, translationargs, translationtype)
+            use_laguerre3_beam(filename,translation, translationargs, translationtype, rotation=rotation)
         case "BESSEL":
-            use_bessel_beam(filename, translation, translationargs, translationtype)
+            use_bessel_beam(filename, translation, translationargs, translationtype, rotation=rotation)
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
 
-def use_gaussCSP_beam(filename, E0=1.5e7, w0=0.4, translation="0.0 0.0 0.0", translationargs=None, translationtype=None):
+def use_gaussCSP_beam(filename, E0=1.5e7, w0=0.4, translation="0.0 0.0 0.0", translationargs=None, translationtype=None, rotation=None):
     """
     Makes a Gaussian complex source point beam
     """
-    beam = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
     write_beams(filename, [beam])
 
-def use_laguerre3_beam(filename, translation, translationargs, translationtype=None):
+def use_laguerre3_beam(filename, translation, translationargs, translationtype=None, rotation=None):
     """
     Makes a Laguerre-Gaussian beam.
     """
-    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
     write_beams(filename, [beam])
 
-def use_bessel_beam(filename, translation, translationargs, translationtype=None):
+def use_bessel_beam(filename, translation, translationargs, translationtype=None, rotation=None):
     """
     Makes a Laguerre-Gaussian beam.
     """
-    beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":None}
+    beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
     write_beams(filename, [beam])
 
 #=======================================================================
@@ -981,6 +981,7 @@ def get_refine_sphere(dimension, separations, particle_size, place_regime="squis
             return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
         else:
             return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
+
 
     coords_list = []
     # Get number of particles to place in each axis
