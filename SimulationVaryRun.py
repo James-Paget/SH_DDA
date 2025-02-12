@@ -471,42 +471,42 @@ def get_closest_particle(point, output_data):
             low_index = int(np.floor(i/3.0))
     return low_index
 
-def select_particle_indices(filename, particle_selection, parameters_stored, read_frames, object_offsets):
+def select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0]):
     #
     # Calculates the particle indices using different modes.
-    # particle_selection = "all": returns all indices
-    # particle_selection = "central": returns index closest to the object centre
-    # particle_selection = [int]: returns the input array of integers
     #
-    
-    match particle_selection:
-        case "all":
-            # Sum force over all particles
-            number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
-            particle_list = np.arange(0, number_of_particles, 1)
-        case "central":
+    particle_list = None
+    if particle_selection == "all":
+        # Sum force over all particles
+        number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
+        particle_list = np.arange(0, number_of_particles, 1)
+
+    elif isinstance(particle_selection, list): # want lists so the force on several indices can be summed.
+        if isinstance(particle_selection[0], (int, np.integer)):
+            particle_list = particle_selection
+
+        elif isinstance(particle_selection[0], (float, np.floating)):
             # Sum force on particle closest to object_offset (the centre)
             number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
-            read_parameters_point = []
-            for p in range(number_of_particles):
-                read_parameters_point.append({"type":"X", "particle":p, "subtype":0})
-                read_parameters_point.append({"type":"X", "particle":p, "subtype":1})
-                read_parameters_point.append({"type":"X", "particle":p, "subtype":2})
-            
-            point_particle_number = get_closest_particle(     # Measure forces on central particle for all systems
-                np.array(object_offsets),
-                output_data = pull_file_data(
-                    filename, 
-                    parameters_stored, 
-                    read_frames, 
-                    read_parameters_point, 
-                    invert_output=False
+            read_parameters_point = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(number_of_particles))]
+            particle_list = []
+            for pos in particle_selection:
+                point_particle_number = get_closest_particle(     # Get particle i nearest to pos.
+                    np.array(pos),
+                    output_data = pull_file_data(
+                        filename, 
+                        parameters_stored, 
+                        read_frames, 
+                        read_parameters_point, 
+                        invert_output=False
+                    )
                 )
-            )
-            particle_list = [point_particle_number]
-        case _:
-            # Manual index specification
-            particle_list = particle_selection
+                particle_list.append(point_particle_number)
+
+    if particle_list is None:
+        print(f"ERROR, unexpected type, {type(particle_selection)} for {particle_selection}")
+        sys.exit()
+
     return particle_list
 
 def get_number_of_particles_XLSX(filename, parameters_stored):
@@ -1681,7 +1681,7 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
             # Calculate required quantities
             #
             # (0) F_mag, Fx, Fy, Fz on 0th particle
-            particle_list = select_particle_indices(filename, "all", parameters_stored, read_frames, object_offsets)
+            particle_list = select_particle_indices(filename, "all", parameters_stored, read_frames) # note, "central" currently deprecated
             for p_i in range(len(particle_list)):
                 # Calculate required quantities
                 recorded_force = np.array([output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
@@ -1886,7 +1886,7 @@ def simulations_refine(dimension, variables_list, separations_list, particle_siz
             # Calculate required quantities
             #
             # (0) F_mag, Fx, Fy, Fz on 0th particle
-            particle_list = select_particle_indices(filename, "all", parameters_stored, read_frames, object_offsets)
+            particle_list = select_particle_indices(filename, "all", parameters_stored, read_frames) # note, "central" currently deprecated
             for p_i in range(len(particle_list)):
                 # Calculate required quantities
                 recorded_force = np.array([output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
@@ -2046,7 +2046,7 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
                 case _: sys.exit("UNIMPLEMENTED SHAPE")
 
             # Calculate what particles to sum the forces over.
-            particle_list = select_particle_indices(filename, particle_selection, parameters_stored, read_frames, object_offsets)
+            particle_list = select_particle_indices(filename, particle_selection, parameters_stored, read_frames)
             read_parameters = [{"type":"F", "particle":p, "subtype":st} for p, st in it.product(particle_list, [0,1,2])]
 
             # Pull data needed from this frame, add it to another list tracking
@@ -2346,6 +2346,174 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
     
     return positions, forces, particle_num, dpp_num
 
+def simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", include_dipole_forces=False, polarisability_type="RR", show_output=True, indep_vector_component=2):
+    #
+    # Consider an object of given parameters. Default to cube object, but can be sphere
+    # dimension is total size in each axis. variables_list contains all of the parameters to be changed (dict).
+    # dda_forces_returned are the forces returned from the DDA - usually ["optical"]. object_shape is either "sphere" or "cube"
+    # beam_type is str for the beam, usually "LAGUERRE"
+    # forces_output is the force types returned, subset of ["Fmag", "Fx", "Fy", "Fz", "Cmag", "Cx", "Cy", "Cz"]
+    # particle_selections is a list of string keywords ("all"), ints (particle indices), or float vectors ([0,0,0], particle closest to this point)
+    #
+    # Return data_set, data_set_params, particle_nums_set, dpp_nums_set
+    # data set is [ [[indep var list], [force list]] for F, p in zip(forces_output, particle_selections) for each set of line parameters]
+    # other returns give different data for the same pattern.
+
+    time_step = 1e-4
+    if len(forces_output) != len(particle_selections): sys.exit(f"ERROR, forces_output and particle_selections must be the same length, not {len(forces_output)} and {len(particle_selections)}.")
+    
+    # Specify all parameters in the file so a subset can be pulled later based on read_parameters
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]}, # (total force including hydrodynamics, not used here)
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+    read_frames = [0]
+
+    # Record what parameters each force output would require
+    read_parameters_lookup = {
+        "Fmag": [["F",0], ["F",1], ["F",2]],
+        "Fx":   [["F",0]],
+        "Fy":   [["F",1]],
+        "Fz":   [["F",2]],
+        "Cmag": [["C",0], ["C",1], ["C",2]],
+        "Cx":   [["C",0]],
+        "Cy":   [["C",1]],
+        "Cz":   [["C",2]],
+    }
+
+    # Begin calculations
+    # get list of variables from the dictionary.
+    dipole_sizes = variables_list["dipole_sizes"]
+    separations_list = variables_list["separations_list"]
+    particle_sizes = variables_list["particle_sizes"]
+    particle_shapes = variables_list["particle_shapes"]
+    object_offsets = variables_list["object_offsets"]
+    # get the independent variable (the one to be plotted against)
+    indep_name = variables_list["indep_var"]
+    indep_list = np.array(variables_list[indep_name])
+
+    # Based on the indep var, set what variable are varied over different lines of the graph.
+    match indep_name:
+        case "dipole_sizes": 
+            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "separations_list": 
+            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
+        case "particle_sizes": 
+            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "particle_shapes": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets]
+            indep_axis_list = indep_list
+        case "object_offsets": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
+
+    print("Performing refinement calculation")
+    data_set_params = []
+    num_indep = len(indep_axis_list)
+    # Iterate though every combination of variables that are varied across the lines of the graph.
+    var_set_length = len(indep_list)
+    for i in line_vars: # count total number of variable combinations
+        var_set_length *= len(i)
+
+    num_expts_per_param = len(forces_output)
+    data_set_length = int(var_set_length * num_expts_per_param/len(indep_list))
+
+    data_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(data_set_length)], dtype=object)
+    particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
+    dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
+
+    match object_shape:
+        case "cube": isObjectCube = True
+        case "sphere": isObjectCube = False
+        case _: isObjectCube = False; print("WARNING, object shape set to sphere")
+
+    # Precalculate lists of particle indices for each selection. 
+    particle_lists = []
+    for particle_selection in particle_selections:
+        if isinstance(particle_selection, list) and isinstance(particle_selection, (float, np.floating)):
+            particles = None
+        else:
+            # In the following case, set to None to mark that it needs to be calculated each time as different particles could be the closest to the specified vector.
+            particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
+        particle_lists.append(particles)
+
+    # START OF LOOP OVER PARAMS
+    for params_i, params in enumerate(it.product(*line_vars)):
+        data_set_params.append(params)
+
+        match indep_name:
+            case "dipole_sizes": separations, particle_size, particle_shape, object_offset = params
+            case "separations_list": dipole_size, particle_size, particle_shape, object_offset = params
+            case "particle_sizes": dipole_size, separations, particle_shape, object_offset = params
+            case "particle_shapes": dipole_size, separations, particle_size, object_offset = params
+            case "object_offsets": dipole_size, separations, particle_size, particle_shape = params
+
+        # Iterate over independent variable to get the data for each line.
+        for i, indep_var in enumerate(indep_list):
+            print("\nProgress;"+str( "="*(int(np.floor(10*(i+ params_i*len(indep_list))/var_set_length))) )+str("-"*(int(np.floor(10*(1.0- (i+ params_i*len(indep_list))/var_set_length)))) )+"; "+str((i+ params_i*len(indep_list)))+"/"+str(var_set_length))
+            match indep_name:
+                case "dipole_sizes": dipole_size = indep_var
+                case "separations_list": separations = indep_var
+                case "particle_sizes": particle_size = indep_var
+                case "particle_shapes": particle_shape = indep_var
+                case "object_offsets": object_offset = indep_var
+        
+            # Generate YAML & Run Simulation
+            particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type, makeCube=isObjectCube)
+            DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
+
+            match particle_shape:
+                case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
+                case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
+                case _: sys.exit("UNIMPLEMENTED SHAPE")
+
+            # Simulation has run so have all the forces. Now do all experiments with force and particle selections
+            for expt_i in range(num_expts_per_param):
+                force_type = forces_output[expt_i]
+                particles = particle_lists[expt_i]
+
+                # Calculate any Nones.
+                if particles == None: 
+                    particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
+
+                read_parameters_args = read_parameters_lookup[force_type]
+                read_parameters = []
+                for p in particles:
+                    if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+                    read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
+
+                pulled_data = pull_file_data(
+                    filename, 
+                    parameters_stored, 
+                    read_frames, 
+                    read_parameters, 
+                    invert_output=False
+                )
+
+                match force_type:
+                    case "Fmag" | "Cmag":
+                        output = np.zeros(3)
+                        for p in range(len(particles)):
+                            output += [pulled_data[0, 3*p+0], pulled_data[0, 3*p+1], pulled_data[0, 3*p+2]]
+                        output = np.linalg.norm(output)
+                    
+                    # Normally just sum all the force components in pulled_data
+                    case _:
+                        output = np.sum(pulled_data[0])
+                    
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+            
+            particle_nums_set[params_i, 1, i] = particle_num
+            dpp_nums_set[params_i, 1, i] = dpp_num
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    return data_set, data_set_params, particle_nums_set, dpp_nums_set
+
 
 def make_param_strs(data_set_params, legend_params, indep_name):
     param_strs = []
@@ -2427,7 +2595,7 @@ def display_var(variable_type, value=None):
             case _: return f"{variable_type} UNKNOWN", "UNITS"
     
     else:
-        mkstr = lambda s: "0.0" if s==0 else f"{s:.2e}"
+        mkstr = lambda s: "0.0" if s==0 else f"{s:.2e}" # function to format a float in scientific notation, except for 0.
         match variable_type:
             case "dipole_sizes": return f"dipole size = {value:.2e}m"
             case "separations_list": return f"separation = [{mkstr(value[0])},{mkstr(value[1])},{mkstr(value[2])}]m"
@@ -2474,7 +2642,7 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
     # print(linestyle_var, legend_params)
     if (linestyle_var == None or linestyle_var not in legend_params) and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
         for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "deflections"]:
-            print(vars, legend_params, len(variables_list[vars]))
+            # print(vars, legend_params, len(variables_list[vars]))
             if vars in legend_params and len(variables_list[vars]) < num_line_options:
                 linestyle_var = vars
                 break
@@ -2499,6 +2667,7 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
                 if linestyle_var_str in piece:
                     linestyle_var_piece = piece
                     break
+            # print(linestyle_var_str, "in ", pieces)
             if linestyle_var_piece == None: print(f"WARNING, could not find '{linestyle_var_str}' in pieces: {pieces}")
 
             if linestyle_var_piece not in linestyle_var_list:
@@ -2904,7 +3073,7 @@ match(sys.argv[1]):
         )
         
         # Format output and make legend/title strings
-        titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "central", dimensions)
+        titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "", dimensions)
         data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
         linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
 
@@ -3008,7 +3177,7 @@ match(sys.argv[1]):
         indep_name = variables_list["indep_var"]
 
         # Run
-        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_sphere(
+        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine(
             dimension, 
             variables_list,
             separations_list, 
@@ -3023,7 +3192,8 @@ match(sys.argv[1]):
             polarisability_type=polarisability_type,
             force_measure_point=force_measure_point,
             show_output=show_output,
-            indep_vector_component=indep_vector_component
+            indep_vector_component=indep_vector_component,
+            isObjectCube=True
         )
 
         # Format output and make legend/title strings
@@ -3051,10 +3221,10 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  =  [0.2e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
+        dimensions  =  [0.6e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
         force_filter=["Fmag", "Fy", "Fx"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "particle_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+        indep_name = "dipole_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
         particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
         # Iterables
         separations_list = [[0,0,0]] # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
@@ -3065,8 +3235,8 @@ match(sys.argv[1]):
         
         ### NORMAL
         # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        dipole_sizes = np.linspace(10e-9, 40e-9, 4)         
-        particle_sizes = np.linspace(0.05e-6, 0.1e-6, 30)
+        dipole_sizes = np.linspace(50e-9, 100e-9, 40)         
+        particle_sizes = np.linspace(0.1e-6, 0.3e-6, 3)
 
         particle_shapes = ["sphere"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
@@ -3079,7 +3249,7 @@ match(sys.argv[1]):
         # Format output then plot graph
         titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
         data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var="dipole_sizes", cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
         graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
         
@@ -3240,7 +3410,7 @@ match(sys.argv[1]):
         indep_name = variables_list["indep_var"]
 
         # Run
-        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_sphere(
+        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine(
             dimension, 
             variables_list,
             separations_list, 
@@ -3252,6 +3422,7 @@ match(sys.argv[1]):
             place_regime,
             beam_type,
             show_output=show_output,
+            isObjectCube=False # sphere
         )
 
         # Format output and make legend/title strings
@@ -3270,6 +3441,56 @@ match(sys.argv[1]):
         # dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
         # Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
 
+    case "new_refine":
+        # Save file
+        filename = "SingleLaguerre"
+
+        show_output     = False
+        dimension       = 200e-9    # Full width of sphere/cube
+        separations_list= [[0.0e-6, 0.0, 0.0]]   
+        particle_sizes  = [dimension/2] # Single particle
+        dipole_sizes    = np.linspace(40e-9, 70e-9, 50)
+        object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
+        particle_shapes = ["sphere"]
+        dda_forces_returned     = ["optical"]
+        indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
+        beam_type = "LAGUERRE"     
+        object_shape = "cube"   
+        place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
+        linestyle_var = None # (it will pick the best) "particle_sizes"
+        # The following lists must be the same length.
+        forces_output= ["Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = ["all"]
+
+        #-----------------------
+        #-----------------------
+
+        variables_list = {
+            "indep_var": indep_var, # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes, deflections
+            "dipole_sizes": dipole_sizes,
+            "separations_list": separations_list,
+            "particle_sizes": particle_sizes,
+            "particle_shapes": particle_shapes,
+            "object_offsets": object_offsets
+        }
+        indep_name = variables_list["indep_var"]
+        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", include_dipole_forces=False, polarisability_type="RR", show_output=show_output, indep_vector_component=2)
+        
+        print("data_set_params is", data_set_params)
+        
+        datalabel_set = []
+        for param in data_set_params:
+            for f, p in zip(forces_output, particle_selections):
+               datalabel_set.append(str(f)+" "+str(p)+" "+str(param))
+        
+        print("datalabel_set is", datalabel_set)
+
+        # things needed for the graph (1) split variables between legend and title - now and force and particle selection to this.
+        # (2) based on legend_params, make legend labels
+
+        plotY= "Torques" if forces_output[0][0]=="C" else "Forces" # try to determine if it is a torque or force plot.
+        graphlabel_set = {"title":plotY+"XXX", "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
+        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set)
 
 
     case _:
