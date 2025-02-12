@@ -2140,8 +2140,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
     #a = a0
 
-    a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))  
-    polarizability_type="LDR"  
+    a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))
     match polarizability_type:
         case "CM":
             polarizability = a0
