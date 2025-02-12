@@ -1743,9 +1743,9 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
     return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
 
 
-def simulations_refine_sphere(dimension, variables_list, separations_list, particle_sizes, dipole_sizes, object_offsets, force_terms, particle_shapes, place_regime, beam_type, include_dipole_forces=False, polarisability_type="RR", force_measure_point=[0.0, 0.0, 0.0], show_output=True, indep_vector_component=2):
+def simulations_refine(dimension, variables_list, separations_list, particle_sizes, dipole_sizes, object_offsets, force_terms, particle_shapes, place_regime, beam_type, include_dipole_forces=False, polarisability_type="RR", force_measure_point=[0.0, 0.0, 0.0], show_output=True, indep_vector_component=2, isObjectCube=True):
     #
-    # Consider a sphere of given parameters
+    # Consider an object of given parameters. Default to cube object, but can be sphere
     #
     time_step = 1e-4
 
@@ -1832,7 +1832,7 @@ def simulations_refine_sphere(dimension, variables_list, separations_list, parti
         
             # Generate YAML & Run Simulation
 
-            particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type, makeCube=True)
+            particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type, makeCube=isObjectCube)
             DM.main(YAML_name=filename, force_terms=force_terms, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
 
 
@@ -1939,8 +1939,6 @@ def simulations_refine_sphere(dimension, variables_list, separations_list, parti
             #
             # Calculate required quantities
             #---
-
-        print(f"for params {params}, Fx is \n{forceX_data}")
 
         data_set.append(np.array(forceMag_data))
         data_set.append(np.array(forceX_data))
@@ -2473,7 +2471,7 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
     line_options = ["solid", "dashed", "dotted", "dashdot"] # Note, more could be added or some could be repeated.
     num_line_options = len(line_options)
 
-    print(linestyle_var, legend_params)
+    # print(linestyle_var, legend_params)
     if (linestyle_var == None or linestyle_var not in legend_params) and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
         for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "deflections"]:
             print(vars, legend_params, len(variables_list[vars]))
@@ -2980,14 +2978,14 @@ match(sys.argv[1]):
         show_output     = False
         dimension       = 200e-9    # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        particle_sizes  = [1e-7, 100e-9]#[0.2e-7, 0.6e-7, 1.0e-7]#np.linspace(0.2e-7, 1.0e-7, 20)#np.linspace(0.04e-6, 0.1e-6, 25)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
-        dipole_sizes    = np.linspace(10e-9, 50e-9, 4)#np.linspace(10e-9, 60e-9, 20)#[30e-9, 40e-9, 50e-9]
-        object_offsets  = [[1.0e-6, 0.0, 0.0e-6]]      # Offset the whole object
+        particle_sizes  = [0.2e-7, 0.6e-7, 1.0e-7]#np.linspace(0.2e-7, 1.0e-7, 20)#np.linspace(0.04e-6, 0.1e-6, 25)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+        dipole_sizes    = np.linspace(10e-9, 70e-9, 50)#np.linspace(10e-9, 60e-9, 20)#[30e-9, 40e-9, 50e-9]
+        object_offsets  = [[1.1e-6, 0.0, 0.0e-6]]      # Offset the whole object
         particle_shapes = ["cube"]
         force_terms     = ["optical"]
         indep_vector_component = 0
         force_measure_point = [1.15e-6, 0.0, 0.0]
-        force_filter= ["Fx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+        force_filter= ["Fx","Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
         indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
         beam_type = "LAGUERRE"          #"GAUSS_CSP"
         place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
@@ -3006,7 +3004,7 @@ match(sys.argv[1]):
             "particle_shapes": particle_shapes,
             "object_offsets": object_offsets
         }
-        # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
+
         indep_name = variables_list["indep_var"]
 
         # Run
@@ -3027,17 +3025,11 @@ match(sys.argv[1]):
             show_output=show_output,
             indep_vector_component=indep_vector_component
         )
-        
-        # print(f"\nDATASET  IS {data_set}\n")
-        # print(f"\nDATASET line 1x IS {data_set[1]}\n")
-        # print(f"\nDATASET line 2x IS {data_set[8]}\n")
 
         # Format output and make legend/title strings
         titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "all", [dimension, dimension, dimension])
         data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
-        linestyle_set, datacolor_set = [None, np.array([])]#get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-
-        # print(f"\nPOST FILTER DATASET IS {data_set}")
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
 
         xAxis_varname, xAxis_units = display_var(indep_name)
         graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} 
@@ -3209,6 +3201,74 @@ match(sys.argv[1]):
         print(f"\nSimulation for 1 frame of a {object_shape} object with cube particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
         positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape="cube", beam="LAGUERRE", show_output=False)
     
+    case "sphere_torque":
+        #
+        # Find the torque on a sphere at the origin in an LG beam.
+        #
+
+        # Save file
+        filename = "SingleLaguerre"
+
+        #-----------------------
+        #-----------------------
+        # Variable args
+        show_output     = True
+        dimension       = 200e-9    # Full width of sphere/cube
+        separations_list= [[0.0e-6, 0.0, 0.0]]   
+        particle_sizes  = [dimension/2] # Single particle
+        dipole_sizes    = np.linspace(40e-9, 70e-9, 5)
+        object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
+        particle_shapes = ["sphere"]
+        force_terms     = ["optical"]
+        force_filter= ["Fx","Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+        indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
+        beam_type = "LAGUERRE"        
+        place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
+        linestyle_var = None # (it will pick the best) "particle_sizes"
+
+        #-----------------------
+        #-----------------------
+
+        variables_list = {
+            "indep_var": indep_var, # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes, deflections
+            "dipole_sizes": dipole_sizes,
+            "separations_list": separations_list,
+            "particle_sizes": particle_sizes,
+            "particle_shapes": particle_shapes,
+            "object_offsets": object_offsets
+        }
+        indep_name = variables_list["indep_var"]
+
+        # Run
+        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_sphere(
+            dimension, 
+            variables_list,
+            separations_list, 
+            particle_sizes, 
+            dipole_sizes, 
+            object_offsets, 
+            force_terms, 
+            particle_shapes, 
+            place_regime,
+            beam_type,
+            show_output=show_output,
+        )
+
+        # Format output and make legend/title strings
+        titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "all", [dimension, dimension, dimension])
+        data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
+        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+
+        xAxis_varname, xAxis_units = display_var(indep_name)
+        graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} 
+        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
+
+        # Plot particle number and dipoles per particle against the independent variable.
+        # pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
+        # particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
+        # Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
+        # dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
+        # Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
 
 
 
