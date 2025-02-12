@@ -244,10 +244,10 @@ def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, pa
     num_particles = use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
     return num_particles
 
-def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE"):
+def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE", makeCube=False):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime)
+    num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube)
     return num_particles
 
 def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, rotation=None, frames=1, show_output=False, beam="LAGUERRE", extra_args=[]):
@@ -440,11 +440,11 @@ def use_refine_arch_prism(filename, dimensions, separations, deflection, object_
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
     return num_particles
 
-def use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape="sphere", place_regime="squish"):
+def use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape="sphere", place_regime="squish", makeCube=False):
     #
     # particle_size = radius of sphere OR half width of cube
     #
-    coords_list = get_refine_sphere(dimension, separations, particle_size, place_regime)
+    coords_list = get_refine_sphere(dimension, separations, particle_size, place_regime, makeCube)
     num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * num_particles
@@ -968,17 +968,20 @@ def get_refine_arch_prism(dimensions, separations, particle_size, deflection, pl
     # print("coords_list = ", coords_list)
     return coords_list
 
-def get_refine_sphere(dimension, separations, particle_size, place_regime="squish"):
+def get_refine_sphere(dimension, separations, particle_size, place_regime="squish", makeCube=False):
     #
     # particle_size = radius of sphere OR half width of cube
     #
 
     def check_bounds(point, radius):
         #
-        # Checks whether a point is within the spherical bounds
+        # Checks whether a point is within the spherical/cubic bounds
         #
-        #return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2            # Sphere bounds
-        return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius) # Cube bounds
+        if makeCube:
+            return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
+        else:
+            return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
+
 
     coords_list = []
     # Get number of particles to place in each axis
