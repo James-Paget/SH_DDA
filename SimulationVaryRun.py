@@ -1800,7 +1800,7 @@ def simulations_refine_arch_prism(dimensions, variables_list, separations_list, 
     return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
 
 
-def simulations_refine_sphere(dimension, variables_list, separations_list, particle_sizes, dipole_sizes, object_offsets, force_terms, particle_shapes, place_regime, beam_type, include_dipole_forces=False, force_measure_point=[0.0, 0.0, 0.0], show_output=True, indep_vector_component=2):
+def simulations_refine_sphere(dimension, variables_list, separations_list, particle_sizes, dipole_sizes, object_offsets, force_terms, particle_shapes, place_regime, beam_type, include_dipole_forces=False, polarisability_type="RR", force_measure_point=[0.0, 0.0, 0.0], show_output=True, indep_vector_component=2):
     #
     # Consider a sphere of given parameters
     #
@@ -1887,7 +1887,7 @@ def simulations_refine_sphere(dimension, variables_list, separations_list, parti
         
             # Generate YAML & Run Simulation
             particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type)
-            DM.main(YAML_name=filename, force_terms=force_terms, include_dipole_forces=include_dipole_forces, verbosity=0)
+            DM.main(YAML_name=filename, force_terms=force_terms, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
 
             match particle_shape:
                 case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
@@ -3016,25 +3016,48 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
 
+        #
+        # Cube of cubes & cube of spheres tending to force of perfect system (1particle cube, inf cube dipoles)
+        #
+        # show_output     = False
+        # dimension       = 200e-9    # Radius of the total spherical mesh
+        # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
+        # particle_sizes  = [0.2e-7] # Radius or half-width
+        # dipole_sizes    = np.linspace(10e-9, 20e-9, 30) # np.linspace(10e-9, 50e-9, 30)
+        # object_offsets  = [[1.0e-6, 0.0, 0.0e-6]]       # Offset the whole object
+        # force_measure_point = [1.15e-6, 0.0, 0.0]       # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+        # force_terms     = ["optical"]
+        # particle_shapes = ["cube"]
+        # indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
+        # force_filter=["Fx", "Fy", "Fmag"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+        # indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
+        # beam_type = "LAGUERRE"          #"GAUSS_CSP"
+        # place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
+        # include_dipole_forces = False
+        # linestyle_var = "dipole_sizes"
+
+        #
+        # Force on cube as it moves in a Bessel beam --> Comparing to single dipole particle with RR, LDR or CM
+        #
         show_output     = False
-        dimension       = 200e-9    # Radius of the total spherical mesh
+        dimension       = 200e-9    # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        particle_sizes  = [0.2e-7] # Radius or half-width
-        dipole_sizes    = np.linspace(10e-9, 20e-9, 30) # np.linspace(10e-9, 50e-9, 30)
-        object_offsets  = [[1.0e-6, 0.0, 0.0e-6]]       # Offset the whole object
+        particle_sizes  = [100e-9] # Radius or half-width
+        dipole_sizes    = [12.5e-9, 50e-9, 100e-9]  #6.25e-9, 
+        object_offsets  = [[i*0.06e-6, 0.0, 0.0] for i in range(25)]       # Offset the whole object
         force_measure_point = [1.15e-6, 0.0, 0.0]       # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
         force_terms     = ["optical"]
         particle_shapes = ["cube"]
         indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
-        force_filter=["Fx", "Fy", "Fmag"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
-        indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
-        beam_type = "LAGUERRE"          #"GAUSS_CSP"
+        force_filter=["Fx", "Fy", "Fz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+        indep_var = "object_offsets"
+        beam_type = "BESSEL" 
         place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
         include_dipole_forces = False
         linestyle_var = "dipole_sizes"
+        polarisability_type = "RR"
         #-----------------------
         #-----------------------
-
 
         variables_list = {
             "indep_var": indep_var, # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes, deflections
@@ -3046,9 +3069,9 @@ match(sys.argv[1]):
         }
         # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         indep_name = variables_list["indep_var"]
-        if indep_name == "separations_list": indep_vector_component = 0
-        elif indep_name == "object_offsets": indep_vector_component = 2
-        else: indep_vector_component = 0
+        # if indep_name == "separations_list": indep_vector_component = 0
+        # elif indep_name == "object_offsets": indep_vector_component = 0
+        # else: indep_vector_component = 0
 
         # Run
         parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_sphere(
@@ -3063,6 +3086,7 @@ match(sys.argv[1]):
             place_regime,
             beam_type,
             include_dipole_forces,
+            polarisability_type=polarisability_type,
             force_measure_point=force_measure_point,
             show_output=show_output,
             indep_vector_component=indep_vector_component
@@ -3155,11 +3179,11 @@ match(sys.argv[1]):
         time_step = 1e-4
         frames = 1
         beam_type = "BESSEL"          # Which beam to use
-        polarisability_type = "LDR"    # Which polarisability to test
+        polarisability_type = "RR"    # Which polarisability to test
         dipole_size = 100e-9          # Half-width/radius of dipole
         object_offset = [0.0, 0.0, 0.0]
         force_terms = ["optical"]
-        test_type = "multi_separated"  # Particle setup to test
+        test_type = "single"  # Particle setup to test
         linestyle_set = None
         rotation = None#"180 0.0 0.0"
 
