@@ -474,6 +474,7 @@ def get_closest_particle(point, output_data):
 def select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0]):
     #
     # Calculates the particle indices using different modes.
+    # Will be passed particle_selections = "all", [i,j,k,...] or [[rx,ry,rz],...]
     #
     particle_list = None
     if particle_selection == "all":
@@ -481,27 +482,32 @@ def select_particle_indices(filename, particle_selection, parameters_stored, rea
         number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
         particle_list = np.arange(0, number_of_particles, 1)
 
+    # Check if particle selection is a list
     elif isinstance(particle_selection, list): # want lists so the force on several indices can be summed.
         if isinstance(particle_selection[0], (int, np.integer)):
             particle_list = particle_selection
 
-        elif isinstance(particle_selection[0], (float, np.floating)): # XXX need to fix this to all list of 3 vectors (another depth of list)
-            # Sum force on particle closest to object_offset (the centre)
-            number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
-            read_parameters_point = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(number_of_particles))]
-            particle_list = []
-            for pos in particle_selection:
-                point_particle_number = get_closest_particle(     # Get particle i nearest to pos.
-                    np.array(pos),
-                    output_data = pull_file_data(
-                        filename, 
-                        parameters_stored, 
-                        read_frames, 
-                        read_parameters_point, 
-                        invert_output=False
+
+
+        # Check if element of particle selection are a list
+        elif isinstance(particle_selection[0], list):
+            if isinstance(particle_selection[0][0], (float, np.floating)):
+                # Sum force on particle closest to object_offset (the centre)
+                number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
+                read_parameters_point = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(number_of_particles))]
+                particle_list = []
+                for pos in particle_selection:
+                    point_particle_number = get_closest_particle(     # Get particle i nearest to pos.
+                        np.array(pos),
+                        output_data = pull_file_data(
+                            filename, 
+                            parameters_stored, 
+                            read_frames, 
+                            read_parameters_point, 
+                            invert_output=False
+                        )
                     )
-                )
-                particle_list.append(point_particle_number)
+                    particle_list.append(point_particle_number)
 
     if particle_list is None:
         print(f"ERROR, unexpected type, {type(particle_selection)} for {particle_selection}")
@@ -2369,6 +2375,24 @@ def simulations_spheredisc_model(disc_radius, variables_list, force_terms, beam_
     # get the independent variable (the one to be plotted against)
     indep_name = variables_list["indep_var"]
     indep_list = np.array(variables_list[indep_name])
+
+    # Based on the indep var, set what variable are varied over different lines of the graph.
+    match indep_name:
+        case "dipole_sizes": 
+            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "separations_list": 
+            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
+        case "particle_sizes": 
+            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "particle_shapes": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets]
+            indep_axis_list = indep_list
+        case "object_offsets": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
     
     # (2) Start calculations
     print("Performing calculations for sphere-disc-model")
@@ -2383,7 +2407,7 @@ def simulations_spheredisc_model(disc_radius, variables_list, force_terms, beam_
     var_set_length = len(indep_list)
     for i in line_vars:
         var_set_length *= len(i)
-    for index_params, params in enumerate(it.product(*line_vars)):
+    for params_i, params in enumerate(it.product(*line_vars)):
 
         forceMag_data = np.array([ indep_axis_list, np.zeros(num_indep) ])  
         forceX_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
@@ -2514,20 +2538,20 @@ def simulations_spheredisc_model(disc_radius, variables_list, force_terms, beam_
             # Calculate required quantities
             #---
 
-      data_set.append(np.array(forceMag_data))
-      data_set.append(np.array(forceX_data))
-      data_set.append(np.array(forceY_data))
-      data_set.append(np.array(forceZ_data))
-      data_set.append(np.array(data_vary_dipoleSize_F))
-      data_set.append(np.array(data_vary_dipoleSize_FperDip))
-      data_set.append(np.array(data_vary_dipoleSize_modF2))
-      data_set_params.append(params)
-      particle_nums_set.append(np.array(particle_nums))
-      dpp_nums_set.append(np.array(dpp_nums))
+        data_set.append(np.array(forceMag_data))
+        data_set.append(np.array(forceX_data))
+        data_set.append(np.array(forceY_data))
+        data_set.append(np.array(forceZ_data))
+        data_set.append(np.array(data_vary_dipoleSize_F))
+        data_set.append(np.array(data_vary_dipoleSize_FperDip))
+        data_set.append(np.array(data_vary_dipoleSize_modF2))
+        data_set_params.append(params)
+        particle_nums_set.append(np.array(particle_nums))
+        dpp_nums_set.append(np.array(dpp_nums))
 
-  # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
-  parameter_text = "" #### LEGACY ####
-  return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    parameter_text = "" #### LEGACY ####
+    return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
         
 def simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", include_dipole_forces=False, polarisability_type="RR", show_output=True, indep_vector_component=2):
     #
@@ -2615,10 +2639,14 @@ def simulations_refine_all(filename, dimension, variables_list, dda_forces_retur
         case "sphere": isObjectCube = False
         case _: isObjectCube = False; print("WARNING, object shape set to sphere")
 
-    # Precalculate lists of particle indices for each selection. 
+    # Precalculate lists of particle indices for each selection
+    # (only for list of indices, as all and close to positions must be recalculated each time)
     particle_lists = []
     for particle_selection in particle_selections:
-        if isinstance(particle_selection, list) and isinstance(particle_selection, (float, np.floating)):
+        if (
+            particle_selection == "all" or
+            (isinstance(particle_selection, list) and isinstance(particle_selection[0], list) and isinstance(particle_selection[0][0], (float, np.floating)))
+        ):
             particles = None
         else:
             # In the following case, set to None to mark that it needs to be calculated each time as different particles could be the closest to the specified vector.
@@ -2661,7 +2689,7 @@ def simulations_refine_all(filename, dimension, variables_list, dda_forces_retur
                 particles = particle_lists[expt_i]
 
                 # Calculate any Nones.
-                if particles == None: 
+                if particles is None: 
                     particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
 
                 read_parameters_args = read_parameters_lookup[force_type]
@@ -2762,12 +2790,13 @@ def filter_data_set(force_filter, data_set, data_set_params, legend_params, inde
     return data_set[filtered_i], datalabel_set, filtered_i
 
 def display_var(variable_type, value=None):
-    #
-    # Returns a string based on the arguments
-    # if value=None, returns the name and units of variable_type as a tuple e.g. "dipole size", "/m"
-    # Else returns a single formatted string using the value e.g. "dipole size = 4e-8m"
-    #
+    """
+    * Returns a string based on the arguments
+    * if value=None, returns the name and units of variable_type as a tuple e.g. "dipole size", "/m"
+    * Else returns a single formatted string using the value e.g. "dipole size = 4e-8m"
+    """
     if value == None:
+        # Used to make the x-axis label
         match variable_type:
             case "dipole_sizes": return "dipole size", "/m"
             case "separations_list": return "separation", "/m"
@@ -2776,8 +2805,10 @@ def display_var(variable_type, value=None):
             case "object_offsets": return "offset", "/m"
             case "deflections": return "deflection", "/m"
             case _: return f"{variable_type} UNKNOWN", "UNITS"
+            # Note, particle selection and force type shouldn't be on the x-axis so are not cases here.
     
     else:
+        # Used to make the title/lege§nd labels
         mkstr = lambda s: "0.0" if s==0 else f"{s:.2e}" # function to format a float in scientific notation, except for 0.
         match variable_type:
             case "dipole_sizes": return f"dipole size = {value:.2e}m"
@@ -2786,6 +2817,12 @@ def display_var(variable_type, value=None):
             case "particle_shapes": return f" particle shape = {value}"
             case "object_offsets": return f"offset = [{mkstr(value[0])},{mkstr(value[1])},{mkstr(value[2])}]m"
             case "deflections": return f" deflection = {value:.2e}"
+            case "forces_output": return f"{value}"
+            case "particle_selections":
+                if isinstance(value, str): return f"particle selection = {value}"
+                elif isinstance(value[0], int): return f"particle selection = [{','.join(str(value[i]) for i in range(len(value)))}]"
+                elif isinstance(value[0][0], (int, float, np.floating)): return f"particle selection = [{','.join(['['+','.join([mkstr(value[i][j]) for j in range(3)])+']' for i in range(len(value))])}]"
+    
             case _: return f"{variable_type} UNKNOWN"
 
 def get_titlelegend(variables_list, indep_name, particle_selection, dimensions):
@@ -2875,6 +2912,80 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
         data_colour_set[i] =  cgrad(data_colour_set[i]) # turn into colours
 
     return linestyle_set, np.array(data_colour_set)
+
+def get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, dimension, indep_name,  title_start, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x)):
+    # Calculates: titlestrbase, datalabel_set, linestyle_set, datacolor_set
+    
+    # 1) split variables over legend and title
+    variables_list["forces_output"] = forces_output
+    variables_list["particle_selections"] = particle_selections
+    title_params, legend_params = split_title_legend(variables_list, indep_name)
+
+    # 2) make title
+    title_str = make_title(title_start, title_params, variables_list, dimension)
+
+    # 3) make legend labels
+    datalabel_set = make_legend_labels(data_set_params, legend_params, indep_name, forces_output, particle_selections)
+
+    # things needed for the graph (1) split variables between legend and title - now and force and particle selection to this.
+    # (2) based on legend_params, make legend labels
+
+    # PLACE HOLDER====
+    # title_str = ""
+    # datalabel_set = []
+    # for param in data_set_params:
+    #     for f, p in zip(forces_output, particle_selections):
+    #         datalabel_set.append(str(f)+" "+str(p)+" "+str(param))
+    linestyle_set = None
+    datacolor_set = []
+    #================
+
+    return title_str, datalabel_set, linestyle_set, datacolor_set
+
+def split_title_legend(variables_list, indep_name):
+    # make lists of variable names which will go into the title and the legend
+    title_params = []
+    legend_params = []
+    for key, value in variables_list.items():
+        if key == "indep_var" or key == indep_name: continue # skip indep variable name and list
+        if len(value) == 1 or all(x == value[0] for x in value): # check if only one unique value
+            title_params.append(key)
+        else:
+            legend_params.append(key)
+    return title_params, legend_params
+
+def make_title(title_start, title_params, variables_list, dimension):
+    title_str = title_start+f" against {display_var(indep_name)[0]}. dimension = {dimension}\n"
+    newline_count = 0
+    for key, value in variables_list.items():
+        if key in title_params: 
+            title_str += f", {display_var(key, value[0])}"
+            if newline_count == 2:
+                newline_count = 0
+                title_str += "\n"
+            newline_count += 1
+    if title_str[-1]=="\n": # remove trailing \n
+        title_str = title_str[:-1]
+    return title_str
+
+def make_legend_labels(data_set_params, legend_params, indep_name, forces_output, particle_selections):
+    param_strs = make_param_strs(data_set_params, legend_params, indep_name) # strs with the params varying (not forces or particle selections)
+    labels = []
+    num_expts = len(forces_output)
+    # Make force and particle base strings.
+    base_strs = [""]*num_expts
+    for i in range(num_expts):
+        if "forces_output" in legend_params:
+            base_strs[i] += display_var("forces_output", forces_output[i])
+        if "particle_selections" in legend_params:
+            if "forces_output" in legend_params: base_strs[i] += ", "
+            base_strs[i] += display_var("particle_selections", particle_selections[i])
+
+    for param_str in param_strs:
+        if base_strs[0] == "": param_str = param_str[2:] # remove ", " prefix if no base string
+        for i in range(num_expts):
+            labels.append(f"{base_strs[i]}{param_str}")
+    return labels
 
 
 #=================#
@@ -3635,10 +3746,10 @@ match(sys.argv[1]):
         show_output     = False
         dimension       = 200e-9    # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]   
-        particle_sizes  = [dimension/2] # Single particle
-        dipole_sizes    = np.linspace(40e-9, 70e-9, 50)
+        particle_sizes  = [dimension/2, dimension/4] # Single particle
+        dipole_sizes    = np.linspace(40e-9, 70e-9, 20)
         object_offsets  = [[1e-6, 0.0, 0.0e-6]]      # Offset the whole object
-        particle_shapes = ["sphere"]
+        particle_shapes = ["sphere", "cube"]
         dda_forces_returned     = ["optical"]
         indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
         beam_type = "LAGUERRE"     
@@ -3646,8 +3757,8 @@ match(sys.argv[1]):
         place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
         linestyle_var = None # (it will pick the best) "particle_sizes"
         # The following lists must be the same length.
-        forces_output= ["Fx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = [[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        forces_output= ["Fx", "Fx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = ["all", "all"] #[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
         #-----------------------
         #-----------------------
@@ -3663,21 +3774,14 @@ match(sys.argv[1]):
         indep_name = variables_list["indep_var"]
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", include_dipole_forces=False, polarisability_type="RR", show_output=show_output, indep_vector_component=2)
         
-        print("data_set_params is", data_set_params)
-        
-        datalabel_set = []
-        for param in data_set_params:
-            for f, p in zip(forces_output, particle_selections):
-               datalabel_set.append(str(f)+" "+str(p)+" "+str(param))
-        
-        print("datalabel_set is", datalabel_set)
+        print(f"\ndata_set_params is {data_set_params}\n")
 
-        # things needed for the graph (1) split variables between legend and title - now and force and particle selection to this.
-        # (2) based on legend_params, make legend labels
+        title_start= "Torques" if forces_output[0][0]=="C" else "Forces" # try to determine if it is a torque or force plot.
+        title_str, datalabel_set, linestyle_set, datacolor_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, dimension, indep_name, title_start, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+        print(f"datalabel_set is {datalabel_set}\n")
 
-        plotY= "Torques" if forces_output[0][0]=="C" else "Forces" # try to determine if it is a torque or force plot.
-        graphlabel_set = {"title":plotY+"XXX", "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
-        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set)
+        graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
+        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
 
     case _:
