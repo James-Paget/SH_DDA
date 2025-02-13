@@ -255,6 +255,11 @@ def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, obj
     use_beam(filename, beam, rotation=rotation)
     num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset, extra_args=extra_args)
     return num_particles
+def make_yaml_spheredisc_model(filename, disc_radius, separation, particle_size, dipole_size, object_offset, particle_shape, mode="disc", beam="LAGUERRE", time_step=1e-4, frames=1, show_output=False):
+    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+    use_beam(filename, beam)
+    num_particles = use_fill_spheredisc(filename, disc_radius, separation, particle_size, dipole_size, object_offset, particle_shape, mode=mode)
+    return num_particles
 
 #=======================================================================
 # Particle configurations
@@ -306,12 +311,12 @@ def use_unconnected_ring(filename, num_particles, ring_radius, particle_radius, 
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
     use_default_particles(filename, "sphere", args_list, coords_list, "num", 0)
 
-def use_sheet_triangle(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
+def use_sheet_triangle(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0, formation="square", bounds=[2e-6], connection_factor=1.001):
     args_list = [[particle_radius]] * num_length * num_width
-    coords_list = get_sheet_points(num_length, num_width, separation, mode="triangle")
+    coords_list = get_sheet_points(num_length, num_width, separation, mode="triangle", formation=formation, bounds=bounds)
     if rotation_theta != 0:
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
-    use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
+    use_default_particles(filename, "sphere", args_list, coords_list, "dist", connection_factor*separation)
 
 def use_sheet_square(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
     args_list = [[particle_radius]] * num_length * num_width
@@ -466,6 +471,21 @@ def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_of
     use_default_particles(filename, "cube", args_list, coords_list, connection_mode="dist", connection_args=0.0)
     return num_particles
 
+
+def use_fill_spheredisc(filename, disc_radius, separation, particle_size, dipole_size, object_offset, particle_shape, mode="disc"):
+    match mode:
+        case "disc":
+            coords_list = get_fill_disc(disc_radius, separation, particle_size)
+        case "sphere":
+            coords_list = get_fill_sphere(disc_radius, separation, particle_size)
+        case _:
+            print("Unknown mode for sphere-disc model, generating no particles")
+    num_particles = len(coords_list)
+    coords_list = np.array(coords_list) + object_offset
+    args_list = [[particle_size]] * num_particles
+    
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    return num_particles
 
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
 #     # makes a row of separated cylinders
@@ -698,12 +718,35 @@ def get_torus_points_args(num_particles, separation, inner_radius, tube_radius):
 
     return coords_list, args_list
 
-def get_sheet_points(num_length, num_width, separation, mode="triangle"):
+def get_sheet_points(num_length, num_width, separation, mode="triangle", formation="square", bounds=[2e-6]):
     # Makes a sheet in the z=0 plane. width in x-axis, length in y-axis.
     # modes are "triangle", "square", "hexagon"
 
     # For triangle and square, each point gives a shape so the nums are numbers of points.
     # For hexagon, the nums are number of hexagons to prevent unformed hexagons.
+
+    def check_bounds(formation, point, bounds):
+        #
+        # formation = string name of formation type; exclude points outside this
+        # point  = [X,Y,Z]
+        # bounds = Assumes centered at origin
+        #       for square: [width, height]
+        #       for circle: [radius]
+        #
+        withinBounds=False
+        match formation:
+            case "square":
+                width, height = bounds
+                withinX = ( -width/2.0 <= point[0]) and (point[0] <= width/2.0)
+                withinY = (-height/2.0 <= point[1]) and (point[1] <= height/2.0)
+                withinBounds = withinX and withinY
+            case "circle":
+                radius = bounds[0]
+                withinBounds = (point[0]**2 + point[1]**2) <= radius**2
+            case _:
+                withinBounds=True
+                print("Unrecognised bounds for sheet formation, accepting all points")
+        return withinBounds
 
     coords_list = []
     match mode:
@@ -773,7 +816,12 @@ def get_sheet_points(num_length, num_width, separation, mode="triangle"):
         case _:
             sys.exit(f"Generate_yaml: get_sheet_points: unknown mode, {mode}")
 
-    return coords_list
+    coords_list_reduced = []
+    for coord in coords_list:
+        if(check_bounds(formation, coord, bounds)):
+            coords_list_reduced.append(coord)
+
+    return coords_list_reduced
 
 def get_filament_points(length, radius, separation):
     # Filment running along the y-axis.
@@ -1091,3 +1139,41 @@ def get_single_dipole_exp(test_type, test_args, dipole_size, extra_args):
     if(invalidArgs):
         print("Invalid test_args: "+str(test_type)+", "+str(test_args))
     return coords_List
+
+def get_fill_disc(disc_radius, separation, particle_size):
+    coord_list = []
+
+    separation = separation[0]
+
+    layer_number = int(np.floor( (disc_radius+particle_size-separation) / (2.0*particle_size) ))
+    for i in range(layer_number):
+        sub_radius = disc_radius -i*(2.0*particle_size +separation/layer_number)
+        layer_particle_number = int(np.floor(2.0*np.pi*sub_radius / (2.0*particle_size)))  # Make sure this doesn't cause overlap
+        if(sub_radius != 0.0):
+            theta_step = (2.0*np.pi -separation/sub_radius) / layer_particle_number
+        else:
+            theta_step = 0.0
+        for j in range(layer_particle_number):
+            coord_list.append([sub_radius*np.cos(theta_step*j), sub_radius*np.sin(theta_step*j), 0.0])
+    return coord_list
+
+def get_fill_sphere(sphere_radius, separation, particle_size):
+    #
+    # Builds a filled sphere from layers of discs
+    # Priorities having a central layer
+    #
+    coord_list = []
+
+    separation_val = separation[0]
+
+    layer_number = int(np.floor( (sphere_radius-separation_val) / (2.0*particle_size) ))
+    for i in range(layer_number):
+        sub_radius = np.sqrt(sphere_radius**2 -(i*(2.0*particle_size +separation_val/layer_number))**2)
+        disc_coord_list = get_fill_disc(sub_radius, separation, particle_size)
+        offset = i*(2.0*particle_size +separation_val/layer_number)
+        for coord in disc_coord_list:
+            coord_list.append( [coord[0], coord[1], coord[2]+offset] )      # Central / Upper
+            if(i!=0):
+                coord_list.append( [coord[0], coord[1], coord[2]-offset] )  # Lower
+    
+    return coord_list
