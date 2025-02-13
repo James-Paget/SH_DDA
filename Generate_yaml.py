@@ -510,7 +510,8 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
     """
     default_radius = 1e-07
     default_material = "FusedSilica"
-    particle_list = [{"material":"FusedSilica", "shape":shape, "args":args_list[i], "coords":coords_list[i], "altcolour":True} for i in range(len(coords_list))]
+    material = "FusedSilica"    # NOTE; "FusedSilica01" can be used here for absorbing particles
+    particle_list = [{"material":material, "shape":shape, "args":args_list[i], "coords":coords_list[i], "altcolour":True} for i in range(len(coords_list))]
     write_particles(filename, particle_list, default_radius, default_material, connection_mode, connection_args )
 
 
@@ -1140,7 +1141,7 @@ def get_single_dipole_exp(test_type, test_args, dipole_size, extra_args):
         print("Invalid test_args: "+str(test_type)+", "+str(test_args))
     return coords_List
 
-def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=True):
+def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=False):
     coord_list = []
 
     layer_number = int(np.floor( (disc_radius+particle_size) / (2.0*particle_size +separation[1]) ))
