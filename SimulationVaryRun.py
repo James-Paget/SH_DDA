@@ -485,7 +485,7 @@ def select_particle_indices(filename, particle_selection, parameters_stored, rea
         if isinstance(particle_selection[0], (int, np.integer)):
             particle_list = particle_selection
 
-        elif isinstance(particle_selection[0], (float, np.floating)):
+        elif isinstance(particle_selection[0], (float, np.floating)): # XXX need to fix this to all list of 3 vectors (another depth of list)
             # Sum force on particle closest to object_offset (the centre)
             number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
             read_parameters_point = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(number_of_particles))]
@@ -3221,7 +3221,7 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        dimensions  =  [0.6e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
+        dimensions  =  [0.8e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
         force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
         force_filter=["Fmag", "Fy", "Fx"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
         indep_name = "dipole_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
@@ -3235,10 +3235,10 @@ match(sys.argv[1]):
         
         ### NORMAL
         # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        dipole_sizes = np.linspace(50e-9, 100e-9, 40)         
+        dipole_sizes = np.linspace(40e-9, 100e-9, 40)         
         particle_sizes = np.linspace(0.1e-6, 0.3e-6, 3)
 
-        particle_shapes = ["sphere"] 
+        particle_shapes = ["cube"] 
         object_offsets = [[1e-6, 0e-6, 0e-6]]
         #====================================================================================
         
@@ -3371,77 +3371,7 @@ match(sys.argv[1]):
         print(f"\nSimulation for 1 frame of a {object_shape} object with cube particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
         positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape="cube", beam="LAGUERRE", show_output=False)
     
-    case "sphere_torque":
-        #
-        # Find the torque on a sphere at the origin in an LG beam.
-        #
-
-        # Save file
-        filename = "SingleLaguerre"
-
-        #-----------------------
-        #-----------------------
-        # Variable args
-        show_output     = True
-        dimension       = 200e-9    # Full width of sphere/cube
-        separations_list= [[0.0e-6, 0.0, 0.0]]   
-        particle_sizes  = [dimension/2] # Single particle
-        dipole_sizes    = np.linspace(40e-9, 70e-9, 5)
-        object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
-        particle_shapes = ["sphere"]
-        force_terms     = ["optical"]
-        force_filter= ["Fx","Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
-        indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
-        beam_type = "LAGUERRE"        
-        place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
-        linestyle_var = None # (it will pick the best) "particle_sizes"
-
-        #-----------------------
-        #-----------------------
-
-        variables_list = {
-            "indep_var": indep_var, # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes, deflections
-            "dipole_sizes": dipole_sizes,
-            "separations_list": separations_list,
-            "particle_sizes": particle_sizes,
-            "particle_shapes": particle_shapes,
-            "object_offsets": object_offsets
-        }
-        indep_name = variables_list["indep_var"]
-
-        # Run
-        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine(
-            dimension, 
-            variables_list,
-            separations_list, 
-            particle_sizes, 
-            dipole_sizes, 
-            object_offsets, 
-            force_terms, 
-            particle_shapes, 
-            place_regime,
-            beam_type,
-            show_output=show_output,
-            isObjectCube=False # sphere
-        )
-
-        # Format output and make legend/title strings
-        titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "all", [dimension, dimension, dimension])
-        data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-
-        xAxis_varname, xAxis_units = display_var(indep_name)
-        graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} 
-        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
-
-        # Plot particle number and dipoles per particle against the independent variable.
-        # pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
-        # particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
-        # Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
-        # dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
-        # Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
-
-    case "new_refine":
+    case "force_torque_sim":
         # Save file
         filename = "SingleLaguerre"
 
@@ -3450,7 +3380,7 @@ match(sys.argv[1]):
         separations_list= [[0.0e-6, 0.0, 0.0]]   
         particle_sizes  = [dimension/2] # Single particle
         dipole_sizes    = np.linspace(40e-9, 70e-9, 50)
-        object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
+        object_offsets  = [[1e-6, 0.0, 0.0e-6]]      # Offset the whole object
         particle_shapes = ["sphere"]
         dda_forces_returned     = ["optical"]
         indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
@@ -3459,8 +3389,8 @@ match(sys.argv[1]):
         place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
         linestyle_var = None # (it will pick the best) "particle_sizes"
         # The following lists must be the same length.
-        forces_output= ["Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = ["all"]
+        forces_output= ["Fx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = [[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
         #-----------------------
         #-----------------------
