@@ -2516,13 +2516,13 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     return data_set, data_set_params, particle_nums_set, dpp_nums_set
             
-def simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", include_dipole_forces=False, polarisability_type="RR", show_output=True, indep_vector_component=2):
+def simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", polarisability_type="RR", show_output=True, indep_vector_component=2, torque_centre=[0,0,0]):
     #
     # Consider an object of given parameters. Default to cube object, but can be sphere
     # dimension is total size in each axis. variables_list contains all of the parameters to be changed (dict).
     # dda_forces_returned are the forces returned from the DDA - usually ["optical"]. object_shape is either "sphere" or "cube"
     # beam_type is str for the beam, usually "LAGUERRE"
-    # forces_output is the force types returned, subset of ["Fmag", "Fx", "Fy", "Fz", "Cmag", "Cx", "Cy", "Cz"]
+    # forces_output is the force types returned, subset of ["Fmag", "Fx", "Fy", "Fz", "Cmag", "Cx", "Cy", "Cz", "Tmag", "Tx", "Ty", "Tz"]
     # particle_selections is a list of string keywords ("all"), ints (particle indices), or float vectors ([0,0,0], particle closest to this point)
     #
     # Return data_set, data_set_params, particle_nums_set, dpp_nums_set
@@ -2539,6 +2539,10 @@ def simulations_refine_all(filename, dimension, variables_list, dda_forces_retur
         {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]}, # (total force including hydrodynamics, not used here)
         {"type":"C", "args":["Cx", "Cy", "Cz"]}
     ]
+    parameters_stored_torque = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+    ]
     read_frames = [0]
 
     # Record what parameters each force output would require
@@ -2551,6 +2555,10 @@ def simulations_refine_all(filename, dimension, variables_list, dda_forces_retur
         "Cx":   [["C",0]],
         "Cy":   [["C",1]],
         "Cz":   [["C",2]],
+        "Tmag": [["X",0], ["X",1], ["X",2], ["F",0], ["F",1], ["F",2]], # normal order
+        "Tx":   [["X",1], ["X",2], ["F",1], ["F",2]], # y,z,Fy,Fz
+        "Ty":   [["X",2], ["X",0], ["F",2], ["F",0]], # z,x,Fz,Fx
+        "Tz":   [["X",0], ["X",1], ["F",0], ["F",1]], # x,y,Fx,Fy
     }
 
     # Begin calculations
@@ -2616,6 +2624,11 @@ def simulations_refine_all(filename, dimension, variables_list, dda_forces_retur
             particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
         particle_lists.append(particles)
 
+    
+    # Only make dipoles file if torque about given centre are needed.
+    if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
+    else: include_dipole_forces = False
+
     # START OF LOOP OVER PARAMS
     for params_i, params in enumerate(it.product(*line_vars)):
         data_set_params.append(params)
@@ -2646,46 +2659,78 @@ def simulations_refine_all(filename, dimension, variables_list, dda_forces_retur
                 case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
                 case _: sys.exit("UNIMPLEMENTED SHAPE")
 
+            particle_nums_set[params_i, 1, i] = particle_num
+            dpp_nums_set[params_i, 1, i] = dpp_num
+
             # Simulation has run so have all the forces. Now do all experiments with force and particle selections
             for expt_i in range(num_expts_per_param):
                 force_type = forces_output[expt_i]
                 particles = particle_lists[expt_i]
+                read_parameters_args = read_parameters_lookup[force_type]
+                read_parameters = []
 
                 # Calculate any Nones.
                 if particles is None: 
                     particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
 
-                read_parameters_args = read_parameters_lookup[force_type]
-                read_parameters = []
-                for p in particles:
-                    if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
-                    read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
+                # Lookup values from <filename>.xlsx
+                if force_type[0] == "F" or force_type[0] == "C":
+                    for p in particles:
+                        if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+                        read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
 
-                pulled_data = pull_file_data(
-                    filename, 
-                    parameters_stored, 
-                    read_frames, 
-                    read_parameters, 
-                    invert_output=False
-                )
+                    pulled_data = pull_file_data(
+                        filename, 
+                        parameters_stored, 
+                        read_frames, 
+                        read_parameters
+                    )
+                
+                # Lookup values from <filename>_dipoles.xlsx
+                elif force_type[0] == "T":
+                    for p in particles:
+                        if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+                        # Now, loop over all dipoles in each desired particle.
+                        for d in range(dpp_num):
+                            read_parameters.extend([{"type":f, "particle":p*dpp_num+d, "subtype":s} for f,s in read_parameters_args])
 
+                    pulled_data = pull_file_data(
+                        filename+"_dipoles", 
+                        parameters_stored_torque, 
+                        read_frames, 
+                        read_parameters
+                    )
+
+                # Calculate output from results
+                value_list = pulled_data[0] # frame 0
                 match force_type:
                     case "Fmag" | "Cmag":
                         output = np.zeros(3)
-                        for p in range(len(particles)):
-                            output += [pulled_data[0, 3*p+0], pulled_data[0, 3*p+1], pulled_data[0, 3*p+2]]
+                        for p in range(int(len(value_list)/3)):
+                            output += [value_list[3*p+0], value_list[3*p+1], value_list[3*p+2]] 
                         output = np.linalg.norm(output)
-                    
-                    # Normally just sum all the force components in pulled_data
+
+                    case "Tx" | "Ty" | "Tz":
+                        if force_type == "Tx": centre = torque_centre[1], torque_centre[2]
+                        elif force_type == "Ty": centre = torque_centre[2], torque_centre[0]
+                        elif force_type == "Tz": centre = torque_centre[0], torque_centre[1]
+                        output = 0
+                        for d in range(len(particles) * dpp_num):
+                            output += (value_list[4*d+0]-centre[0]) * value_list[4*d+3] - (value_list[4*d+1]-centre[0]) * value_list[4*d+2] # order for cross product comes from read_parameters_args
+                        # output *=2 # TEMP XXX REMOVE
+                    case "Tmag":
+                        output = np.zero(3)
+                        for d in range(len(particles) * dpp_num):
+                            output += np.cross(value_list[4*d+0:4*d+3] - torque_centre, value_list[4*d+3:4*d+6]) # order for cross product comes from read_parameters_args
+                        output = np.linalg.norm(output)
+
+                    # Normally just sum all the force components in value_list
                     case _:
-                        output = np.sum(pulled_data[0])
+                        output = np.sum(value_list)
                     
+                # record output for each param and expt, then for each indep value.
                 data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
             
-            particle_nums_set[params_i, 1, i] = particle_num
-            dpp_nums_set[params_i, 1, i] = dpp_num
-
-    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     return data_set, data_set_params, particle_nums_set, dpp_nums_set
 
 
@@ -3724,19 +3769,20 @@ match(sys.argv[1]):
         show_output     = False
         dimension       = 200e-9    # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]   
-        particle_sizes  = [dimension/2, dimension/4] # Single particle
+        particle_sizes  = [dimension/2] # Single particle
         dipole_sizes    = np.linspace(40e-9, 70e-9, 20)
-        object_offsets  = [[1e-6, 0.0, 0.0e-6]]      # Offset the whole object
-        particle_shapes = ["sphere", "cube"]
+        object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
+        particle_shapes = ["sphere"]
         dda_forces_returned     = ["optical"]
         indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
         beam_type = "LAGUERRE"     
         object_shape = "cube"   
+        torque_centre = [0,0,0]
         place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
         linestyle_var = None # (it will pick the best if None) strings: dipole_sizes, particle_sizes, particle_shapes, forces_output, particle_selections, deflections, separations_list
         # The following lists must be the same length.
-        forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = ["all", [[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        forces_output= ["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
         #-----------------------
         #-----------------------
@@ -3750,7 +3796,7 @@ match(sys.argv[1]):
             "object_offsets": object_offsets
         }
         indep_name = variables_list["indep_var"]
-        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", include_dipole_forces=False, polarisability_type="RR", show_output=show_output, indep_vector_component=2)
+        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", polarisability_type="RR", show_output=show_output, indep_vector_component=2, torque_centre=torque_centre)
         
         print(f"\ndata_set_params is {data_set_params}\n")
 
