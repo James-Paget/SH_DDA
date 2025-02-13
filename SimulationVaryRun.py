@@ -464,7 +464,8 @@ def get_closest_particle(point, output_data):
     low_dist  = 1.0e10  # Distance of closest particle to point (easily beatable placeholder when initialised)
     low_index = 0       # Index of the particle that is closest to the point (placeholder of 0 when initialised)
     for i in range(0,len(output_data[0]),3):
-        pos  = np.array([ output_data[0,i+0], output_data[0,i+1], output_data[0,i+2] ])
+        # NOTE; Plus epsilon included to prevent tie-breaker cases when convieniently picking halfway points
+        pos  = np.array([ output_data[0,i+0]+sys.float_info.epsilon, output_data[0,i+1]+sys.float_info.epsilon, output_data[0,i+2]+sys.float_info.epsilon ])
         dist = np.linalg.norm( point-pos )
         if(dist <= low_dist):
             low_dist  = dist
@@ -3627,12 +3628,12 @@ match(sys.argv[1]):
         # Variable args
 
         show_output     = False
-        disc_radius     = 1.12e-6                   # Radius of full disc
+        disc_radius     = 1.09e-6                   # Radius of full disc
         particle_sizes  = [200e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 20
-        separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.2e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
+        separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
         dipole_sizes    = [75e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         dda_forces_returned     = ["optical"]
@@ -3648,7 +3649,7 @@ match(sys.argv[1]):
         time_step   = 1e-4
         # NOTE; The following lists must be the same length.
         forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = [ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        particle_selections = [ [0], [0] ]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
         #-----------------------
         #-----------------------
