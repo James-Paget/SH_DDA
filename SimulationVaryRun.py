@@ -474,6 +474,7 @@ def get_closest_particle(point, output_data):
 def select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0]):
     #
     # Calculates the particle indices using different modes.
+    # Will be passed particle_selections = "all", [i,j,k,...] or [[rx,ry,rz],...]
     #
     particle_list = None
     if particle_selection == "all":
@@ -481,27 +482,32 @@ def select_particle_indices(filename, particle_selection, parameters_stored, rea
         number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
         particle_list = np.arange(0, number_of_particles, 1)
 
+    # Check if particle selection is a list
     elif isinstance(particle_selection, list): # want lists so the force on several indices can be summed.
         if isinstance(particle_selection[0], (int, np.integer)):
             particle_list = particle_selection
 
-        elif isinstance(particle_selection[0], (float, np.floating)): # XXX need to fix this to all list of 3 vectors (another depth of list)
-            # Sum force on particle closest to object_offset (the centre)
-            number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
-            read_parameters_point = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(number_of_particles))]
-            particle_list = []
-            for pos in particle_selection:
-                point_particle_number = get_closest_particle(     # Get particle i nearest to pos.
-                    np.array(pos),
-                    output_data = pull_file_data(
-                        filename, 
-                        parameters_stored, 
-                        read_frames, 
-                        read_parameters_point, 
-                        invert_output=False
+
+
+        # Check if element of particle selection are a list
+        elif isinstance(particle_selection[0], list):
+            if isinstance(particle_selection[0][0], (float, np.floating)):
+                # Sum force on particle closest to object_offset (the centre)
+                number_of_particles = get_number_of_particles_XLSX(filename, parameters_stored)
+                read_parameters_point = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(number_of_particles))]
+                particle_list = []
+                for pos in particle_selection:
+                    point_particle_number = get_closest_particle(     # Get particle i nearest to pos.
+                        np.array(pos),
+                        output_data = pull_file_data(
+                            filename, 
+                            parameters_stored, 
+                            read_frames, 
+                            read_parameters_point, 
+                            invert_output=False
+                        )
                     )
-                )
-                particle_list.append(point_particle_number)
+                    particle_list.append(point_particle_number)
 
     if particle_list is None:
         print(f"ERROR, unexpected type, {type(particle_selection)} for {particle_selection}")
@@ -2369,6 +2375,24 @@ def simulations_spheredisc_model(disc_radius, variables_list, force_terms, beam_
     # get the independent variable (the one to be plotted against)
     indep_name = variables_list["indep_var"]
     indep_list = np.array(variables_list[indep_name])
+
+    # Based on the indep var, set what variable are varied over different lines of the graph.
+    match indep_name:
+        case "dipole_sizes": 
+            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "separations_list": 
+            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
+        case "particle_sizes": 
+            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets]
+            indep_axis_list = indep_list
+        case "particle_shapes": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets]
+            indep_axis_list = indep_list
+        case "object_offsets": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes]
+            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
     
     # (2) Start calculations
     print("Performing calculations for sphere-disc-model")
@@ -2383,7 +2407,7 @@ def simulations_spheredisc_model(disc_radius, variables_list, force_terms, beam_
     var_set_length = len(indep_list)
     for i in line_vars:
         var_set_length *= len(i)
-    for index_params, params in enumerate(it.product(*line_vars)):
+    for params_i, params in enumerate(it.product(*line_vars)):
 
         forceMag_data = np.array([ indep_axis_list, np.zeros(num_indep) ])  
         forceX_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
@@ -2514,20 +2538,20 @@ def simulations_spheredisc_model(disc_radius, variables_list, force_terms, beam_
             # Calculate required quantities
             #---
 
-      data_set.append(np.array(forceMag_data))
-      data_set.append(np.array(forceX_data))
-      data_set.append(np.array(forceY_data))
-      data_set.append(np.array(forceZ_data))
-      data_set.append(np.array(data_vary_dipoleSize_F))
-      data_set.append(np.array(data_vary_dipoleSize_FperDip))
-      data_set.append(np.array(data_vary_dipoleSize_modF2))
-      data_set_params.append(params)
-      particle_nums_set.append(np.array(particle_nums))
-      dpp_nums_set.append(np.array(dpp_nums))
+        data_set.append(np.array(forceMag_data))
+        data_set.append(np.array(forceX_data))
+        data_set.append(np.array(forceY_data))
+        data_set.append(np.array(forceZ_data))
+        data_set.append(np.array(data_vary_dipoleSize_F))
+        data_set.append(np.array(data_vary_dipoleSize_FperDip))
+        data_set.append(np.array(data_vary_dipoleSize_modF2))
+        data_set_params.append(params)
+        particle_nums_set.append(np.array(particle_nums))
+        dpp_nums_set.append(np.array(dpp_nums))
 
-  # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
-  parameter_text = "" #### LEGACY ####
-  return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    parameter_text = "" #### LEGACY ####
+    return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
         
 def simulations_refine_all(filename, dimension, variables_list, dda_forces_returned, object_shape, beam_type, forces_output, particle_selections, place_regime="squish", include_dipole_forces=False, polarisability_type="RR", show_output=True, indep_vector_component=2):
     #
