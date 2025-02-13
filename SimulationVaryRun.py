@@ -2798,12 +2798,16 @@ def display_var(variable_type, value=None):
     if value == None:
         # Used to make the x-axis label
         match variable_type:
+            # note, these strings should match the starts of the value!=None case, as used in get_colourline to match strings (force_output is an exception)
             case "dipole_sizes": return "dipole size", "/m"
             case "separations_list": return "separation", "/m"
             case "particle_sizes": return "particle size", "/m"
             case "particle_shapes": return " particle shape", ""
             case "object_offsets": return "offset", "/m"
             case "deflections": return "deflection", "/m"
+            # the below cases are for matching linestyle_var_str in get_colourline, not for axis labels
+            case "particle_selections": return "particle selection", ""
+
             case _: return f"{variable_type} UNKNOWN", "UNITS"
             # Note, particle selection and force type shouldn't be on the x-axis so are not cases here.
     
@@ -2852,27 +2856,37 @@ def get_titlelegend(variables_list, indep_name, particle_selection, dimensions):
 
 def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x)):
     # Makes linestyle_set, data_colour_set
-    # linestyle_var can be "dipole_sizes", "separations_list", "particle_sizes", "particle_shapes", "object_offsets" or "deflections"
+    # linestyle_var can be "dipole_sizes", "separations_list", "particle_sizes", "particle_shapes", "object_offsets" or "deflections", "forces_output", "particle_selections"
     # If None, it will be set automatically
     # cgrad determines the colour tuples.
 
     line_options = ["solid", "dashed", "dotted", "dashdot"] # Note, more could be added or some could be repeated.
     num_line_options = len(line_options)
 
-    # print(linestyle_var, legend_params)
-    if (linestyle_var == None or linestyle_var not in legend_params) and len(legend_params) > 1: # Automatically select linestyle_var if useful, list below gives a priority order.
-        for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "deflections"]:
+    # Automatically select linestyle_var if useful, list below gives a priority order.
+    if (linestyle_var == None or linestyle_var not in legend_params) and len(legend_params) > 1:
+        for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "forces_output", "particle_selections", "deflections"]:
             # print(vars, legend_params, len(variables_list[vars]))
             if vars in legend_params and len(variables_list[vars]) < num_line_options:
                 linestyle_var = vars
+                print(f"Note, set linestyle_var to {linestyle_var}")
                 break
-
+    
+    # Trivial case
     if linestyle_var == None: # Set to defaults if no changes in linestyle needed.
         linestyle_set = ["solid" for _ in range(len(datalabel_set))]
         data_colour_set = [i for i in range(len(datalabel_set))]
 
+    # Non-trivial case
     else:
-        linestyle_var_str = display_var(linestyle_var)[0] # e.g. dipole_size -> dipole size
+        # display_var will always be in the legend if param is present, so search for it, except force as that is just shown as e.g. "Fx".
+        if linestyle_var == "forces_output":
+            linestyle_var_str_list = variables_list["forces_output"]
+            count = 0
+        else:
+            linestyle_var_str = display_var(linestyle_var)[0] # e.g. dipole_size -> dipole size
+
+        print("linestyle_var_str is ", linestyle_var_str)
         linestyle_set = []
         data_colour_set = []
         # record params seen before, and get their index, else create new entry.
@@ -2880,6 +2894,12 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
         other_var_list = []
 
         for label in datalabel_set:
+            # forces output doesn't have a string label for it so, so need to test the value e.g. "Fx"
+            if linestyle_var == "forces_output":
+                print(count, linestyle_var_str_list)
+                linestyle_var_str = linestyle_var_str_list[count % len(linestyle_var_str_list)]
+                count += 1
+
             pieces = label.split(", ") # split label into piece of each param it contains.
 
             linestyle_var_piece = None # find the linestyle_var piece to compare if it has changed.
@@ -2927,18 +2947,8 @@ def get_title_label_line_colour(variables_list, data_set_params, forces_output, 
     # 3) make legend labels
     datalabel_set = make_legend_labels(data_set_params, legend_params, indep_name, forces_output, particle_selections)
 
-    # things needed for the graph (1) split variables between legend and title - now and force and particle selection to this.
-    # (2) based on legend_params, make legend labels
-
-    # PLACE HOLDER====
-    # title_str = ""
-    # datalabel_set = []
-    # for param in data_set_params:
-    #     for f, p in zip(forces_output, particle_selections):
-    #         datalabel_set.append(str(f)+" "+str(p)+" "+str(param))
-    linestyle_set = None
-    datacolor_set = []
-    #================
+    # 4) make linestyles and colours
+    linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=cgrad)
 
     return title_str, datalabel_set, linestyle_set, datacolor_set
 
@@ -3755,16 +3765,16 @@ match(sys.argv[1]):
         beam_type = "LAGUERRE"     
         object_shape = "cube"   
         place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
-        linestyle_var = None # (it will pick the best) "particle_sizes"
+        linestyle_var = None # (it will pick the best if None) strings: dipole_sizes, particle_sizes, particle_shapes, forces_output, particle_selections, deflections, separations_list
         # The following lists must be the same length.
-        forces_output= ["Fx", "Fx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = ["all", "all"] #[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = ["all", [[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
         #-----------------------
         #-----------------------
 
         variables_list = {
-            "indep_var": indep_var, # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes, deflections
+            "indep_var": indep_var, # Must be one of the other keys: 
             "dipole_sizes": dipole_sizes,
             "separations_list": separations_list,
             "particle_sizes": particle_sizes,
@@ -3777,7 +3787,7 @@ match(sys.argv[1]):
         print(f"\ndata_set_params is {data_set_params}\n")
 
         title_start= "Torques" if forces_output[0][0]=="C" else "Forces" # try to determine if it is a torque or force plot.
-        title_str, datalabel_set, linestyle_set, datacolor_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, dimension, indep_name, title_start, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+        title_str, datalabel_set, linestyle_set, datacolor_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, dimension, indep_name, title_start, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
         print(f"datalabel_set is {datalabel_set}\n")
 
         graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
