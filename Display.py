@@ -450,10 +450,12 @@ class DisplayObject (object):
         # Scale forces to [0,1] for the cmap.
         maximum = np.max(shifted_forces, axis=0)
         minimum = np.min(shifted_forces, axis=0)
+        for i in range(3):
+            if maximum[i] == 0: maximum[i] = 1; print("WARNING, maximum was 0")
+            if minimum[i] == 0: minimum[i] = 1; print("WARNING, minimum was 0")
         scaled_forces = np.zeros((num_particles, 3))
         for i in range(3):
             # negative shifted forces mapped to [-1,0], posititives to [0,1]
-            print(minimum[i], maximum[i])
             scaled_forces[:,i] = shifted_forces[:,i]/np.array([maximum[i] if x[i]>=0 else -minimum[i] for x in shifted_forces]) # -min as min only used when x[i]<0, then want to keep the vals -ve so div by +ve.
         scaled_forces = scaled_forces/2 + 0.5 # /2 and +1 so scaled force range is [0,1] with 0 force at 0.5 - midpoint of the cmap.
         
@@ -808,6 +810,6 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
     plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
     plt.ylabel(graphlabel_set["yAxis"])
-    if(show_legend and datalabel_set!=[""]):
+    if(show_legend and datalabel_set!=[""] and datalabel_set!=[]):
         ax.legend()
     plt.show()
