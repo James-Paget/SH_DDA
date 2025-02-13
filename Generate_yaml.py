@@ -258,7 +258,7 @@ def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, obj
 def make_yaml_spheredisc_model(filename, disc_radius, separation, particle_size, dipole_size, object_offset, particle_shape, mode="disc", beam="LAGUERRE", time_step=1e-4, frames=1, show_output=False):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    num_particles = use_fill_spheredisc(filename, disc_radius, separation, particle_size, dipole_size, object_offset, particle_shape, mode=mode)
+    num_particles = use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode=mode)
     return num_particles
 
 #=======================================================================
@@ -472,7 +472,7 @@ def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_of
     return num_particles
 
 
-def use_fill_spheredisc(filename, disc_radius, separation, particle_size, dipole_size, object_offset, particle_shape, mode="disc"):
+def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode="disc"):
     match mode:
         case "disc":
             coords_list = get_fill_disc(disc_radius, separation, particle_size)
@@ -1140,19 +1140,26 @@ def get_single_dipole_exp(test_type, test_args, dipole_size, extra_args):
         print("Invalid test_args: "+str(test_type)+", "+str(test_args))
     return coords_List
 
-def get_fill_disc(disc_radius, separation, particle_size):
+def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=True):
     coord_list = []
 
-    separation = separation[0]
+    layer_number = int(np.floor( (disc_radius+particle_size) / (2.0*particle_size +separation[1]) ))
+    if(fix_to_ring):
+        layer_number = 1
 
-    layer_number = int(np.floor( (disc_radius+particle_size-separation) / (2.0*particle_size) ))
     for i in range(layer_number):
-        sub_radius = disc_radius -i*(2.0*particle_size +separation/layer_number)
-        layer_particle_number = int(np.floor(2.0*np.pi*sub_radius / (2.0*particle_size)))  # Make sure this doesn't cause overlap
-        if(sub_radius != 0.0):
-            theta_step = (2.0*np.pi -separation/sub_radius) / layer_particle_number
-        else:
-            theta_step = 0.0
+        sub_radius = disc_radius -i*(2.0*particle_size +separation[1])
+        
+        # Find number of particles in each ring, ignore if can only fit 1 particles in that ring (not enough symmetry)
+        layer_particle_number = int(np.floor((2.0*np.pi*sub_radius) / (2.0*particle_size +separation[0])))  # Make sure this doesn't cause overlap
+        if(layer_particle_number==1):
+            layer_particle_number = 0
+
+        theta_step = 0.0
+        if(layer_particle_number!=0):
+            if(sub_radius != 0.0):
+                theta_step = (2.0*np.pi) / layer_particle_number
+
         for j in range(layer_particle_number):
             coord_list.append([sub_radius*np.cos(theta_step*j), sub_radius*np.sin(theta_step*j), 0.0])
     return coord_list
@@ -1164,13 +1171,11 @@ def get_fill_sphere(sphere_radius, separation, particle_size):
     #
     coord_list = []
 
-    separation_val = separation[0]
-
-    layer_number = int(np.floor( (sphere_radius-separation_val) / (2.0*particle_size) ))
+    layer_number = int(np.floor( (sphere_radius) / (2.0*particle_size +separation[2]) ))
     for i in range(layer_number):
-        sub_radius = np.sqrt(sphere_radius**2 -(i*(2.0*particle_size +separation_val/layer_number))**2)
+        sub_radius = np.sqrt(sphere_radius**2 -(i*(2.0*particle_size +separation[2]))**2)
         disc_coord_list = get_fill_disc(sub_radius, separation, particle_size)
-        offset = i*(2.0*particle_size +separation_val/layer_number)
+        offset = i*(2.0*particle_size +separation[2])
         for coord in disc_coord_list:
             coord_list.append( [coord[0], coord[1], coord[2]+offset] )      # Central / Upper
             if(i!=0):
