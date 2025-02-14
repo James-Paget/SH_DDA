@@ -473,12 +473,12 @@ def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_of
     return num_particles
 
 
-def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode="disc", material="FusedSilica", fix_to_ring=True):
+def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode="disc", material="FusedSilica", fix_to_ring=False):
     match mode:
         case "disc":
             coords_list = get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=fix_to_ring)
         case "sphere":
-            coords_list = get_fill_sphere(disc_radius, separation, particle_size)
+            coords_list = get_fill_sphere(disc_radius, separation, particle_size, fix_to_ring=fix_to_ring)
         case _:
             print("Unknown mode for sphere-disc model, generating no particles")
     num_particles = len(coords_list)
@@ -1141,7 +1141,7 @@ def get_single_dipole_exp(test_type, test_args, dipole_size, extra_args):
         print("Invalid test_args: "+str(test_type)+", "+str(test_args))
     return coords_List
 
-def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=True):
+def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=False):
     coord_list = []
 
     layer_number = int(np.floor( (disc_radius+particle_size) / (2.0*particle_size +separation[1]) ))
@@ -1165,7 +1165,7 @@ def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=True):
             coord_list.append([sub_radius*np.cos(theta_step*j), sub_radius*np.sin(theta_step*j), 0.0])
     return coord_list
 
-def get_fill_sphere(sphere_radius, separation, particle_size):
+def get_fill_sphere(sphere_radius, separation, particle_size, fix_to_ring=False):
     #
     # Builds a filled sphere from layers of discs
     # Priorities having a central layer
@@ -1175,7 +1175,7 @@ def get_fill_sphere(sphere_radius, separation, particle_size):
     layer_number = int(np.floor( (sphere_radius) / (2.0*particle_size +separation[2]) ))
     for i in range(layer_number):
         sub_radius = np.sqrt(sphere_radius**2 -(i*(2.0*particle_size +separation[2]))**2)
-        disc_coord_list = get_fill_disc(sub_radius, separation, particle_size)
+        disc_coord_list = get_fill_disc(sub_radius, separation, particle_size, fix_to_ring=fix_to_ring)
         offset = i*(2.0*particle_size +separation[2])
         for coord in disc_coord_list:
             coord_list.append( [coord[0], coord[1], coord[2]+offset] )      # Central / Upper

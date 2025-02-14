@@ -3743,12 +3743,12 @@ match(sys.argv[1]):
         #
         show_output     = False
         disc_radius     = [1.14e-6]    #1.14e-6 #1.09e-6                   # Radius of full disc
-        particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
+        particle_sizes  = [200e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 50
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [50e-9]#[40e-9, 50e-9, 60e-9, 70e-9]#np.linspace(80e-9, 100e-9, 20)
+        dipole_sizes    = [60e-9]#[40e-9, 50e-9, 60e-9, 70e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         dda_forces_returned     = ["optical"]
         particle_shapes         = ["sphere"]
@@ -3761,7 +3761,7 @@ match(sys.argv[1]):
         mode        = "sphere"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        material = "FusedSilica"
+        material = "FusedSilica01"
         fix_to_ring = False
         # NOTE; The following lists must be the same length.
         forces_output= ["Tz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
