@@ -37,6 +37,6 @@ particles:
     part_0:
       material: FusedSilica
       shape: sphere
-      args: 1e-07
+      args: 9e-07
       coords: 0.0 0.0 0.0
       altcolour: True
