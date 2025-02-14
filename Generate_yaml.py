@@ -255,10 +255,11 @@ def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, obj
     use_beam(filename, beam, rotation=rotation)
     num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset, extra_args=extra_args)
     return num_particles
-def make_yaml_spheredisc_model(filename, disc_radius, separation, particle_size, dipole_size, object_offset, particle_shape, mode="disc", beam="LAGUERRE", time_step=1e-4, frames=1, show_output=False):
+
+def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode="disc", beam="LAGUERRE", time_step=1e-4, frames=1, show_output=False, absorbing_value="0"):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    num_particles = use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode=mode)
+    num_particles = use_fill_spheredisc(filename, dimension, separations, particle_size, object_offset, particle_shape, mode=mode, absorbing_value=absorbing_value)
     return num_particles
 
 #=======================================================================
@@ -472,7 +473,7 @@ def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_of
     return num_particles
 
 
-def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode="disc"):
+def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode="disc", absorbing_value="0"):
     match mode:
         case "disc":
             coords_list = get_fill_disc(disc_radius, separation, particle_size)
@@ -484,7 +485,7 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * num_particles
     
-    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, absorbing_value=absorbing_value)
     return num_particles
 
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
@@ -504,13 +505,17 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
 
 
 
-def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args):
+def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args, absorbing_value="0"):
     """
     Fills in typical particle parameters e.g. material, but leaves particles general.
     """
     default_radius = 1e-07
     default_material = "FusedSilica"
-    material = "FusedSilica"    # NOTE; "FusedSilica01" can be used here for absorbing particles
+    match absorbing_value:
+        case "0": material = "FusedSilica"    # NOTE; "FusedSilica01" can be used here for absorbing particles
+        case "01": material = "FusedSilica01"
+        case "001": material = "FusedSilica001"
+        case _: material = "FusedSilica"; print("set particles to non-absorbing")
     particle_list = [{"material":material, "shape":shape, "args":args_list[i], "coords":coords_list[i], "altcolour":True} for i in range(len(coords_list))]
     write_particles(filename, particle_list, default_radius, default_material, connection_mode, connection_args )
 
@@ -1141,7 +1146,7 @@ def get_single_dipole_exp(test_type, test_args, dipole_size, extra_args):
         print("Invalid test_args: "+str(test_type)+", "+str(test_args))
     return coords_List
 
-def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=False):
+def get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=True):
     coord_list = []
 
     layer_number = int(np.floor( (disc_radius+particle_size) / (2.0*particle_size +separation[1]) ))
