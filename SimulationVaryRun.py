@@ -13,6 +13,7 @@ import random
 import math
 import pickle
 import itertools as it
+import os
 from functools import partial
 
 import Display
@@ -2443,17 +2444,6 @@ def simulations_spheredisc_model(filename, variables_list, dda_forces_returned, 
     particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
     dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
 
-    # Precalculate lists of particle indices for each selection. 
-    particle_lists = []
-    for particle_selection in particle_selections:
-        if isinstance(particle_selection, list) and isinstance(particle_selection, (float, np.floating)):
-            particles = None
-        else:
-            # In the following case, set to None to mark that it needs to be calculated each time as different particles could be the closest to the specified vector.
-            particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
-        particle_lists.append(particles)
-    print("!!!! particle_lists", particle_lists)
-
     # Only make dipoles file if torque about given centre are needed.
     if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
     else: include_dipole_forces = False
@@ -2496,13 +2486,9 @@ def simulations_spheredisc_model(filename, variables_list, dda_forces_returned, 
             # Simulation has run so have all the forces. Now do all experiments with force and particle selections
             for expt_i in range(num_expts_per_param):
                 force_type = forces_output[expt_i]
-                # particles = particle_lists[expt_i]
+                particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
                 read_parameters_args = read_parameters_lookup[force_type]
                 read_parameters = []
-
-                # Calculate any Nones.
-                # if particles is None: 
-                particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
 
                 # Lookup values from <filename>.xlsx
                 if force_type[0] == "F" or force_type[0] == "C":
@@ -3710,6 +3696,10 @@ match(sys.argv[1]):
 
         # Save file
         filename = "SingleLaguerre"
+        if(os.path.exists(filename+".xlsx")):
+            os.remove(filename+".xlsx")
+        if(os.path.exists(filename+"_dipoles.xlsx")):
+            os.remove(filename+"_dipoles.xlsx")
 
         #-----------------------
         #-----------------------
@@ -3787,13 +3777,13 @@ match(sys.argv[1]):
         
         partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output, absorbing_value=absorbing_value)
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(
-            filename, 
+            filename,
             variables_list, 
             partial_yaml_func, 
             dda_forces_returned, 
             forces_output, 
             particle_selections, 
-            polarisability_type="RR", 
+            polarisability_type, 
             indep_vector_component=indep_vector_component, 
             torque_centre=[0,0,0]
         )
