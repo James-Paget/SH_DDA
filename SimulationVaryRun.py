@@ -2609,6 +2609,9 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
     particle_shapes = variables_list["particle_shapes"]
     object_offsets = variables_list["object_offsets"]
     dimensions = variables_list["dimensions"]
+    # (make a default material)
+    if "materials" in variables_list.keys(): materials = variables_list["materials"]
+    else: materials = ["FusedSilica"]
     # get the independent variable (the one to be plotted against)
     indep_name = variables_list["indep_var"]
     indep_list = np.array(variables_list[indep_name])
@@ -2616,23 +2619,26 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
     # Based on the indep var, set what variable are varied over different lines of the graph.
     match indep_name:
         case "dipole_sizes": 
-            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets, dimensions]
+            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets, dimensions, materials]
             indep_axis_list = indep_list
         case "separations_list": 
-            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets, dimensions]
+            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets, dimensions, materials]
             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
         case "particle_sizes": 
-            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets, dimensions]
+            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets, dimensions, materials]
             indep_axis_list = indep_list
         case "particle_shapes": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets, dimensions]
+            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets, dimensions, materials]
             indep_axis_list = indep_list
         case "object_offsets": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, dimensions]
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, dimensions, materials]
             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
         case "dimensions": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets]
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets, materials]
             indep_axis_list = indep_list # note, this is 1D (sphere and cube only)
+        case "materials": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets, dimensions]
+            indep_axis_list = indep_list 
             
     print("Performing refinement calculation")
     data_set_params = []
@@ -2658,12 +2664,13 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
         data_set_params.append(params)
 
         match indep_name:
-            case "dipole_sizes": separations, particle_size, particle_shape, object_offset, dimension = params
-            case "separations_list": dipole_size, particle_size, particle_shape, object_offset, dimension = params
-            case "particle_sizes": dipole_size, separations, particle_shape, object_offset, dimension = params
-            case "particle_shapes": dipole_size, separations, particle_size, object_offset, dimension = params
-            case "object_offsets": dipole_size, separations, particle_size, particle_shape, dimension = params
-            case "dimensions": dipole_size, separations, particle_size, particle_shape, object_offset = params
+            case "dipole_sizes": separations, particle_size, particle_shape, object_offset, dimension, material = params
+            case "separations_list": dipole_size, particle_size, particle_shape, object_offset, dimension, material = params
+            case "particle_sizes": dipole_size, separations, particle_shape, object_offset, dimension, material = params
+            case "particle_shapes": dipole_size, separations, particle_size, object_offset, dimension, material = params
+            case "object_offsets": dipole_size, separations, particle_size, particle_shape, dimension, material = params
+            case "dimensions": dipole_size, separations, particle_size, particle_shape, object_offset, material = params
+            case "materials": dipole_size, separations, particle_size, particle_shape, object_offset, dimension = params
 
         # Iterate over independent variable to get the data for each line.
         for i, indep_var in enumerate(indep_list):
@@ -2683,7 +2690,7 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
                 case "dimensions": dimension = indep_var
         
             # Generate YAML & Run Simulation
-            particle_num = partial_yaml_func(dimension=dimension, separations=separations, particle_size=particle_size, dipole_size=dipole_size, object_offset=object_offset, particle_shape=particle_shape)
+            particle_num = partial_yaml_func(dimension=dimension, separations=separations, particle_size=particle_size, dipole_size=dipole_size, object_offset=object_offset, particle_shape=particle_shape, material=material)
             # particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type, makeCube=isObjectCube)
             DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
 
@@ -2766,7 +2773,7 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
 
 def make_param_strs(data_set_params, legend_params, indep_name):
     param_strs = []
-    i_dict = {"dipole_sizes":0, "separations_list":1, "particle_sizes":2, "particle_shapes":3, "object_offsets":4, "dimensions":5} # convert between names and list index.
+    i_dict = {"dipole_sizes":0, "separations_list":1, "particle_sizes":2, "particle_shapes":3, "object_offsets":4, "dimensions":5, "materials":6} # convert between names and list index.
     indep_val = i_dict[indep_name]
     for params in data_set_params:
         # Pick what variables to show in the legend.
@@ -2844,6 +2851,7 @@ def display_var(variable_type, value=None):
             case "object_offsets": return "offset", "/m"
             case "deflections": return "deflection", "/m"
             case "dimensions": return "dimension", "/m"
+            case "materials": return "material", ""
             # the below cases are for matching linestyle_var_str in get_colourline, not for axis labels
             case "particle_selections": return "particle selection", ""
 
@@ -2861,6 +2869,7 @@ def display_var(variable_type, value=None):
             case "object_offsets": return f"offset = [{mkstr(value[0])},{mkstr(value[1])},{mkstr(value[2])}]m"
             case "deflections": return f" deflection = {value:.2e}"
             case "dimensions": return f" dimension = {value:.1e}"
+            case "materials": return f" material = {value}"
             case "forces_output": return f"{value}"
             case "particle_selections":
                 if isinstance(value, str): return f"particle selection = {value}"
@@ -2905,7 +2914,7 @@ def get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=N
 
     # Automatically select linestyle_var if useful, list below gives a priority order.
     if (linestyle_var == None or linestyle_var not in legend_params) and len(legend_params) > 1:
-        for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "forces_output", "particle_selections", "dimensions", "deflections"]:
+        for vars in ["particle_shapes", "object_offsets", "dipole_sizes", "separations_list", "particle_sizes", "forces_output", "particle_selections", "dimensions", "materials", "deflections"]:
             # print(vars, legend_params, len(variables_list[vars]))
             if vars in legend_params and len(variables_list[vars]) < num_line_options:
                 linestyle_var = vars
@@ -3743,12 +3752,12 @@ match(sys.argv[1]):
         #
         show_output     = False
         disc_radius     = [1.14e-6]    #1.14e-6 #1.09e-6                   # Radius of full disc
-        particle_sizes  = [200e-9]                  # Radius of spherical particles used to model the disc
+        particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
-        separation_iter = 50
+        separation_iter = 25
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [60e-9]#[40e-9, 50e-9, 60e-9, 70e-9]#np.linspace(80e-9, 100e-9, 20)
+        dipole_sizes    = [100e-9]#[40e-9, 50e-9, 60e-9, 70e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         dda_forces_returned     = ["optical"]
         particle_shapes         = ["sphere"]
@@ -3761,7 +3770,7 @@ match(sys.argv[1]):
         mode        = "sphere"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        material = "FusedSilica01"
+        materials = ["FusedSilica", "FusedSilica01"]
         fix_to_ring = False
         # NOTE; The following lists must be the same length.
         forces_output= ["Tz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
@@ -3779,12 +3788,13 @@ match(sys.argv[1]):
             "particle_sizes": particle_sizes,
             "particle_shapes": particle_shapes,
             "object_offsets": object_offsets,
-            "dimensions": disc_radius
+            "dimensions": disc_radius,
+            "materials": materials
         }
         # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         indep_name = variables_list["indep_var"]
         
-        partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output, material=material, fix_to_ring=fix_to_ring)
+        partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output, fix_to_ring=fix_to_ring)
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(
             filename,
             variables_list, 
@@ -3800,7 +3810,7 @@ match(sys.argv[1]):
         # Format output and make legend/title strings
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
       
-        graphlabel_set["title"] += f", material={material}, mesh_shape={mode}, fix_ring={fix_to_ring}"
+        graphlabel_set["title"] += f", mesh_shape={mode}, fix_ring={fix_to_ring}"
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
         # Plot particle number and dipoles per particle against the independent variable.
@@ -3859,6 +3869,7 @@ match(sys.argv[1]):
         # The following lists must be the same length.
         forces_output= ["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        materials = ["FusedSilica", "FusedSilica01"]
 
         # NORMAL EXAMPLE TEST
         # show_output     = False
@@ -3906,7 +3917,8 @@ match(sys.argv[1]):
             "particle_sizes": particle_sizes,
             "particle_shapes": particle_shapes,
             "object_offsets": object_offsets,
-            "dimensions": dimensions
+            "dimensions": dimensions,
+            "materials": materials
         }
 
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forces_returned, forces_output, particle_selections, polarisability_type="RR", indep_vector_component=2, torque_centre=torque_centre)
