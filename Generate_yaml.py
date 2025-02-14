@@ -510,7 +510,7 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
     """
     default_radius = 1e-07
     default_material = "FusedSilica"
-    material = "FusedSilica"    # NOTE; "FusedSilica01" can be used here for absorbing particles
+    material = "FusedSilica01"    # NOTE; "FusedSilica01" can be used here for absorbing particles
     particle_list = [{"material":material, "shape":shape, "args":args_list[i], "coords":coords_list[i], "altcolour":True} for i in range(len(coords_list))]
     write_particles(filename, particle_list, default_radius, default_material, connection_mode, connection_args )
 
