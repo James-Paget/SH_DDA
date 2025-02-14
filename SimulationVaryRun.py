@@ -13,6 +13,7 @@ import random
 import math
 import pickle
 import itertools as it
+import os
 
 import Display
 import DipolesMulti2024Eigen as DM
@@ -2352,7 +2353,7 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
     
     return positions, forces, particle_num, dpp_num
 
-def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
+def simulations_spheredisc_model(filename, disc_radius, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
     #
     # Consider an object of given parameters. Default to cube object, but can be sphere
     # dimension is total size in each axis. variables_list contains all of the parameters to be changed (dict).
@@ -2439,14 +2440,14 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
     dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
 
     # Precalculate lists of particle indices for each selection. 
-    particle_lists = []
-    for particle_selection in particle_selections:
-        if isinstance(particle_selection, list) and isinstance(particle_selection, (float, np.floating)):
-            particles = None
-        else:
-            # In the following case, set to None to mark that it needs to be calculated each time as different particles could be the closest to the specified vector.
-            particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
-        particle_lists.append(particles)
+    # particle_lists = []
+    # for particle_selection in particle_selections:
+    #     if isinstance(particle_selection=="all" or particle_selection, list) and isinstance(particle_selection, (float, np.floating)):
+    #         particles = None
+    #     else:
+    #         # In the following case, set to None to mark that it needs to be calculated each time as different particles could be the closest to the specified vector.
+    #         particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
+    #     particle_lists.append(particles)
 
     # Only make dipoles file if torque about given centre are needed.
     if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
@@ -2488,13 +2489,14 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
             # Simulation has run so have all the forces. Now do all experiments with force and particle selections
             for expt_i in range(num_expts_per_param):
                 force_type = forces_output[expt_i]
-                particles = particle_lists[expt_i]
+                #particles = particle_lists[expt_i]
+                particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
                 read_parameters_args = read_parameters_lookup[force_type]
                 read_parameters = []
 
                 # Calculate any Nones.
-                if particles is None: 
-                    particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
+                #if particles is None: 
+                #    particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
 
                 # Lookup values from <filename>.xlsx
                 if force_type[0] == "F" or force_type[0] == "C":
@@ -3711,6 +3713,10 @@ match(sys.argv[1]):
 
         # Save file
         filename = "SingleLaguerre"
+        if(os.path.exists(filename+".xlsx")):
+            os.remove(filename+".xlsx")
+        if(os.path.exists(filename+"_dipoles.xlsx")):
+            os.remove(filename+"_dipoles.xlsx")
 
         #-----------------------
         #-----------------------
@@ -3753,7 +3759,7 @@ match(sys.argv[1]):
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 50
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [75e-9]#np.linspace(80e-9, 100e-9, 20)
+        dipole_sizes    = [60e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         dda_forces_returned     = ["optical"]
         particle_shapes         = ["sphere"]
@@ -3763,7 +3769,7 @@ match(sys.argv[1]):
         include_dipole_forces   = False
         linestyle_var           = None
         polarisability_type     = "RR"
-        mode        = "sphere"     #"disc", "sphere"
+        mode        = "disc"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
         # NOTE; The following lists must be the same length.
@@ -3786,6 +3792,7 @@ match(sys.argv[1]):
 
         # Run
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_spheredisc_model(
+            filename,
             disc_radius, 
             variables_list, 
             dda_forces_returned, 
