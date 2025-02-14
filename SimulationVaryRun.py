@@ -2710,6 +2710,7 @@ def simulations_refine_all(filename, variables_list, dda_forces_returned, beam_t
                         if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
                         # Now, loop over all dipoles in each desired particle.
                         for d in range(dpp_num):
+                            # print(f"particle number {particle_num}, dpp {dpp_num}, p*dpp_num+d={p*dpp_num+d}")
                             read_parameters.extend([{"type":f, "particle":p*dpp_num+d, "subtype":s} for f,s in read_parameters_args])
 
                     pulled_data = pull_file_data(
@@ -2978,7 +2979,11 @@ def get_title_label_line_colour(variables_list, data_set_params, forces_output, 
     # 4) make linestyles and colours
     linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=cgrad)
 
-    return title_str, datalabel_set, linestyle_set, datacolor_set
+    # 5) axis labels
+    y_axis = "Torques /Nm" if forces_output[0][0]=="C" else "Forces /N"
+    graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_var)[0]} {display_var(indep_var)[1]}", "yAxis":y_axis} 
+
+    return title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set
 
 def split_title_legend(variables_list, indep_name):
     # make lists of variable names which will go into the title and the legend
@@ -3787,11 +3792,11 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
 
         # SPHERE AT CENTRE
-        show_output     = False
+        show_output     = True
         dimensions       = [1800e-9]    # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]   
         particle_sizes  = [dimensions[0]/2] # Single particle
-        dipole_sizes    = np.linspace(40e-9, 70e-9, 20)
+        dipole_sizes    = np.linspace(60e-9, 95e-9, 80)
         object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
         particle_shapes = ["sphere"]
         dda_forces_returned     = ["optical"]
@@ -3839,9 +3844,8 @@ match(sys.argv[1]):
 
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, place_regime=place_regime, polarisability_type="RR", show_output=show_output, indep_vector_component=2, torque_centre=torque_centre, func_spec={"name":"normal", "object_shape":object_shape})
 
-        title_str, datalabel_set, linestyle_set, datacolor_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_var, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+        title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_var, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
 
-        graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_var)[0]} {display_var(indep_var)[1]}", "yAxis":"Force /N"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
 
