@@ -2353,7 +2353,7 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
     
     return positions, forces, particle_num, dpp_num
 
-def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
+def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
     #
     # Consider an object of given parameters. Default to cube object, but can be sphere
     # dimension is total size in each axis. variables_list contains all of the parameters to be changed (dict).
@@ -2376,6 +2376,10 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
         {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]}, # (total force including hydrodynamics, not used here)
         {"type":"C", "args":["Cx", "Cy", "Cz"]}
     ]
+    parameters_stored_torque = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+    ]
     read_frames = [0]
     # Record what parameters each force output would require
     read_parameters_lookup = {
@@ -2387,6 +2391,10 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
         "Cx":   [["C",0]],
         "Cy":   [["C",1]],
         "Cz":   [["C",2]],
+        "Tmag": [["X",0], ["X",1], ["X",2], ["F",0], ["F",1], ["F",2]], # normal order
+        "Tx":   [["X",1], ["X",2], ["F",1], ["F",2]], # y,z,Fy,Fz
+        "Ty":   [["X",2], ["X",0], ["F",2], ["F",0]], # z,x,Fz,Fx
+        "Tz":   [["X",0], ["X",1], ["F",0], ["F",1]], # x,y,Fx,Fy
     }
     # Pull variables from list supplied
     dipole_sizes = variables_list["dipole_sizes"]
@@ -2441,6 +2449,10 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
             particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
         particle_lists.append(particles)
 
+    # Only make dipoles file if torque about given centre are needed.
+    if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
+    else: include_dipole_forces = False
+
     # START OF LOOP OVER PARAMS
     for params_i, params in enumerate(it.product(*line_vars)):
         data_set_params.append(params)
@@ -2478,30 +2490,62 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
             for expt_i in range(num_expts_per_param):
                 force_type = forces_output[expt_i]
                 particles = particle_lists[expt_i]
+                read_parameters_args = read_parameters_lookup[force_type]
+                read_parameters = []
 
                 # Calculate any Nones.
                 if particles is None: 
                     particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
 
-                read_parameters_args = read_parameters_lookup[force_type]
-                read_parameters = []
-                for p in particles:
-                    if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
-                    read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
+                # Lookup values from <filename>.xlsx
+                if force_type[0] == "F" or force_type[0] == "C":
+                    for p in particles:
+                        if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+                        read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
 
-                pulled_data = pull_file_data(
-                    filename, 
-                    parameters_stored, 
-                    read_frames, 
-                    read_parameters, 
-                    invert_output=False
-                )
+                    pulled_data = pull_file_data(
+                        filename, 
+                        parameters_stored, 
+                        read_frames, 
+                        read_parameters
+                    )
+                
+                # Lookup values from <filename>_dipoles.xlsx
+                elif force_type[0] == "T":
+                    for p in particles:
+                        if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+                        # Now, loop over all dipoles in each desired particle.
+                        for d in range(dpp_num):
+                            read_parameters.extend([{"type":f, "particle":p*dpp_num+d, "subtype":s} for f,s in read_parameters_args])
 
+                    pulled_data = pull_file_data(
+                        filename+"_dipoles", 
+                        parameters_stored_torque, 
+                        read_frames, 
+                        read_parameters
+                    )
+
+                # Calculate output from results
+                value_list = pulled_data[0] # frame 0
                 match force_type:
                     case "Fmag" | "Cmag":
                         output = np.zeros(3)
                         for p in range(len(particles)):
                             output += [pulled_data[0, 3*p+0], pulled_data[0, 3*p+1], pulled_data[0, 3*p+2]]
+                        output = np.linalg.norm(output)
+
+                    case "Tx" | "Ty" | "Tz":
+                        if force_type == "Tx": centre = torque_centre[1], torque_centre[2]
+                        elif force_type == "Ty": centre = torque_centre[2], torque_centre[0]
+                        elif force_type == "Tz": centre = torque_centre[0], torque_centre[1]
+                        output = 0
+                        for d in range(len(particles) * dpp_num):
+                            output += (value_list[4*d+0]-centre[0]) * value_list[4*d+3] - (value_list[4*d+1]-centre[0]) * value_list[4*d+2] # order for cross product comes from read_parameters_args
+                        # output *=2 # TEMP XXX REMOVE
+                    case "Tmag":
+                        output = np.zero(3)
+                        for d in range(len(particles) * dpp_num):
+                            output += np.cross(value_list[4*d+0:4*d+3] - torque_centre, value_list[4*d+3:4*d+6]) # order for cross product comes from read_parameters_args
                         output = np.linalg.norm(output)
                     
                     # Normally just sum all the force components in pulled_data
@@ -3697,12 +3741,42 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
 
+        #
+        # Sphere / Disc for measurements on far right particle
+        #
+        # show_output     = False
+        # disc_radius     = 1.09e-6                   # Radius of full disc
+        # particle_sizes  = [200e-9]                  # Radius of spherical particles used to model the disc
+        # separation_min = 0.0e-6
+        # separation_max = 1.4e-6#1.4e-6
+        # separation_iter = 20
+        # separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
+        # dipole_sizes    = [75e-9]#np.linspace(80e-9, 100e-9, 20)
+        # object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
+        # dda_forces_returned     = ["optical"]
+        # particle_shapes         = ["sphere"]
+        # indep_vector_component  = 0              # Which component to plot when dealing with vector quantities to plot (Often not used)
+        # indep_var               = "separations_list"
+        # beam_type               = "LAGUERRE" 
+        # include_dipole_forces   = False
+        # linestyle_var           = None
+        # polarisability_type     = "RR"
+        # mode        = "sphere"     #"disc", "sphere"
+        # frames      = 1
+        # time_step   = 1e-4
+        # # NOTE; The following lists must be the same length.
+        # forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        # particle_selections = [ [0], [0] ]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+
+        #
+        # Measure torque experienced by entire shape (sphere/disc/ring)
+        #
         show_output     = False
-        disc_radius     = 1.09e-6                   # Radius of full disc
-        particle_sizes  = [200e-9]                  # Radius of spherical particles used to model the disc
+        disc_radius     = 1.14e-6#1.09e-6                   # Radius of full disc
+        particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
-        separation_iter = 20
+        separation_iter = 50
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
         dipole_sizes    = [75e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
@@ -3718,8 +3792,8 @@ match(sys.argv[1]):
         frames      = 1
         time_step   = 1e-4
         # NOTE; The following lists must be the same length.
-        forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = [ [0], [0] ]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        forces_output= ["Tz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = ["all"]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
         #-----------------------
         #-----------------------
@@ -3753,10 +3827,13 @@ match(sys.argv[1]):
         )
 
         # Format output and make legend/title strings
-        title_start= "Torques" if forces_output[0][0]=="C" else "Forces" # try to determine if it is a torque or force plot.
+        title_start= "Torques" if (forces_output[0][0]=="C" or forces_output[0][0]=="T") else "Forces" # try to determine if it is a torque or force plot.
         title_str, datalabel_set, linestyle_set, datacolor_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, disc_radius, indep_name, title_start, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
 
-        graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
+        y_axis_units = "N"
+        if(title_start=="Torques"):
+            y_axis_units = "Nm"
+        graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":f"{title_start} /{y_axis_units}"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
 
