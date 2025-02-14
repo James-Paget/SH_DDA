@@ -2646,8 +2646,8 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
     data_set_length = int(var_set_length * num_expts_per_param/len(indep_list))
 
     data_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(data_set_length)], dtype=object)
-    particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
-    dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
+    particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(int(var_set_length/len(indep_list)))], dtype=object)
+    dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(int(var_set_length/len(indep_list)))], dtype=object)
     
     # Only make dipoles file if torque about given centre are needed.
     if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
@@ -3803,6 +3803,12 @@ match(sys.argv[1]):
         graphlabel_set["title"] += f", material={material}, mesh_shape={mode}, fix_ring={fix_to_ring}"
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
+        # Plot particle number and dipoles per particle against the independent variable.
+        particlelabel_set = {"title":"Particle number", "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
+        Display.plot_multi_data(particle_nums_set, datalabel_set[::len(forces_output)], graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(forces_output)], datacolor_set=datacolor_set[::len(forces_output)]) 
+        dipolelabel_set = {"title":"Dipoles per particle", "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
+        Display.plot_multi_data(dpp_nums_set, datalabel_set[::len(forces_output)], graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(forces_output)], datacolor_set=datacolor_set[::len(forces_output)]) 
+
 
     case "surface_stresses":
         #
@@ -3853,7 +3859,6 @@ match(sys.argv[1]):
         # The following lists must be the same length.
         forces_output= ["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...]
-        func_spec = {"name":"normal", "object_shape":object_shape}
 
         # NORMAL EXAMPLE TEST
         # show_output     = False

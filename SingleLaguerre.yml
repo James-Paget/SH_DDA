@@ -35,25 +35,25 @@ particles:
   connection_args: 0.0
   particle_list:
     part_0:
-      material: FusedSilica
+      material: FusedSilica01
       shape: sphere
       args: 1e-07
       coords: 1.14e-06 0.0 1e-06
       altcolour: True
     part_1:
-      material: FusedSilica
+      material: FusedSilica01
       shape: sphere
       args: 1e-07
       coords: 6.980486755139914e-23 1.14e-06 1e-06
       altcolour: True
     part_2:
-      material: FusedSilica
+      material: FusedSilica01
       shape: sphere
       args: 1e-07
       coords: -1.14e-06 1.3960973510279827e-22 1e-06
       altcolour: True
     part_3:
-      material: FusedSilica
+      material: FusedSilica01
       shape: sphere
       args: 1e-07
       coords: -2.094146026541974e-22 -1.14e-06 1e-06
