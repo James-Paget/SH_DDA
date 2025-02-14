@@ -256,10 +256,10 @@ def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, obj
     num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset, extra_args=extra_args)
     return num_particles
 
-def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode="disc", beam="LAGUERRE", time_step=1e-4, frames=1, show_output=False, absorbing_value="0"):
+def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode="disc", beam="LAGUERRE", time_step=1e-4, frames=1, show_output=False, material="FusedSilica", fix_to_ring=True):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    num_particles = use_fill_spheredisc(filename, dimension, separations, particle_size, object_offset, particle_shape, mode=mode, absorbing_value=absorbing_value)
+    num_particles = use_fill_spheredisc(filename, dimension, separations, particle_size, object_offset, particle_shape, mode=mode, material=material, fix_to_ring=fix_to_ring)
     return num_particles
 
 #=======================================================================
@@ -473,10 +473,10 @@ def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_of
     return num_particles
 
 
-def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode="disc", absorbing_value="0"):
+def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object_offset, particle_shape, mode="disc", material="FusedSilica", fix_to_ring=True):
     match mode:
         case "disc":
-            coords_list = get_fill_disc(disc_radius, separation, particle_size)
+            coords_list = get_fill_disc(disc_radius, separation, particle_size, fix_to_ring=fix_to_ring)
         case "sphere":
             coords_list = get_fill_sphere(disc_radius, separation, particle_size)
         case _:
@@ -485,7 +485,7 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * num_particles
     
-    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, absorbing_value=absorbing_value)
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, material=material)
     return num_particles
 
 # def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
@@ -505,17 +505,12 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
 
 
 
-def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args, absorbing_value="0"):
+def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args, material="FusedSilica"):
     """
     Fills in typical particle parameters e.g. material, but leaves particles general.
     """
     default_radius = 1e-07
     default_material = "FusedSilica"
-    match absorbing_value:
-        case "0": material = "FusedSilica"    # NOTE; "FusedSilica01" can be used here for absorbing particles
-        case "01": material = "FusedSilica01"
-        case "001": material = "FusedSilica001"
-        case _: material = "FusedSilica"; print("set particles to non-absorbing")
     particle_list = [{"material":material, "shape":shape, "args":args_list[i], "coords":coords_list[i], "altcolour":True} for i in range(len(coords_list))]
     write_particles(filename, particle_list, default_radius, default_material, connection_mode, connection_args )
 

@@ -3735,7 +3735,7 @@ match(sys.argv[1]):
         #
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
-        show_output     = False
+        show_output     = True
         disc_radius     = [1.14e-6]#1.09e-6                   # Radius of full disc
         particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
@@ -3755,7 +3755,8 @@ match(sys.argv[1]):
         mode        = "disc"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        absorbing_value = "01" # "0", "01", "001"
+        material = "FusedSilica" 
+        fix_to_ring = True
         # NOTE; The following lists must be the same length.
         forces_output= ["Tz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all"]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
@@ -3775,7 +3776,7 @@ match(sys.argv[1]):
         # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         indep_name = variables_list["indep_var"]
         
-        partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output, absorbing_value=absorbing_value)
+        partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output, material=material, fix_to_ring=fix_to_ring)
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(
             filename,
             variables_list, 
