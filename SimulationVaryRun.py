@@ -2353,7 +2353,7 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
     
     return positions, forces, particle_num, dpp_num
 
-def simulations_spheredisc_model(variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
+def simulations_spheredisc_model(filename, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
     #
     # Consider an object of given parameters. Default to cube object, but can be sphere
     # variables_list contains all of the parameters to be changed (dict).
@@ -2452,6 +2452,7 @@ def simulations_spheredisc_model(variables_list, dda_forces_returned, beam_type,
             # In the following case, set to None to mark that it needs to be calculated each time as different particles could be the closest to the specified vector.
             particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
         particle_lists.append(particles)
+    print("!!!! particle_lists", particle_lists)
 
     # Only make dipoles file if torque about given centre are needed.
     if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
@@ -2484,7 +2485,7 @@ def simulations_spheredisc_model(variables_list, dda_forces_returned, beam_type,
             particle_num = Generate_yaml.make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
             DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
 
-
+            print("PATICLE NUM IS ", particle_num)
             match particle_shape:
                 case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
                 case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
@@ -2495,13 +2496,13 @@ def simulations_spheredisc_model(variables_list, dda_forces_returned, beam_type,
             # Simulation has run so have all the forces. Now do all experiments with force and particle selections
             for expt_i in range(num_expts_per_param):
                 force_type = forces_output[expt_i]
-                particles = particle_lists[expt_i]
+                # particles = particle_lists[expt_i]
                 read_parameters_args = read_parameters_lookup[force_type]
                 read_parameters = []
 
                 # Calculate any Nones.
-                if particles is None: 
-                    particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
+                # if particles is None: 
+                particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
 
                 # Lookup values from <filename>.xlsx
                 if force_type[0] == "F" or force_type[0] == "C":
@@ -2568,7 +2569,7 @@ def simulations_spheredisc_model(variables_list, dda_forces_returned, beam_type,
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     return data_set, data_set_params, particle_nums_set, dpp_nums_set
             
-def simulations_refine_all(filename, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, place_regime="squish", polarisability_type="RR", show_output=True, indep_vector_component=2, time_step = 1e-4, torque_centre=[0,0,0], func_spec={"name":"normal", "object_shape":"cube"}):
+def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forces_returned, forces_output, particle_selections, polarisability_type="RR", indep_vector_component=2, torque_centre=[0,0,0]):
     #
     # Consider an object of given parameters. Default to cube object, but can be sphere
     # variables_list contains all of the parameters to be changed (dict).
@@ -2577,28 +2578,14 @@ def simulations_refine_all(filename, variables_list, dda_forces_returned, beam_t
     # forces_output is the force types returned, subset of ["Fmag", "Fx", "Fy", "Fz", "Cmag", "Cx", "Cy", "Cz", "Tmag", "Tx", "Ty", "Tz"]
     # particle_selections is a list of string keywords ("all"), ints (particle indices), or float vectors ([0,0,0], particle closest to this point)
     #
+    # Requires form partial_yaml_func(dimension=dimension, separations=separations, particle_size=particle_size, dipole_size=dipole_size, object_offset=object_offset, particle_shape=particle_shape)
+    #
     # Return data_set, data_set_params, particle_nums_set, dpp_nums_set
     # data set is [ [[indep var list], [force list]] for F, p in zip(forces_output, particle_selections) for each set of line parameters]
     # other returns give different data for the same pattern.
 
     if len(forces_output) != len(particle_selections): sys.exit(f"ERROR, forces_output and particle_selections must be the same length, not {len(forces_output)} and {len(particle_selections)}.")
 
-    # Get YAML function
-    # Args left to call: dimension, separations, particle_size, dipole_size, object_offset, particle_shape
-    if func_spec["name"] == "normal":
-        match func_spec["object_shape"]:
-            case "cube": isObjectCube = True
-            case "sphere": isObjectCube = False
-            case _: isObjectCube = False; print("WARNING, object shape set to sphere")
-        # partial_yaml = partial(Generate_yaml.make_yaml_refine_sphere, makeCube=isObjectCube, filename=filename, frames=1, time_step=time_step, place_regime=place_regime, show_output=show_output, beam=beam_type )
-
-    # elif func_spec["name"] == "spheredisc":
-    #     disc_radius = func_spec["disc_radius"]
-    #     mode = func_spec["mode"]
-    #     partial_yaml = partial(Generate_yaml.make_yaml_spheredisc_model, mode=mode, frames=1) # disc_radius=disc_radius,
-    #     #Generate_yaml.make_yaml_spheredisc_model(filename, disc_radius, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
-
-    
     # Specify all parameters in the file so a subset can be pulled later based on read_parameters
     parameters_stored = [
         {"type":"X", "args":["x", "y", "z"]},
@@ -2675,22 +2662,6 @@ def simulations_refine_all(filename, variables_list, dda_forces_returned, beam_t
     data_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(data_set_length)], dtype=object)
     particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
     dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
-
-    
-    # Precalculate lists of particle indices for each selection
-    # (only for list of indices, as all and close to positions must be recalculated each time)
-    particle_lists = []
-    for particle_selection in particle_selections:
-        if (
-            particle_selection == "all" or
-            (isinstance(particle_selection, list) and isinstance(particle_selection[0], list) and isinstance(particle_selection[0][0], (float, np.floating)))
-        ):
-            particles = None
-        else:
-            # In the following case, set to None to mark that it needs to be calculated each time as different particles could be the closest to the specified vector.
-            particles = select_particle_indices(filename, particle_selection, parameters_stored, read_frames=[0])
-        particle_lists.append(particles)
-
     
     # Only make dipoles file if torque about given centre are needed.
     if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
@@ -2720,7 +2691,8 @@ def simulations_refine_all(filename, variables_list, dda_forces_returned, beam_t
                 case "dimensions": dimension = indep_var
         
             # Generate YAML & Run Simulation
-            particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type, makeCube=isObjectCube)
+            particle_num = partial_yaml_func(dimension=dimension, separations=separations, particle_size=particle_size, dipole_size=dipole_size, object_offset=object_offset, particle_shape=particle_shape)
+            # particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type, makeCube=isObjectCube)
             DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
 
             match particle_shape:
@@ -2734,14 +2706,10 @@ def simulations_refine_all(filename, variables_list, dda_forces_returned, beam_t
             # Simulation has run so have all the forces. Now do all experiments with force and particle selections
             for expt_i in range(num_expts_per_param):
                 force_type = forces_output[expt_i]
-                particles = particle_lists[expt_i]
+                particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
                 read_parameters_args = read_parameters_lookup[force_type]
                 read_parameters = []
-
-                # Calculate any Nones.
-                if particles is None: 
-                    particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
-
+        
                 # Lookup values from <filename>.xlsx
                 if force_type[0] == "F" or force_type[0] == "C":
                     for p in particles:
@@ -3780,11 +3748,11 @@ match(sys.argv[1]):
         show_output     = False
         disc_radius     = [1.14e-6]#1.09e-6                   # Radius of full disc
         particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
-        separation_min = 0.7e-6
+        separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
-        separation_iter = 5
+        separation_iter = 50
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [75e-9]#np.linspace(80e-9, 100e-9, 20)
+        dipole_sizes    = [60e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         dda_forces_returned     = ["optical"]
         particle_shapes         = ["sphere"]
@@ -3794,9 +3762,10 @@ match(sys.argv[1]):
         include_dipole_forces   = False
         linestyle_var           = None
         polarisability_type     = "RR"
-        mode        = "sphere"     #"disc", "sphere"
+        mode        = "disc"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
+        absorbing_value = "01" # "0", "01", "001"
         # NOTE; The following lists must be the same length.
         forces_output= ["Tz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all"]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
@@ -3815,31 +3784,23 @@ match(sys.argv[1]):
         }
         # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         indep_name = variables_list["indep_var"]
-
-        # Run
-        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_spheredisc_model( 
+        
+        partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output, absorbing_value=absorbing_value)
+        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(
+            filename, 
             variables_list, 
+            partial_yaml_func, 
             dda_forces_returned, 
-            beam_type, 
-            forces_output = forces_output,
-            particle_selections = particle_selections,
-            include_dipole_forces=include_dipole_forces, 
-            polarisability_type=polarisability_type, 
-            mode=mode,
-            indep_vector_component=indep_vector_component,
-            time_step=time_step, 
-            frames=frames, 
-            show_output=show_output
+            forces_output, 
+            particle_selections, 
+            polarisability_type="RR", 
+            indep_vector_component=indep_vector_component, 
+            torque_centre=[0,0,0]
         )
 
         # Format output and make legend/title strings
-        title_start= "Torques" if (forces_output[0][0]=="C" or forces_output[0][0]=="T") else "Forces" # try to determine if it is a torque or force plot.
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
                                    
-        # y_axis_units = "N"
-        # if(title_start=="Torques"):
-        #     y_axis_units = "Nm"
-        # graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":f"{title_start} /{y_axis_units}"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
 
@@ -3879,7 +3840,7 @@ match(sys.argv[1]):
         dimensions       = [1200e-9]    # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]   
         particle_sizes  = [dimensions[0]/2] # Single particle
-        dipole_sizes    = np.linspace(60e-9, 95e-9, 10)
+        dipole_sizes    = np.linspace(60e-9, 95e-9, 5)
         object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
         particle_shapes = ["sphere"]
         dda_forces_returned     = ["optical"]
@@ -3892,6 +3853,7 @@ match(sys.argv[1]):
         # The following lists must be the same length.
         forces_output= ["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        func_spec = {"name":"normal", "object_shape":object_shape}
 
         # NORMAL EXAMPLE TEST
         # show_output     = False
@@ -3912,6 +3874,23 @@ match(sys.argv[1]):
         # forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         # particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
+            # Get YAML function
+        # partial_yaml_func args left to call: dimension, separations, particle_size, dipole_size, object_offset, particle_shape
+
+        match object_shape:
+            case "cube": isObjectCube = True
+            case "sphere": isObjectCube = False
+            case _: isObjectCube = False; print("WARNING, object shape set to sphere")
+        partial_yaml_func = partial(Generate_yaml.make_yaml_refine_sphere, makeCube=isObjectCube, filename=filename, frames=1, time_step=1e-4, place_regime=place_regime, show_output=show_output, beam=beam_type )
+
+        # elif func_spec["name"] == "spheredisc":
+        #     disc_radius = func_spec["disc_radius"]
+        #     mode = func_spec["mode"]
+        #     partial_yaml = partial(Generate_yaml.make_yaml_spheredisc_model, mode=mode, frames=1) # disc_radius=disc_radius,
+        #     #Generate_yaml.make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
+
+    
+
         #-----------------------
         #-----------------------
 
@@ -3925,7 +3904,7 @@ match(sys.argv[1]):
             "dimensions": dimensions
         }
 
-        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, place_regime=place_regime, polarisability_type="RR", show_output=show_output, indep_vector_component=2, torque_centre=torque_centre, func_spec={"name":"normal", "object_shape":object_shape})
+        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forces_returned, forces_output, particle_selections, polarisability_type="RR", indep_vector_component=2, torque_centre=torque_centre)
 
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_var, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
 
