@@ -2646,8 +2646,8 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
     data_set_length = int(var_set_length * num_expts_per_param/len(indep_list))
 
     data_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(data_set_length)], dtype=object)
-    particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
-    dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
+    particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(int(var_set_length/len(indep_list)))], dtype=object)
+    dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(int(var_set_length/len(indep_list)))], dtype=object)
     
     # Only make dipoles file if torque about given centre are needed.
     if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
@@ -3735,14 +3735,14 @@ match(sys.argv[1]):
         #
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
-        show_output     = True
+        show_output     = False
         disc_radius     = [1.14e-6]#1.09e-6                   # Radius of full disc
         particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 50
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [60e-9]#np.linspace(80e-9, 100e-9, 20)
+        dipole_sizes    = [50e-9, 60e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         dda_forces_returned     = ["optical"]
         particle_shapes         = ["sphere"]
@@ -3755,11 +3755,11 @@ match(sys.argv[1]):
         mode        = "disc"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        material = "FusedSilica" 
+        material = "FusedSilica01" 
         fix_to_ring = True
         # NOTE; The following lists must be the same length.
-        forces_output= ["Tz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = ["all"]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        forces_output= ["Tz", "Tx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = ["all","all"]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
 
         #-----------------------
         #-----------------------
@@ -3793,6 +3793,12 @@ match(sys.argv[1]):
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
                                    
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
+
+        # Plot particle number and dipoles per particle against the independent variable.
+        particlelabel_set = {"title":"Particle number", "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
+        Display.plot_multi_data(particle_nums_set, datalabel_set[::len(forces_output)], graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(forces_output)], datacolor_set=datacolor_set[::len(forces_output)]) 
+        dipolelabel_set = {"title":"Dipoles per particle", "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
+        Display.plot_multi_data(dpp_nums_set, datalabel_set[::len(forces_output)], graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(forces_output)], datacolor_set=datacolor_set[::len(forces_output)]) 
 
 
     case "surface_stresses":
@@ -3844,7 +3850,6 @@ match(sys.argv[1]):
         # The following lists must be the same length.
         forces_output= ["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...]
-        func_spec = {"name":"normal", "object_shape":object_shape}
 
         # NORMAL EXAMPLE TEST
         # show_output     = False
