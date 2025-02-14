@@ -1749,6 +1749,8 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             case "cube":
                 dipole_primitive_num[particle_i] = cube_size(args[particle_i], dipole_radius)
     dipole_primitive_num_total = np.sum(dipole_primitive_num);
+    if(verbosity==0):
+        print("Dipole Total; ",dipole_primitive_num_total)
 
     # Check dipole_primitive_num_total is an expected number
     dipole_primitive_num_max = 15000
