@@ -2668,6 +2668,12 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
         # Iterate over independent variable to get the data for each line.
         for i, indep_var in enumerate(indep_list):
             print("\nProgress;"+str( "="*(int(np.floor(10*(i+ params_i*len(indep_list))/var_set_length))) )+str("-"*(int(np.floor(10*(1.0- (i+ params_i*len(indep_list))/var_set_length)))) )+"; "+str((i+ params_i*len(indep_list)))+"/"+str(var_set_length))
+            # Very precautious clearing of file here, as there were issues with incorrect reading before
+            if(os.path.exists(filename+".xlsx")):
+                os.remove(filename+".xlsx")
+            if(os.path.exists(filename+"_dipoles.xlsx")):
+                os.remove(filename+"_dipoles.xlsx")
+
             match indep_name:
                 case "dipole_sizes": dipole_size = indep_var
                 case "separations_list": separations = indep_var
@@ -3735,14 +3741,14 @@ match(sys.argv[1]):
         #
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
-        show_output     = True
-        disc_radius     = [1.14e-6]#1.09e-6                   # Radius of full disc
+        show_output     = False
+        disc_radius     = [1.14e-6]    #1.14e-6 #1.09e-6                   # Radius of full disc
         particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 50
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [60e-9]#np.linspace(80e-9, 100e-9, 20)
+        dipole_sizes    = [50e-9]#[40e-9, 50e-9, 60e-9, 70e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         dda_forces_returned     = ["optical"]
         particle_shapes         = ["sphere"]
@@ -3752,14 +3758,16 @@ match(sys.argv[1]):
         include_dipole_forces   = False
         linestyle_var           = None
         polarisability_type     = "RR"
-        mode        = "disc"     #"disc", "sphere"
+        mode        = "sphere"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        material = "FusedSilica" 
-        fix_to_ring = True
+        material = "FusedSilica"
+        fix_to_ring = False
         # NOTE; The following lists must be the same length.
         forces_output= ["Tz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all"]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        # forces_output= ["Fx", "Fy"]
+        # particle_selections = [ [0],[0] ]
 
         #-----------------------
         #-----------------------
@@ -3791,7 +3799,8 @@ match(sys.argv[1]):
 
         # Format output and make legend/title strings
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-                                   
+      
+        graphlabel_set["title"] += f", material={material}, mesh_shape={mode}, fix_ring={fix_to_ring}"
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
 
