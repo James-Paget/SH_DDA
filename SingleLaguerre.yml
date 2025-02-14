@@ -68,429 +68,489 @@ particles:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.6999999999999984e-07 8.140638795573725e-07 1e-06
+      coords: 5.75583995599256e-23 9.400000000000001e-07 1e-06
       altcolour: True
     part_6:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.700000000000005e-07 -8.140638795573722e-07 1e-06
+      coords: -9.400000000000001e-07 1.151167991198512e-22 1e-06
       altcolour: True
     part_7:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 7.400000000000001e-07 0.0 1e-06
+      coords: -1.726751986797768e-22 -9.400000000000001e-07 1e-06
       altcolour: True
     part_8:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -7.400000000000001e-07 9.062386313690415e-23 1e-06
+      coords: 7.400000000000001e-07 0.0 1e-06
       altcolour: True
     part_9:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 5.400000000000001e-07 0.0 1e-06
+      coords: -3.6999999999999995e-07 6.408587988004847e-07 1e-06
       altcolour: True
     part_10:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -5.400000000000001e-07 6.613092715395709e-23 1e-06
+      coords: -3.700000000000004e-07 -6.408587988004845e-07 1e-06
       altcolour: True
     part_11:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 1.1223190277278562e-06 0.0 1.2e-06
+      coords: 5.400000000000001e-07 0.0 1e-06
       altcolour: True
     part_12:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 1.1223190277278562e-06 0.0 8e-07
+      coords: -5.400000000000001e-07 6.613092715395709e-23 1e-06
       altcolour: True
     part_13:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.872222024645443e-23 1.1223190277278562e-06 1.2e-06
+      coords: 1.1223190277278562e-06 0.0 1.2e-06
       altcolour: True
     part_14:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.872222024645443e-23 1.1223190277278562e-06 8e-07
+      coords: 1.1223190277278562e-06 0.0 8e-07
       altcolour: True
     part_15:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -1.1223190277278562e-06 1.3744444049290886e-22 1.2e-06
+      coords: 6.872222024645443e-23 1.1223190277278562e-06 1.2e-06
       altcolour: True
     part_16:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -1.1223190277278562e-06 1.3744444049290886e-22 8e-07
+      coords: 6.872222024645443e-23 1.1223190277278562e-06 8e-07
       altcolour: True
     part_17:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -2.0616666073936329e-22 -1.1223190277278562e-06 1.2e-06
+      coords: -1.1223190277278562e-06 1.3744444049290886e-22 1.2e-06
       altcolour: True
     part_18:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -2.0616666073936329e-22 -1.1223190277278562e-06 8e-07
+      coords: -1.1223190277278562e-06 1.3744444049290886e-22 8e-07
       altcolour: True
     part_19:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 9.223190277278562e-07 0.0 1.2e-06
+      coords: -2.0616666073936329e-22 -1.1223190277278562e-06 1.2e-06
       altcolour: True
     part_20:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 9.223190277278562e-07 0.0 8e-07
+      coords: -2.0616666073936329e-22 -1.1223190277278562e-06 8e-07
       altcolour: True
     part_21:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.611595138639279e-07 7.987517084060875e-07 1.2e-06
+      coords: 9.223190277278562e-07 0.0 1.2e-06
       altcolour: True
     part_22:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.611595138639279e-07 7.987517084060875e-07 8e-07
+      coords: 9.223190277278562e-07 0.0 8e-07
       altcolour: True
     part_23:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.611595138639285e-07 -7.987517084060873e-07 1.2e-06
+      coords: -4.6115951386392793e-07 7.987517084060875e-07 1.2e-06
       altcolour: True
     part_24:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.611595138639285e-07 -7.987517084060873e-07 8e-07
+      coords: -4.6115951386392793e-07 7.987517084060875e-07 8e-07
       altcolour: True
     part_25:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 7.223190277278562e-07 0.0 1.2e-06
+      coords: -4.611595138639285e-07 -7.987517084060873e-07 1.2e-06
       altcolour: True
     part_26:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 7.223190277278562e-07 0.0 8e-07
+      coords: -4.611595138639285e-07 -7.987517084060873e-07 8e-07
       altcolour: True
     part_27:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -7.223190277278562e-07 8.845856852701474e-23 1.2e-06
+      coords: 7.223190277278562e-07 0.0 1.2e-06
       altcolour: True
     part_28:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -7.223190277278562e-07 8.845856852701474e-23 8e-07
+      coords: 7.223190277278562e-07 0.0 8e-07
       altcolour: True
     part_29:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 5.223190277278562e-07 0.0 1.2e-06
+      coords: -3.61159513863928e-07 6.255466276491999e-07 1.2e-06
       altcolour: True
     part_30:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 5.223190277278562e-07 0.0 8e-07
+      coords: -3.61159513863928e-07 6.255466276491999e-07 8e-07
       altcolour: True
     part_31:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -5.223190277278562e-07 6.396563254406768e-23 1.2e-06
+      coords: -3.611595138639284e-07 -6.255466276491996e-07 1.2e-06
       altcolour: True
     part_32:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -5.223190277278562e-07 6.396563254406768e-23 8e-07
+      coords: -3.611595138639284e-07 -6.255466276491996e-07 8e-07
       altcolour: True
     part_33:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 1.0675204916066016e-06 0.0 1.4e-06
+      coords: 5.223190277278562e-07 0.0 1.2e-06
       altcolour: True
     part_34:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 1.0675204916066016e-06 0.0 6e-07
+      coords: 5.223190277278562e-07 0.0 8e-07
       altcolour: True
     part_35:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.536677765351168e-23 1.0675204916066016e-06 1.4e-06
+      coords: -5.223190277278562e-07 6.396563254406768e-23 1.2e-06
       altcolour: True
     part_36:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.536677765351168e-23 1.0675204916066016e-06 6e-07
+      coords: -5.223190277278562e-07 6.396563254406768e-23 8e-07
       altcolour: True
     part_37:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -1.0675204916066016e-06 1.3073355530702337e-22 1.4e-06
+      coords: 1.0675204916066016e-06 0.0 1.4e-06
       altcolour: True
     part_38:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -1.0675204916066016e-06 1.3073355530702337e-22 6e-07
+      coords: 1.0675204916066016e-06 0.0 6e-07
       altcolour: True
     part_39:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -1.9610033296053503e-22 -1.0675204916066016e-06 1.4e-06
+      coords: 6.536677765351168e-23 1.0675204916066016e-06 1.4e-06
       altcolour: True
     part_40:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -1.9610033296053503e-22 -1.0675204916066016e-06 6e-07
+      coords: 6.536677765351168e-23 1.0675204916066016e-06 6e-07
       altcolour: True
     part_41:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 8.675204916066016e-07 0.0 1.4e-06
+      coords: -1.0675204916066016e-06 1.3073355530702337e-22 1.4e-06
       altcolour: True
     part_42:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 8.675204916066016e-07 0.0 6e-07
+      coords: -1.0675204916066016e-06 1.3073355530702337e-22 6e-07
       altcolour: True
     part_43:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.337602458033006e-07 7.512947840348819e-07 1.4e-06
+      coords: -1.9610033296053503e-22 -1.0675204916066016e-06 1.4e-06
       altcolour: True
     part_44:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.337602458033006e-07 7.512947840348819e-07 6e-07
+      coords: -1.9610033296053503e-22 -1.0675204916066016e-06 6e-07
       altcolour: True
     part_45:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.337602458033012e-07 -7.512947840348817e-07 1.4e-06
+      coords: 8.675204916066016e-07 0.0 1.4e-06
       altcolour: True
     part_46:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.337602458033012e-07 -7.512947840348817e-07 6e-07
+      coords: 8.675204916066016e-07 0.0 6e-07
       altcolour: True
     part_47:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.675204916066017e-07 0.0 1.4e-06
+      coords: -4.3376024580330067e-07 7.512947840348819e-07 1.4e-06
       altcolour: True
     part_48:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.675204916066017e-07 0.0 6e-07
+      coords: -4.3376024580330067e-07 7.512947840348819e-07 6e-07
       altcolour: True
     part_49:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -6.675204916066017e-07 8.174768334112924e-23 1.4e-06
+      coords: -4.337602458033012e-07 -7.512947840348817e-07 1.4e-06
       altcolour: True
     part_50:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -6.675204916066017e-07 8.174768334112924e-23 6e-07
+      coords: -4.337602458033012e-07 -7.512947840348817e-07 6e-07
       altcolour: True
     part_51:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 9.693296652842108e-07 0.0 1.6e-06
+      coords: 6.675204916066017e-07 0.0 1.4e-06
       altcolour: True
     part_52:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 9.693296652842108e-07 0.0 4e-07
+      coords: 6.675204916066017e-07 0.0 6e-07
       altcolour: True
     part_53:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.846648326421052e-07 8.394641147779934e-07 1.6e-06
+      coords: -6.675204916066017e-07 8.174768334112924e-23 1.4e-06
       altcolour: True
     part_54:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.846648326421052e-07 8.394641147779934e-07 4e-07
+      coords: -6.675204916066017e-07 8.174768334112924e-23 6e-07
       altcolour: True
     part_55:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.846648326421058e-07 -8.394641147779931e-07 1.6e-06
+      coords: 4.6752049160660167e-07 0.0 1.4e-06
       altcolour: True
     part_56:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.846648326421058e-07 -8.394641147779931e-07 4e-07
+      coords: 4.6752049160660167e-07 0.0 6e-07
       altcolour: True
     part_57:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 7.693296652842108e-07 0.0 1.6e-06
+      coords: -4.6752049160660167e-07 5.725474735818218e-23 1.4e-06
       altcolour: True
     part_58:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 7.693296652842108e-07 0.0 4e-07
+      coords: -4.6752049160660167e-07 5.725474735818218e-23 6e-07
       altcolour: True
     part_59:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -3.8466483264210525e-07 6.662590340211058e-07 1.6e-06
+      coords: 9.693296652842108e-07 0.0 1.6e-06
       altcolour: True
     part_60:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -3.8466483264210525e-07 6.662590340211058e-07 4e-07
+      coords: 9.693296652842108e-07 0.0 4e-07
       altcolour: True
     part_61:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -3.846648326421057e-07 -6.662590340211054e-07 1.6e-06
+      coords: 5.93543235954442e-23 9.693296652842108e-07 1.6e-06
       altcolour: True
     part_62:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -3.846648326421057e-07 -6.662590340211054e-07 4e-07
+      coords: 5.93543235954442e-23 9.693296652842108e-07 4e-07
       altcolour: True
     part_63:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 5.693296652842108e-07 0.0 1.6e-06
+      coords: -9.693296652842108e-07 1.187086471908884e-22 1.6e-06
       altcolour: True
     part_64:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 5.693296652842108e-07 0.0 4e-07
+      coords: -9.693296652842108e-07 1.187086471908884e-22 4e-07
       altcolour: True
     part_65:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -5.693296652842108e-07 6.972277522499428e-23 1.6e-06
+      coords: -1.780629707863326e-22 -9.693296652842108e-07 1.6e-06
       altcolour: True
     part_66:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -5.693296652842108e-07 6.972277522499428e-23 4e-07
+      coords: -1.780629707863326e-22 -9.693296652842108e-07 4e-07
       altcolour: True
     part_67:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 8.121576201698783e-07 0.0 1.8e-06
+      coords: 7.693296652842108e-07 0.0 1.6e-06
       altcolour: True
     part_68:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 8.121576201698783e-07 0.0 2e-07
+      coords: 7.693296652842108e-07 0.0 4e-07
       altcolour: True
     part_69:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.06078810084939e-07 7.033491309442277e-07 1.8e-06
+      coords: -3.846648326421053e-07 6.662590340211058e-07 1.6e-06
       altcolour: True
     part_70:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.06078810084939e-07 7.033491309442277e-07 2e-07
+      coords: -3.846648326421053e-07 6.662590340211058e-07 4e-07
       altcolour: True
     part_71:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.0607881008493953e-07 -7.033491309442274e-07 1.8e-06
+      coords: -3.846648326421057e-07 -6.662590340211054e-07 1.6e-06
       altcolour: True
     part_72:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -4.0607881008493953e-07 -7.033491309442274e-07 2e-07
+      coords: -3.846648326421057e-07 -6.662590340211054e-07 4e-07
       altcolour: True
     part_73:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.121576201698783e-07 0.0 1.8e-06
+      coords: 5.693296652842108e-07 0.0 1.6e-06
       altcolour: True
     part_74:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: 6.121576201698783e-07 0.0 2e-07
+      coords: 5.693296652842108e-07 0.0 4e-07
       altcolour: True
     part_75:
       material: FusedSilica01
       shape: sphere
       args: 1e-07
-      coords: -6.121576201698783e-07 7.496768701147027e-23 1.8e-06
+      coords: -5.693296652842108e-07 6.972277522499428e-23 1.6e-06
       altcolour: True
     part_76:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: -5.693296652842108e-07 6.972277522499428e-23 4e-07
+      altcolour: True
+    part_77:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: 8.121576201698783e-07 0.0 1.8e-06
+      altcolour: True
+    part_78:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: 8.121576201698783e-07 0.0 2e-07
+      altcolour: True
+    part_79:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: -4.06078810084939e-07 7.033491309442277e-07 1.8e-06
+      altcolour: True
+    part_80:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: -4.06078810084939e-07 7.033491309442277e-07 2e-07
+      altcolour: True
+    part_81:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: -4.0607881008493953e-07 -7.033491309442274e-07 1.8e-06
+      altcolour: True
+    part_82:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: -4.0607881008493953e-07 -7.033491309442274e-07 2e-07
+      altcolour: True
+    part_83:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: 6.121576201698783e-07 0.0 1.8e-06
+      altcolour: True
+    part_84:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: 6.121576201698783e-07 0.0 2e-07
+      altcolour: True
+    part_85:
+      material: FusedSilica01
+      shape: sphere
+      args: 1e-07
+      coords: -6.121576201698783e-07 7.496768701147027e-23 1.8e-06
+      altcolour: True
+    part_86:
       material: FusedSilica01
       shape: sphere
       args: 1e-07

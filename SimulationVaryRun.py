@@ -2353,10 +2353,10 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
     
     return positions, forces, particle_num, dpp_num
 
-def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
+def simulations_spheredisc_model(variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
     #
     # Consider an object of given parameters. Default to cube object, but can be sphere
-    # dimension is total size in each axis. variables_list contains all of the parameters to be changed (dict).
+    # variables_list contains all of the parameters to be changed (dict).
     # dda_forces_returned are the forces returned from the DDA - usually ["optical"]. object_shape is either "sphere" or "cube"
     # beam_type is str for the beam, usually "LAGUERRE"
     # forces_output is the force types returned, subset of ["Fmag", "Fx", "Fy", "Fz", "Cmag", "Cx", "Cy", "Cz"]
@@ -2402,26 +2402,30 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
     particle_sizes = variables_list["particle_sizes"]
     particle_shapes = variables_list["particle_shapes"]
     object_offsets = variables_list["object_offsets"]
+    dimensions = variables_list["dimensions"]
     # get the independent variable (the one to be plotted against)
     indep_name = variables_list["indep_var"]
     indep_list = np.array(variables_list[indep_name])
     # Based on the indep var, set what variable are varied over different lines of the graph.
     match indep_name:
         case "dipole_sizes": 
-            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets]
+            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets, dimensions]
             indep_axis_list = indep_list
         case "separations_list": 
-            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets]
+            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets, dimensions]
             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
         case "particle_sizes": 
-            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets]
+            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets, dimensions]
             indep_axis_list = indep_list
         case "particle_shapes": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets]
+            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets, dimensions]
             indep_axis_list = indep_list
         case "object_offsets": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes]
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, dimensions]
             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
+        case "dimensions": 
+            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets]
+            indep_axis_list = indep_list # note, this is 1D (sphere and cube only)
             
     
     print("Performing sphere-disc calculation")
@@ -2458,11 +2462,12 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
         data_set_params.append(params)
 
         match indep_name:
-            case "dipole_sizes": separations, particle_size, particle_shape, object_offset = params
-            case "separations_list": dipole_size, particle_size, particle_shape, object_offset = params
-            case "particle_sizes": dipole_size, separations, particle_shape, object_offset = params
-            case "particle_shapes": dipole_size, separations, particle_size, object_offset = params
-            case "object_offsets": dipole_size, separations, particle_size, particle_shape = params
+            case "dipole_sizes": separations, particle_size, particle_shape, object_offset, dimension = params
+            case "separations_list": dipole_size, particle_size, particle_shape, object_offset, dimension = params
+            case "particle_sizes": dipole_size, separations, particle_shape, object_offset, dimension = params
+            case "particle_shapes": dipole_size, separations, particle_size, object_offset, dimension = params
+            case "object_offsets": dipole_size, separations, particle_size, particle_shape, dimension = params
+            case "dimensions": dipole_size, separations, particle_size, particle_shape, object_offset = params
 
         # Iterate over independent variable to get the data for each line.
         for i, indep_var in enumerate(indep_list):
@@ -2473,9 +2478,10 @@ def simulations_spheredisc_model(disc_radius, variables_list, dda_forces_returne
                 case "particle_sizes": particle_size = indep_var
                 case "particle_shapes": particle_shape = indep_var
                 case "object_offsets": object_offset = indep_var
+                case "dimensions": dimension = indep_var
         
             # Generate YAML & Run Simulation
-            particle_num = Generate_yaml.make_yaml_spheredisc_model(filename, disc_radius, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
+            particle_num = Generate_yaml.make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
             DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
 
 
@@ -3025,7 +3031,7 @@ def get_title_label_line_colour(variables_list, data_set_params, forces_output, 
     linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=cgrad)
 
     # 5) axis labels
-    y_axis = "Torques /Nm" if forces_output[0][0]=="C" else "Forces /N"
+    y_axis = "Forces /N" if forces_output[0][0]=="F" else "Torques /Nm"
     graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_var)[0]} {display_var(indep_var)[1]}", "yAxis":y_axis} 
 
     return title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set
@@ -3772,11 +3778,11 @@ match(sys.argv[1]):
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
         show_output     = False
-        disc_radius     = 1.14e-6#1.09e-6                   # Radius of full disc
+        disc_radius     = [1.14e-6]#1.09e-6                   # Radius of full disc
         particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
-        separation_min = 0.0e-6
+        separation_min = 0.7e-6
         separation_max = 1.4e-6#1.4e-6
-        separation_iter = 50
+        separation_iter = 5
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
         dipole_sizes    = [75e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
@@ -3804,14 +3810,14 @@ match(sys.argv[1]):
             "separations_list": separations_list,
             "particle_sizes": particle_sizes,
             "particle_shapes": particle_shapes,
-            "object_offsets": object_offsets
+            "object_offsets": object_offsets,
+            "dimensions": disc_radius
         }
         # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         indep_name = variables_list["indep_var"]
 
         # Run
-        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_spheredisc_model(
-            disc_radius, 
+        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_spheredisc_model( 
             variables_list, 
             dda_forces_returned, 
             beam_type, 
@@ -3828,12 +3834,12 @@ match(sys.argv[1]):
 
         # Format output and make legend/title strings
         title_start= "Torques" if (forces_output[0][0]=="C" or forces_output[0][0]=="T") else "Forces" # try to determine if it is a torque or force plot.
-        title_str, datalabel_set, linestyle_set, datacolor_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, disc_radius, indep_name, title_start, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-
-        y_axis_units = "N"
-        if(title_start=="Torques"):
-            y_axis_units = "Nm"
-        graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":f"{title_start} /{y_axis_units}"} 
+        title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+                                   
+        # y_axis_units = "N"
+        # if(title_start=="Torques"):
+        #     y_axis_units = "Nm"
+        # graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":f"{title_start} /{y_axis_units}"} 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
 
@@ -3869,11 +3875,11 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
 
         # SPHERE AT CENTRE
-        show_output     = True
-        dimensions       = [1800e-9]    # Full width of sphere/cube
+        show_output     = False
+        dimensions       = [1200e-9]    # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]   
         particle_sizes  = [dimensions[0]/2] # Single particle
-        dipole_sizes    = np.linspace(60e-9, 95e-9, 80)
+        dipole_sizes    = np.linspace(60e-9, 95e-9, 10)
         object_offsets  = [[0e-6, 0.0, 0.0e-6]]      # Offset the whole object
         particle_shapes = ["sphere"]
         dda_forces_returned     = ["optical"]
