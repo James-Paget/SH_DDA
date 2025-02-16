@@ -264,7 +264,7 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     force = np.zeros([3, 3])
 
     if np.isnan(rij).any() or np.isnan(rik).any():
-        print(f"Bending force received NaN,returning 0. rij; rik; r_plane = {rij}; {rik}; {r_plane}")
+        print(f"Bending force received NaN,returning 0. ri = {ri}, rj = {rj}, rij = {rij}; rik = {rik}; r_plane = {r_plane}")
         return np.zeros([3, 3])
     
     # Rotate rij so that if it were at eqm_angle, it would be at a stable eqm.
@@ -1823,7 +1823,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
     # particle_groups = group_particles_into_objects(number_of_particles, connection_indices)
     # print(f"particle_groups is {particle_groups}")
     particle_neighbours = get_nearest_neighbours(number_of_particles, connection_indices, max_connections_dist=2)
-
+    np.random.seed(2) # XXX remove
     for i in range(number_of_timesteps):
         #
         # Pass in list of dipole positions to generate total dipole array;
@@ -1870,6 +1870,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             print(" Simulation Step: ",i)
             #print(i,optical)
 
+        print("1position vectors are", position_vectors)
         D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
 
         total_force_array = np.zeros( (number_of_particles,3), dtype=np.float64 )
@@ -1893,6 +1894,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
                 case "gravity":
                     gravity = gravity_force_array(position_vectors, effective_radii[0])
                     total_force_array += gravity
+            print(f"{force_param} position vectors ", position_vectors)
 
         # Record total forces too if required
         if include_force==True:
@@ -1905,6 +1907,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         R = np.random.multivariate_normal(mean, cov)
         SumDijFj = (1 / (k_B * temperature)) * np.dot(D, F)
         positions_stacked = np.hstack(position_vectors)
+        print("FINAL position vectors ", position_vectors)
         new_positions = positions_stacked + SumDijFj * timestep + R
         #        new_positions = positions_stacked + temp
 
@@ -1916,7 +1919,6 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         for j in range(len(new_positions_list)):
             new_positions_array[j] = new_positions_list[j]
         position_vectors = new_positions_array
-
         # particles not experiencing mutual Buckingham force are moved apart if overlapping
         stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
 

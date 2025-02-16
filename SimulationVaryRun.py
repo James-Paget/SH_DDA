@@ -3917,20 +3917,29 @@ match(sys.argv[1]):
 
 
     case "stretcher_with_springs":
-        filename = "optical_stretcher"
-        num_particles = 50
-        sphere_radius = 0.6e-6
-        dipole_size = 40e-9
-        particle_radius = 0.15e-6
-        connection_mode = "num"
-        connection_args = [5]
-        E0 = 1.5e7
-        w0 = 0.4
+        #
+        # Simulation of a sphere stretched between two oppsing Gaussian beams
+        #
+        filename = "Optical_stretcher"
         show_output = True
-        frames = 1
+        frames = 20
+        time_step = 20e-5
 
-        Generate_yaml.make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=1e-4)
-        DM.main(filename)
+        num_particles = 72
+        sphere_radius = 0.8e-6
+        dipole_size = 40e-9
+        particle_radius = 0.1e-6
+        connection_mode = "num"
+        connection_args = "5"
+        E0 = 10e6 #1.5e7
+        w0 = 0.5
+        stiffness = 5e-8  # 5e-7
+        bending = 5e-20# 0.5e-18 # 5e-19
+        force_terms = ["optical", "spring", "bending", "buckingham"]
+        
+
+        Generate_yaml.make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=time_step)
+        DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
 
     case _:
         print("Unknown run type: ",sys.argv[1])
