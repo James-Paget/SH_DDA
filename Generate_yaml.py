@@ -244,10 +244,10 @@ def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, pa
     num_particles = use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
     return num_particles
 
-def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE", makeCube=False):
+def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE", makeCube=False, material="FusedSilica"):
     use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
     use_beam(filename, beam)
-    num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube)
+    num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube, material=material)
     return num_particles
 
 def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, rotation=None, frames=1, show_output=False, beam="LAGUERRE", extra_args=[]):
@@ -446,7 +446,7 @@ def use_refine_arch_prism(filename, dimensions, separations, deflection, object_
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
     return num_particles
 
-def use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape="sphere", place_regime="squish", makeCube=False):
+def use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape="sphere", place_regime="squish", makeCube=False, material="FusedSilica"):
     #
     # particle_size = radius of sphere OR half width of cube
     #
@@ -455,7 +455,7 @@ def use_refine_sphere(filename, dimension, separations, object_offset, particle_
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * num_particles
     
-    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0)
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, material=material)
     return num_particles
 
 def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=[0.0, 0.0, 0.0], extra_args=[]):
