@@ -1894,7 +1894,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
                 case "gravity":
                     gravity = gravity_force_array(position_vectors, effective_radii[0])
                     total_force_array += gravity
-            print(f"{force_param} position vectors ", position_vectors)
+            # print(f"{force_param} position vectors ", position_vectors)
 
         # Record total forces too if required
         if include_force==True:
@@ -1907,8 +1907,11 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         R = np.random.multivariate_normal(mean, cov)
         SumDijFj = (1 / (k_B * temperature)) * np.dot(D, F)
         positions_stacked = np.hstack(position_vectors)
-        print("FINAL position vectors ", position_vectors)
+        # print("FINAL position vectors ", position_vectors)
         new_positions = positions_stacked + SumDijFj * timestep + R
+        print("D is", D)
+        print("F is", F)
+        print("SUMDIJFJ is", SumDijFj)
         #        new_positions = positions_stacked + temp
 
         #        print("%6.4g" % new_positions[0], "%6.4g" % F[0],"%6.4g" % F[1],"%6.4g" % F[2],"%6.4g" % F[3],"%6.4g" % F[4],"%6.4g" % F[5], sep=', ', file=MyFileObject)
@@ -1921,7 +1924,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         position_vectors = new_positions_array
         # particles not experiencing mutual Buckingham force are moved apart if overlapping
         stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
-
+        # print("FINAL LAST position vectors ", position_vectors)
         vectors_list.append(
             position_vectors
         )  # returns list of position vector arrays of all particles

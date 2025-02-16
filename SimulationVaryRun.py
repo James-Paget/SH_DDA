@@ -3935,7 +3935,7 @@ match(sys.argv[1]):
         w0 = 0.5
         stiffness = 5e-8  # 5e-7
         bending = 5e-20# 0.5e-18 # 5e-19
-        force_terms = ["optical", "spring", "bending", "buckingham"]
+        force_terms = ["optical", "spring", "bending"] #, "buckingham"
         
 
         Generate_yaml.make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=time_step)
