@@ -1788,6 +1788,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
     # (1) Set constants
     stiffness = constants["spring"]
     BENDING   = constants["bending"]
+    stiffness_spec["default_value"] = stiffness # XXX check this is working ok, then can remove stiffness_spec?
 
     # (2) Get Connections
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args, verbosity=verbosity)
@@ -2205,9 +2206,10 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
         fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=2, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=1, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
 
-        #display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=False)
+    if display.show_stress==True:
+        display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=False)
 
 
     # writer = animation.PillowWriter(fps=30)

@@ -14,6 +14,7 @@ import Beams
 
 class DisplayObject (object):
     defaults = {"show_output":'True',
+                "show_stress":'False',
                 "frame_interval":10,
                 "max_size":3.2e-6,
                 "resolution":201,
@@ -26,6 +27,7 @@ class DisplayObject (object):
         if displayinfo==None:
             # Set defaults
             self.show_output = bool(DisplayObject.defaults['show_output'])
+            self.show_stress = bool(DisplayObject.defaults['show_stress'])
             self.frame_interval = int(DisplayObject.defaults['frame_interval'])
             self.max_size = float(DisplayObject.defaults['max_size']) # range will be 2 times this
             self.resolution = int(DisplayObject.defaults['resolution']) # number of points in each direction of plot
@@ -35,6 +37,7 @@ class DisplayObject (object):
         else:
             # Read from file
             self.show_output = bool(displayinfo.get('show_output',DisplayObject.defaults['show_output']))
+            self.show_stress = bool(displayinfo.get('show_stress',DisplayObject.defaults['show_stress']))
             self.frame_interval = int(displayinfo.get('frame_interval',DisplayObject.defaults['frame_interval']))
             self.max_size = float(displayinfo.get('max_size',DisplayObject.defaults['max_size']))
             self.resolution = int(displayinfo.get('resolution',DisplayObject.defaults['resolution']))
@@ -410,7 +413,13 @@ class DisplayObject (object):
 
 
     def plot_stresses(self, positions, forces, shapes, all_args, beam_collection, include_quiver=True):
-        # For cube particles, and for 1 frame.
+        """
+        Plots the stresses on each particle (force/area).
+        Particles are shown as cubes and the colour of each face shows the normal stress out of that face.
+        Inwards stresses are blue and outward are red.
+
+        all_args are the shape args of each particle, however, only the 0th value of the 0th particle is used to get the cube radius.
+        """
 
         for shape in shapes:
             if shape != "cube": print("WARNING: plot_stresses plots all particles as cubes")
