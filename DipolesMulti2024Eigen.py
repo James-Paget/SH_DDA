@@ -744,11 +744,14 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[], verb
 
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
-            connection_indices = args
+            #connection_indices = args      #### OLD METHOD ####
+            for i in range(len(args)):
+                if((i+1)%2 == 0):
+                    connection_indices.append( (int(args[i])  , int(args[i-1])) )   # Add connections into list as adjacent pairs
+                    connection_indices.append( (int(args[i-1]), int(args[i])  ) )
         case _:
             sys.exit(f"get_connected_pairs error: modes are 'num', 'line', 'loop', 'manual'.\nInputted mode, args: {mode}, {args}")
 
-    #print("Connections established= ",connection_indices)
     return connection_indices
 
 def get_equilibrium_angles(initial_positions, connection_indices):
@@ -1882,7 +1885,6 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             print(" Simulation Step: ",i)
             #print(i,optical)
 
-        print("1position vectors are", position_vectors)
         D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
 
         total_force_array = np.zeros( (number_of_particles,3), dtype=np.float64 )
@@ -2220,7 +2222,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
         fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=1, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=0, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
 
     if display.show_stress==True:
         display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=False)

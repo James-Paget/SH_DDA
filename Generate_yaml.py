@@ -260,6 +260,12 @@ def make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_s
     use_beam(filename, "STRETCHER", E0=E0, w0=w0)
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
 
+def make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=1, time_step=1e-4, connection_mode="dist", connection_args=0.0, material="FusedSilica", show_output=False, show_stress=False):
+    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size, show_stress=show_stress)
+    use_beam(filename, "STRETCHER", E0=E0, w0=w0)
+    num_particles = use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape=particle_shape, connection_mode=connection_mode, connection_args=connection_args, material=material)
+    return num_particles
+
 #=======================================================================
 # Particle configurations
 #=======================================================================
@@ -484,6 +490,15 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
     args_list = [[particle_size]] * num_particles
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, material=material)
+    return num_particles
+
+def use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape="sphere", connection_mode="dist", connection_args=0.0, material="FusedSilica"):
+    coords_list, connection_args = get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args)
+    num_particles = len(coords_list)
+    coords_list = np.array(coords_list) + object_offset
+    args_list = [[particle_size]] * num_particles
+    
+    use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode=connection_mode, connection_args=connection_args, material=material)
     return num_particles
 
 
@@ -1175,3 +1190,47 @@ def get_fill_sphere(sphere_radius, separation, particle_size, fix_to_ring=False)
                 coord_list.append( [coord[0], coord[1], coord[2]-offset] )  # Lower
     
     return coord_list
+
+def get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args):
+    #
+    # dimension = full diameter of sphere
+    # particle_size = radius of particle
+    #
+    coords_list = []
+
+    mesh_radius = dimension/2.0
+    base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)
+    #number_of_particles_side = int(np.floor( (mesh_radius-particle_size) / (2.0*particle_size) ))
+    number_of_particles_side = int(np.floor( mesh_radius/base_separation ))
+    number_of_particles = 2*number_of_particles_side +1
+
+    # Generate some base sphere shape
+    base_separation = dimension/number_of_particles
+    for i in range(-number_of_particles_side, number_of_particles_side+1):
+        i_coord = i*base_separation
+        for j in range(-number_of_particles_side, number_of_particles_side+1):
+            j_coord = j*base_separation
+            for k in range(-number_of_particles_side, number_of_particles_side+1):
+                k_coord = k*base_separation
+                withinBounds = (i_coord**2 +j_coord**2 +k_coord**2) < mesh_radius**2
+                if(withinBounds):   # Check will fit within a base sphere shape
+                    coords_list.append([i_coord, j_coord, k_coord])
+
+    # Get connections if in manual mode; if in another mode ignore this
+    if(connection_mode == "manual"):    # => connections to be made based on NN for original sphere
+        print("Generating new connections...")
+        connection_args = ""
+        for i in range(len(coords_list)):    # Go through all particles
+            for j in range(i, len(coords_list)):# Connect any adjacent (based on lattice grid)
+                if(i != j):
+                    dist = np.sqrt( (coords_list[i][0]-coords_list[j][0])**2 +(coords_list[i][1]-coords_list[j][1])**2 +(coords_list[i][2]-coords_list[j][2])**2 )
+                    if(dist <= base_separation*1.01):
+                        connection_args += f"{i} {j} "
+                        connection_args += f"{j} {i} "
+
+    # Modify this base sphere to get the ellpsoid / other shape to be generated
+    transformed_coords_list = []
+    for coord in coords_list:
+        transformed_coords_list.append(func_transform(coord, transform_factor))
+
+    return transformed_coords_list, connection_args
