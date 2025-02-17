@@ -264,7 +264,7 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     force = np.zeros([3, 3])
 
     if np.isnan(rij).any() or np.isnan(rik).any():
-        print(f"Bending force received NaN,returning 0. rij; rik; r_plane = {rij}; {rik}; {r_plane}")
+        print(f"Bending force received NaN,returning 0. ri = {ri}, rj = {rj}, rij = {rij}; rik = {rik}; r_plane = {r_plane}")
         return np.zeros([3, 3])
     
     # Rotate rij so that if it were at eqm_angle, it would be at a stable eqm.
@@ -506,8 +506,11 @@ def buckingham_force_array(array_of_positions, effective_radii, particle_neighbo
 
 
 def stop_particles_overlapping(array_of_positions, effective_radii, particle_neighbours):
-    # for each particle, stop it overlapping with ones it's within N connections of (based on particle_neighbours).
-    # no return as changes are made directly to array_of_positions.
+    """
+    for each particle, stop it overlapping with ones it's within N connections of (based on particle_neighbours).
+    directly moves particle positions - this is for when the Buckinghm force between nearby connected particles is deactivated.
+    Modifies array_of_positions by reference.
+    """
 
     epsilon = 1e-10 # prevent small float errors.
     done = False
@@ -541,6 +544,7 @@ def stop_particles_overlapping(array_of_positions, effective_radii, particle_nei
 def generate_connection_indices(array_of_positions, mode="manual", args=[], verbosity=2):
     """
     Return a list of matrix indices (i,j) of connected particles
+    Note currently, both (i,j) and (j,i) are included, so it could allow asymmetric connections in the future. 
     mode (args): num (num_connections), line (), dist ()
     Defaults to no connections with mode="manual", args=[]
     """
@@ -748,9 +752,11 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[], verb
     return connection_indices
 
 def get_equilibrium_angles(initial_positions, connection_indices):
-    # build list of [i,j,k,eqm_angle]; i is central index, j,k are connected particles.
-    # Calculating equilibrium angles from initial_positions assumes connections are initially in equilibrium.
-
+    """
+    Gets the particle indices and equilibrium angle of each bend combination.
+    builds list of [i,j,k,eqm_angle]; i is central index, j,k are connected particles.
+    Calculating equilibrium angles from initial_positions assumes connections are initially in equilibrium.
+    """
     if len(connection_indices) == 0:
         return []
 
@@ -781,9 +787,11 @@ def get_equilibrium_angles(initial_positions, connection_indices):
     return ijkangles
 
 def group_particles_into_objects(number_of_particles, connection_indices):
-    # Returns a list of the particle indices of each object
-    # CURRENTLY UNUSED.
-
+    """
+    Finds which particles have a path of connections between them, and so form an object.
+    Returns a list of the particle indices of each object.
+    CURRENTLY UNUSED.
+    """
     if len(connection_indices) == 0: # test trivial unconnected case
         return [ [i] for i in range(number_of_particles)]
 
@@ -832,9 +840,10 @@ def group_particles_into_objects(number_of_particles, connection_indices):
     return object_indices_list
 
 def get_nearest_neighbours(number_of_particles, connection_indices, max_connections_dist=2):
-    # Particles that are within "max_connections_dist" connections of each other are considered nearby.
-    # Returns [ [particles nearby to 0th particle], [particles nearby to 1st particle], ... ]
-
+    """
+    Particles that are within "max_connections_dist" connections of each other are considered nearby.
+    Returns [ [particles nearby to 0th particle], [particles nearby to 1st particle], ... ]
+    """
     if len(connection_indices) == 0: # test trivial unconnected case
         return [ [i] for i in range(number_of_particles)]
 
@@ -1110,6 +1119,9 @@ def bending_force_array(array_of_positions, dipole_radius):
 """
 
 def bending_force_array(array_of_positions, ijkangles, bond_stiffness):
+    """
+    Get total bending force on all particles by summing over all the combinations of lines of 3 particles.
+    """
     number_of_particles = len(array_of_positions)
     bending_force_matrix = np.zeros([number_of_particles,3])
     bending_force_temp = np.zeros([3,3])
@@ -1788,6 +1800,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
     # (1) Set constants
     stiffness = constants["spring"]
     BENDING   = constants["bending"]
+    stiffness_spec["default_value"] = stiffness # XXX check this is working ok, then can remove stiffness_spec?
 
     # (2) Get Connections
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args, verbosity=verbosity)
@@ -1869,6 +1882,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             print(" Simulation Step: ",i)
             #print(i,optical)
 
+        print("1position vectors are", position_vectors)
         D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
 
         total_force_array = np.zeros( (number_of_particles,3), dtype=np.float64 )
@@ -1904,21 +1918,22 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         R = np.random.multivariate_normal(mean, cov)
         SumDijFj = (1 / (k_B * temperature)) * np.dot(D, F)
         positions_stacked = np.hstack(position_vectors)
+        # print("FINAL position vectors ", position_vectors)
         new_positions = positions_stacked + SumDijFj * timestep + R
+        # print("D is", D)
+        # print("F is", F)
+        # print("SUMDIJFJ is", SumDijFj)
         #        new_positions = positions_stacked + temp
 
         #        print("%6.4g" % new_positions[0], "%6.4g" % F[0],"%6.4g" % F[1],"%6.4g" % F[2],"%6.4g" % F[3],"%6.4g" % F[4],"%6.4g" % F[5], sep=', ', file=MyFileObject)
 
-##        print(new_positions)
         new_positions_list = np.hsplit(new_positions, number_of_particles)
         new_positions_array = np.zeros((number_of_particles,3), dtype=np.float64)
         for j in range(len(new_positions_list)):
             new_positions_array[j] = new_positions_list[j]
         position_vectors = new_positions_array
-
         # particles not experiencing mutual Buckingham force are moved apart if overlapping
         stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
-
         vectors_list.append(
             position_vectors
         )  # returns list of position vector arrays of all particles
@@ -2205,9 +2220,10 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
         fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=2, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=1, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
 
-        #display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=False)
+    if display.show_stress==True:
+        display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=False)
 
 
     # writer = animation.PillowWriter(fps=30)

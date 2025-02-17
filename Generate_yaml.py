@@ -118,13 +118,6 @@ def generate_yaml(preset, filename="Preset"):
     
     return True
 
-        # case "11" | "CYLINDER":
-        #     use_default_options(filename, frames=1, show_output=True)
-        #     use_laguerre3_beam(filename)
-        #     use_cylinder(filename, num_particles=3, length=1e-6, radius=2e-7, separation=0.2e-6, rotation_axis=[1,0,0], rotation_theta=0.7)
-        #    # axis x and y rotation is SWAPPED!
-
-
 #=======================================================================
 # Make yamls
 #=======================================================================
@@ -232,8 +225,8 @@ def make_yaml_fibre_2d_cylinder_shelllayers(filename, time_step=1e-4, frames=1, 
     use_beam(filename, beam)
     use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args)
 
-def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step, dipole_radius=dipole_size)
+def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE", show_stress=False):
+    use_default_options(filename, frames, show_output, time_step=time_step, dipole_radius=dipole_size, show_stress=show_stress)
     use_beam(filename, beam)
     num_particles = use_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape)
     return num_particles
@@ -244,8 +237,8 @@ def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, pa
     num_particles = use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
     return num_particles
 
-def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE", makeCube=False, material="FusedSilica"):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE", makeCube=False, material="FusedSilica", show_stress=False):
+    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size, show_stress=show_stress)
     use_beam(filename, beam)
     num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube, material=material)
     return num_particles
@@ -261,6 +254,11 @@ def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, 
     use_beam(filename, beam)
     num_particles = use_fill_spheredisc(filename, dimension, separations, particle_size, object_offset, particle_shape, mode=mode, material=material, fix_to_ring=fix_to_ring)
     return num_particles
+
+def make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=1e-4):
+    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+    use_beam(filename, "STRETCHER", E0=E0, w0=w0)
+    use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
 
 #=======================================================================
 # Particle configurations
@@ -488,22 +486,6 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, material=material)
     return num_particles
 
-# def use_cylinder(filename, num_particles, length, radius, separation, rotation_axis=[0,0,1], rotation_theta=0):
-#     # makes a row of separated cylinders
-#     coords_list = get_cylinder_points(num_particles, length, separation)
-#     if rotation_theta != 0:
-#         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
-#     # radius, width, theta_Z, theta_pitch
-#     test_pt = rotate_coords_list([[0,1,0]], rotation_axis, rotation_theta)[0]
-#     theta_Z, theta_pitch = np.arctan2(test_pt[1],test_pt[0]), np.arccos(np.clip(test_pt[2], -1, 1))
-#     args_list = [[radius, length, theta_Z, theta_pitch] for (x,y,z) in coords_list] # the spherical angles of the piece positions ARE their individual rotation.
-#     # XXX need to fix the 0,0,0 case.
-#     print(f"ARGSLIST IS {args_list}")
-    
-#     use_default_particles(filename, "cylinder", args_list, coords_list, "num", 0)
-    # use_default_particles(filename, "sphere", [[0.15e-6]] * len(coords_list), coords_list, "num", 0)
-
-
 
 def use_default_particles(filename, shape, args_list, coords_list, connection_mode, connection_args, material="FusedSilica"):
     """
@@ -519,7 +501,7 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 # Beam configurations
 #=======================================================================
 
-def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None):
+def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None, E0=1.5e7, w0=0.4):
     match beam:
         case "GAUSS_CSP":
             use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype, rotation=rotation)
@@ -527,6 +509,8 @@ def use_beam(filename, beam, translation=None, translationargs=None, translation
             use_laguerre3_beam(filename,translation, translationargs, translationtype, rotation=rotation)
         case "BESSEL":
             use_bessel_beam(filename, translation, translationargs, translationtype, rotation=rotation)
+        case "STRETCHER":
+            use_stretcher_beam(filename, E0, w0)
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
 
@@ -551,11 +535,18 @@ def use_bessel_beam(filename, translation, translationargs, translationtype=None
     beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
     write_beams(filename, [beam])
 
+def use_stretcher_beam(filename, E0=1.5e7, w0=0.4):
+    """
+    Makes two counter-propagating Gaussian beams.
+    """
+    use_gaussCSP_beam(filename, E0, w0, rotation=None)
+    use_gaussCSP_beam(filename, E0, w0, rotation="3.1415926536 0.0 .0.")
+
 #=======================================================================
 # Option configurations
 #=======================================================================
 
-def use_default_options(filename, frames, show_output, wavelength=1e-6, dipole_radius=4e-8, time_step=0.0001, vmd_output=True, excel_output=True, include_force=True, include_couple=True, frame_interval=2, max_size=2e-6, resolution=201, frame_min=0, frame_max=None, z_offset=0.0):
+def use_default_options(filename, frames, show_output, wavelength=1e-6, dipole_radius=4e-8, time_step=0.0001, vmd_output=True, excel_output=True, include_force=True, include_couple=True, frame_interval=2, max_size=2e-6, resolution=201, frame_min=0, frame_max=None, z_offset=0.0, show_stress=False):
     """
     Make the default options, requiring just filename, frames, show_output
     """
@@ -566,13 +557,13 @@ def use_default_options(filename, frames, show_output, wavelength=1e-6, dipole_r
     # Continue writing in blank slate
     if frame_max == None:
         frame_max = frames
-    write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset)
+    write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset, show_stress)
 
 #=======================================================================
 # Core functions which write options, beams and particles
 #=======================================================================
 
-def write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset):
+def write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset, show_stress):
     """
     Base function to write the passed options to filename.
     """
@@ -590,6 +581,7 @@ def write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_ou
         file.write(f"  include_couple: {include_couple}\n")
         file.write(f"display:\n")
         file.write(f"  show_output: {show_output}\n")
+        file.write(f"  show_stress: {show_stress}\n")
         file.write(f"  frame_interval: {frame_interval}\n")
         file.write(f"  max_size: {max_size}\n")
         file.write(f"  resolution: {resolution}\n")

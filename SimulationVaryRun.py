@@ -2323,10 +2323,10 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
     read_frames = [
         0
     ]
-    
+    show_stress = True
     match object_shape:
-        case "sphere": particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimensions[0], separations, particle_size, dipole_size, object_offset, particle_shape, place_regime="squish", frames=1, show_output=show_output, beam=beam)
-        case "cube": particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam=beam)
+        case "sphere": particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimensions[0], separations, particle_size, dipole_size, object_offset, particle_shape, place_regime="squish", frames=1, show_output=show_output, beam=beam, show_stress=show_stress)
+        case "cube": particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam=beam, show_stress=show_stress)
         case _: sys.exit("UNIMPLEMENTED SHAPE object_shape")
     
     # Run simulation
@@ -3844,10 +3844,11 @@ match(sys.argv[1]):
         object_shape = "sphere" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
-        num_particles_in_diameter = 12
+        num_particles_in_diameter = 10
         particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
         # particle_size = 0.15e-6 # NOTE *2 for diameter
         object_offset = [0.5e-6, 0e-6, 0e-6]
+        show_output = False
         #====================================================================================
         
         # Run
@@ -3855,7 +3856,7 @@ match(sys.argv[1]):
             dipole_size = particle_size
             print(f"WARNING: particle size smaller than dipoles size, setting dipole size to particle size ({particle_size})")
         print(f"\nSimulation for 1 frame of a {object_shape} object with cube particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
-        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape="cube", beam="LAGUERRE", show_output=True)
+        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape="cube", beam="LAGUERRE", show_output=show_output)
     
     case "force_torque_sim":
         #
@@ -3914,6 +3915,31 @@ match(sys.argv[1]):
 
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
+
+    case "stretcher_with_springs":
+        #
+        # Simulation of a sphere stretched between two oppsing Gaussian beams
+        #
+        filename = "Optical_stretcher"
+        show_output = True
+        frames = 20
+        time_step = 20e-5
+
+        num_particles = 72
+        sphere_radius = 0.8e-6
+        dipole_size = 40e-9
+        particle_radius = 0.1e-6
+        connection_mode = "num"
+        connection_args = "5"
+        E0 = 10e6 #1.5e7
+        w0 = 0.5
+        stiffness = 5e-8  # 5e-7
+        bending = 5e-20# 0.5e-18 # 5e-19
+        force_terms = ["optical", "spring", "bending"] #, "buckingham"
+        
+
+        Generate_yaml.make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=time_step)
+        DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
 
     case _:
         print("Unknown run type: ",sys.argv[1])
