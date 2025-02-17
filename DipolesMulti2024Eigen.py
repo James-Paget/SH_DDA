@@ -1882,7 +1882,6 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             print(" Simulation Step: ",i)
             #print(i,optical)
 
-        print("1position vectors are", position_vectors)
         D = diffusion_matrix(position_vectors, effective_radii, k_B, temperature, viscosity)
 
         total_force_array = np.zeros( (number_of_particles,3), dtype=np.float64 )
