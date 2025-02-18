@@ -266,7 +266,7 @@ class DisplayObject (object):
         return np.array(x), np.array(y), np.array(z)
     
 
-    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], quiver_setting=0, include_tracer=True, include_connections=True, quiver_scale=6e5, beam_collection_list=None):
+    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], quiver_setting=0, include_tracer=True, include_connections=True, quiver_scale=6e5, beam_collection_list=None, time_step=1e-4):
         #
         # Plots particles with optional quiver (force forces) and tracer (for positions) plots too
         # NOTE; If a quiver plot is wanted, a list of forces must be provided as well (in the format of optforces)
@@ -407,8 +407,7 @@ class DisplayObject (object):
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 
-        ani = animation.FuncAnimation(fig, update, frames=steps, interval=100)  #100
-
+        ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
         plt.show()
 
 

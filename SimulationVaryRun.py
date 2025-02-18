@@ -3129,8 +3129,8 @@ def simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0,
                 for p in layer_indices:
                     sum_dot += forces[p,0]*coords_list[p,0] + forces[p,1]*coords_list[p,1]
                 sum_dot *= -factor
+                layer_z_stretch_factors[layer_i] = np.exp(sum_dot)
                 # sum_dot = -factor * np.sum( np.dot(forces[layer_indices], projected_coords) )
-                layer_z_stretch_factors[layer_i] = np.exp(sum_dot) # CHANGED; sigmoid, *2 as must =1 at 0
             
                 # scale x,y here
                 for i in layer_indices:
@@ -4015,20 +4015,22 @@ match(sys.argv[1]):
         #
         filename = "Optical_stretcher"
         show_output = True
-        frames = 100
-        time_step = 5e-5
+        frames = 30
+        time_step = 10e-5
 
-        num_particles = 100    # 40, 72, 160
-        sphere_radius = 1.5e-6
+        num_particles = 160   # 40, 72, 160
+        sphere_radius = 1.3e-6
         dipole_size = 40e-9
         particle_radius = 0.1e-6
         connection_mode = "num"
         connection_args = "5"
         E0 = 7e6 #1.5e7
-        w0 = 1.5
-        stiffness = 5e-8  # 5e-7
-        bending = 5e-20  # 0.5e-18 # 5e-19
+        w0 = 1.9
+        stiffness = 1e-10#5e-8  # 5e-7
+        bending = 1e-21  #5e-20  # 0.5e-18 # 5e-19
         force_terms = ["optical", "spring", "bending"] #, "buckingham"
+
+        print(f"\ntime step = {time_step}, stiffness = {stiffness}, bending = {bending}, particle number = {num_particles}, dipole size = {dipole_size}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0}, beam width = {w0}\n")
         
         Generate_yaml.make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=time_step)
         DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
