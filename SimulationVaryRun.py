@@ -4056,19 +4056,16 @@ match(sys.argv[1]):
                     print("Invalid transform function type, returning 0 coord: ")
                     return [0.0, 0.0, 0.0]
                 
-        ####
-        ## F_T <---- READINGS FROM HERE, NOT JUST F (OPTICAL ONLY)
-        ####
-
         # System variables
         filename = "Optical_stretcher"
-        show_output = True
+        show_output = False
         show_stress = False
-        frames = 15
-        time_step = 1e-4
-        stiffness = 5e-8    # 5e-7
-        bending = 5e-20     # 0.5e-18 # 5e-19
-        force_terms = ["optical"] #, "spring", "bending", "buckingham"
+        frames = 1
+        time_step = 0.5e-4
+        stiffness = 5e-6
+        stiffness_spec={"type":"", "default_value":stiffness}
+        bending = 0.75e-19     # 0.5e-18 # 5e-19
+        force_terms = ["optical", "spring", "bending"] #,  "bending", "spring", "buckingham"
 
         # Particle variables
         dimension = 2.4e-6      # Base diameter of the full untransformed sphere
@@ -4083,7 +4080,7 @@ match(sys.argv[1]):
         particle_shape = "sphere"
         
         # Beam variables
-        E0 = 10e6 #1.5e7
+        E0 = 7.0e6 #4.75e6
         w0 = 0.5
 
         # Single run version
@@ -4092,26 +4089,29 @@ match(sys.argv[1]):
 
         # Run a varying simulation over transforms
         # Specify all parameters in the xlsx file so a subset can be pulled later based on read_parameters. Gives information about the structure of the data in the file.
-        parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
+        parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
         read_frames = [0]
 
         graphlabel_set={"title":"Stretched sphere model", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
         data_set = [ [[],[]], [[],[]], [[],[]] ]
-        datalabel_set = ["Fx", "Fy", "Fz"]
-        transform_factor_list = np.linspace(1.0, 2.0, 3)
+        datalabel_set = ["FTx", "FTy", "FTz"]
+        transform_factor_list = np.linspace(1.0, 2.0, 20)
         for i in range(len(transform_factor_list)):
             print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
             
             transform_factor = transform_factor_list[i]
             particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=frames, time_step=time_step, connection_mode=connection_mode, connection_args=connection_args, material=material, show_output=show_output, show_stress=show_stress)
-            DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
+            DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms, stiffness_spec=stiffness_spec)
 
             # Pull all forces for 0th frame
             read_parameters = []
             for p in range(particle_num):
-                read_parameters.append({"type":"F", "particle":p, "subtype":0})
-                read_parameters.append({"type":"F", "particle":p, "subtype":1})
-                read_parameters.append({"type":"F", "particle":p, "subtype":2})
+                read_parameters.append({"type":"FT", "particle":p, "subtype":0})
+                read_parameters.append({"type":"FT", "particle":p, "subtype":1})
+                read_parameters.append({"type":"FT", "particle":p, "subtype":2})
+                read_parameters.append({"type":"X", "particle":p, "subtype":0})
+                read_parameters.append({"type":"X", "particle":p, "subtype":1})
+                read_parameters.append({"type":"X", "particle":p, "subtype":2})
             pulled_data = pull_file_data(
                 filename, 
                 parameters_stored, 
@@ -4121,14 +4121,15 @@ match(sys.argv[1]):
             # Read total force on entire system
             output = np.zeros(3)
             for p in range(int(len(pulled_data)/3)):
+                pos = pulled_data[6*p]
                 output += [pulled_data[3*p+0], pulled_data[3*p+1], pulled_data[3*p+2]] 
             data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
             data_set[1][0].append(transform_factor_list[i]);data_set[1][1].append(output[1])    # Y force
             data_set[2][0].append(transform_factor_list[i]);data_set[2][1].append(output[2])    # Z force
 
         # Plot forces for each step considered to see if equilibrium is being reached
-        #data_set.pop(1)
-        #data_set.pop(1)
+        # data_set.pop(0)
+        # data_set.pop(0)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
         
