@@ -744,11 +744,14 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[], verb
 
         case "manual":
             # Manually state which particles will be connected in arguments when more specific connection patterns required
-            connection_indices = args
+            #connection_indices = args      #### OLD METHOD ####
+            for i in range(len(args)):
+                if((i+1)%2 == 0):
+                    connection_indices.append( (int(args[i])  , int(args[i-1])) )   # Add connections into list as adjacent pairs
+                    connection_indices.append( (int(args[i-1]), int(args[i])  ) )
         case _:
             sys.exit(f"get_connected_pairs error: modes are 'num', 'line', 'loop', 'manual'.\nInputted mode, args: {mode}, {args}")
 
-    #print("Connections established= ",connection_indices)
     return connection_indices
 
 def get_equilibrium_angles(initial_positions, connection_indices):
@@ -1798,9 +1801,9 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             optcouple = None
 
     # (1) Set constants
-    stiffness = constants["spring"]
+    #stiffness = constants["spring"]
     BENDING   = constants["bending"]
-    stiffness_spec["default_value"] = stiffness # XXX check this is working ok, then can remove stiffness_spec?
+    #stiffness_spec["default_value"] = stiffness # XXX check this is working ok, then can remove stiffness_spec?
 
     # (2) Get Connections
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args, verbosity=verbosity)

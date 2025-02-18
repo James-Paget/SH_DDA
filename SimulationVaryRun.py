@@ -4035,6 +4035,103 @@ match(sys.argv[1]):
         Generate_yaml.make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=time_step)
         DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
 
+
+    case "stretcher_springs_cubic_sphere":
+        #
+        # Simulation of a sphere mode of cubic particles placed in an optical stretcher (counter-propagating beams, Gaussian usually)
+        # Stresses on the particles are then considered, and the placement of the particles changed to try and minimise these forces
+        # Spring forces are also used to allow an equilibrium to be reached
+        #
+
+        def func_transform(coordinate, transform_factor, transform_type="linear"):
+            #
+            # coordinate = [x,y,z] position of particle to be transformed
+            # transform_factor=1.0 => no transform for linear map, >1.0 => stretching of Z axis, shrinking other XY, vice verse for <1.0
+            #
+            match transform_type:
+                case "linear":
+                    # Linear transform
+                    return [coordinate[0]/np.sqrt(transform_factor), coordinate[1]/np.sqrt(transform_factor), coordinate[2]*transform_factor]
+                case _:
+                    print("Invalid transform function type, returning 0 coord: ")
+                    return [0.0, 0.0, 0.0]
+                
+        ####
+        ## F_T <---- READINGS FROM HERE, NOT JUST F (OPTICAL ONLY)
+        ####
+
+        # System variables
+        filename = "Optical_stretcher"
+        show_output = True
+        show_stress = False
+        frames = 15
+        time_step = 1e-4
+        stiffness = 5e-8    # 5e-7
+        bending = 5e-20     # 0.5e-18 # 5e-19
+        force_terms = ["optical"] #, "spring", "bending", "buckingham"
+
+        # Particle variables
+        dimension = 2.4e-6      # Base diameter of the full untransformed sphere
+        transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
+        critical_transform_factor = 2.0 # The max transform you want to apply, which sets the default separation of particles in the system
+        particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        dipole_size = 100e-9
+        object_offset = [0.0, 0.0, 0.0e-6]
+        material = "FusedSilica"
+        connection_mode = "manual"  #"dist", 0.0
+        connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
+        particle_shape = "sphere"
+        
+        # Beam variables
+        E0 = 10e6 #1.5e7
+        w0 = 0.5
+
+        # Single run version
+        # Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=frames, time_step=time_step, connection_mode=connection_mode, connection_args=connection_args, material=material, show_output=show_output, show_stress=show_stress)
+        # DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
+
+        # Run a varying simulation over transforms
+        # Specify all parameters in the xlsx file so a subset can be pulled later based on read_parameters. Gives information about the structure of the data in the file.
+        parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
+        read_frames = [0]
+
+        graphlabel_set={"title":"Stretched sphere model", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
+        data_set = [ [[],[]], [[],[]], [[],[]] ]
+        datalabel_set = ["Fx", "Fy", "Fz"]
+        transform_factor_list = np.linspace(1.0, 2.0, 3)
+        for i in range(len(transform_factor_list)):
+            print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
+            
+            transform_factor = transform_factor_list[i]
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=frames, time_step=time_step, connection_mode=connection_mode, connection_args=connection_args, material=material, show_output=show_output, show_stress=show_stress)
+            DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
+
+            # Pull all forces for 0th frame
+            read_parameters = []
+            for p in range(particle_num):
+                read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                read_parameters.append({"type":"F", "particle":p, "subtype":2})
+            pulled_data = pull_file_data(
+                filename, 
+                parameters_stored, 
+                read_frames, 
+                read_parameters
+            )[0]
+            # Read total force on entire system
+            output = np.zeros(3)
+            for p in range(int(len(pulled_data)/3)):
+                output += [pulled_data[3*p+0], pulled_data[3*p+1], pulled_data[3*p+2]] 
+            data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
+            data_set[1][0].append(transform_factor_list[i]);data_set[1][1].append(output[1])    # Y force
+            data_set[2][0].append(transform_factor_list[i]);data_set[2][1].append(output[2])    # Z force
+
+        # Plot forces for each step considered to see if equilibrium is being reached
+        #data_set.pop(1)
+        #data_set.pop(1)
+        Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
+
+        
     case "stretcher_dipole_shapes":
         filename = "Optical_stretcher"
         show_output = True
@@ -4052,6 +4149,7 @@ match(sys.argv[1]):
         force_terms = ["optical", "spring", "bending"] #, "buckingham"
 
         simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output)
+
 
     case _:
         print("Unknown run type: ",sys.argv[1])

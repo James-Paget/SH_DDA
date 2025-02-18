@@ -420,8 +420,11 @@ class DisplayObject (object):
         all_args are the shape args of each particle, however, only the 0th value of the 0th particle is used to get the cube radius.
         """
 
-        for shape in shapes:
-            if shape != "cube": print("WARNING: plot_stresses plots all particles as cubes")
+        ##
+        ## TEMP DISABLED
+        ##
+        # for shape in shapes:
+        #     if shape != "cube": print("WARNING: plot_stresses plots all particles as cubes")
 
         particle_radius = all_args[0][0] # for cubic particles
         positions = np.array(positions)
