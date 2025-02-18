@@ -3061,6 +3061,99 @@ def make_legend_labels(data_set_params, legend_params, indep_name, forces_output
     return labels
 
 
+
+
+
+
+
+def simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output):
+    # Sphere of particles, each a single dipole so particle_size = dipole_size
+
+
+
+    parameters_stored = [
+        {"type":"X", "args":["x", "y", "z"]},
+        {"type":"F", "args":["Fx", "Fy", "Fz"]},
+        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+        {"type":"C", "args":["Cx", "Cy", "Cz"]}
+    ]
+
+    # Initialise sphere of single dipole particles
+    dipole_diameter = 2*dipole_size
+    coords_list = []
+    number_of_dipoles = 0
+    num = int(2*sphere_radius/dipole_diameter)
+    nums = np.arange(-(num-1)/2,(num+1)/2,1)
+    z_count = 0
+    z_slices = [] # coords list, separated into z layers, <num> of them, bottom to top
+    slice_indices_list = [] # also, get the particle indices of each layer
+    for k in nums:
+        slice_indices = []
+        k2 = k*k
+        z = k*dipole_diameter
+        for i in nums:
+            i2 = i*i
+            x = i*dipole_diameter +1e-20
+            for j in nums:
+                j2 = j*j
+                y = j*dipole_diameter +1e-20
+                rad2 = (i2+j2+k2)*dipole_diameter**2
+                if rad2 < sphere_radius**2:
+                    coords_list.append([x, y, z])
+                    slice_indices.append(number_of_dipoles)
+                    number_of_dipoles += 1
+        slice_indices_list.append(slice_indices)
+        z_slices.append(coords_list[z_count:number_of_dipoles-1]) # slice by reference
+    coords_list = np.array(coords_list)
+
+    num_particles = number_of_dipoles
+    read_parameters = [{"type":"F", "particle":p, "subtype":s} for p,s in it.product(range(num_particles), range(3))]
+
+    for t in range(frames):
+        Generate_yaml.make_yaml_stretcher_dipole_shape(filename, coords_list, dipole_size, connection_mode, connection_args, E0, w0, show_output, time_step=time_step)
+        DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
+
+        # Iterate coords list to new coords
+        if t != frames-1:
+            output_data = pull_file_data(filename, parameters_stored, [0], read_parameters, invert_output=False)[0] # 0th frame
+            
+            forces = np.array([[output_data[3*p_i+0], output_data[3*p_i+1], output_data[3*p_i+2]] for p_i in range(num_particles)])
+            layer_z_stretch_factors = np.zeros(num)
+            for layer_i in range(num):
+                layer_indices = slice_indices_list[layer_i]
+                projected_coords = coords_list[layer_indices]
+                projected_coords[:,2] = 0.0 # project by setting z force to zero
+                # get the x-y radial 
+                factor = 1e0
+                sum_dot = 0
+                for p in layer_indices:
+                    sum_dot += forces[p,0]*coords_list[p,0] + forces[p,1]*coords_list[p,1]
+                sum_dot *= -factor
+                layer_z_stretch_factors[layer_i] = np.exp(sum_dot)
+                # sum_dot = -factor * np.sum( np.dot(forces[layer_indices], projected_coords) )
+            
+                # scale x,y here
+                for i in layer_indices:
+                    coords_list[i] *= (layer_z_stretch_factors[layer_i])**(-0.5) # 1/sqrt scale
+
+            # now, z needs scaling, and shift to account for others scaling
+            print("layer_z_stretch_factors",layer_z_stretch_factors)
+            cumulative_factors = np.cumsum(layer_z_stretch_factors)# - layer_z_stretch_factors/2
+            print("cumulative_factors",cumulative_factors)
+
+
+            if num %2==0: #even
+                centre_scale = cumulative_factors[int(num/2)]
+            else:
+                centre_scale = cumulative_factors[int(num/2)] + layer_z_stretch_factors[int((num+1)/2)]/2 - layer_z_stretch_factors[0]/2
+
+            print(centre_scale)
+            coords_list[:,2] += dipole_size * num
+            for iz in range(num):
+                for i in range(len(z_slices[iz])):
+                    z_slices[iz][i][2] *= cumulative_factors[iz]
+            coords_list[:,2] -= dipole_diameter * centre_scale
+
 #=================#
 # Perform Program #
 #=================#
@@ -3922,24 +4015,26 @@ match(sys.argv[1]):
         #
         filename = "Optical_stretcher"
         show_output = True
-        frames = 20
-        time_step = 20e-5
+        frames = 30
+        time_step = 10e-5
 
-        num_particles = 72
-        sphere_radius = 0.8e-6
+        num_particles = 160   # 40, 72, 160
+        sphere_radius = 1.3e-6
         dipole_size = 40e-9
         particle_radius = 0.1e-6
         connection_mode = "num"
         connection_args = "5"
-        E0 = 10e6 #1.5e7
-        w0 = 0.5
-        stiffness = 5e-8  # 5e-7
-        bending = 5e-20# 0.5e-18 # 5e-19
+        E0 = 7e6 #1.5e7
+        w0 = 1.9
+        stiffness = 1e-10#5e-8  # 5e-7
+        bending = 1e-21  #5e-20  # 0.5e-18 # 5e-19
         force_terms = ["optical", "spring", "bending"] #, "buckingham"
-        
 
+        print(f"\ntime step = {time_step}, stiffness = {stiffness}, bending = {bending}, particle number = {num_particles}, dipole size = {dipole_size}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0}, beam width = {w0}\n")
+        
         Generate_yaml.make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=time_step)
         DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
+
 
     case "stretcher_springs_cubic_sphere":
         #
@@ -4035,6 +4130,26 @@ match(sys.argv[1]):
         #data_set.pop(1)
         #data_set.pop(1)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
+
+        
+    case "stretcher_dipole_shapes":
+        filename = "Optical_stretcher"
+        show_output = True
+        frames = 2
+        time_step = 1e-4
+
+        sphere_radius = 0.3e-6
+        dipole_size = 60e-9
+        connection_mode = "dist"
+        connection_args = "81e-9" # dipole diameter
+        E0 = 7e6 #1.5e7
+        w0 = 0.4
+        stiffness = 5e-8  # 5e-7
+        bending = 5e-20  # 0.5e-18 # 5e-19
+        force_terms = ["optical", "spring", "bending"] #, "buckingham"
+
+        simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output)
+
 
     case _:
         print("Unknown run type: ",sys.argv[1])
