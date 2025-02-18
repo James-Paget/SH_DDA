@@ -260,6 +260,12 @@ def make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_s
     use_beam(filename, "STRETCHER", E0=E0, w0=w0)
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
 
+def make_yaml_stretcher_dipole_shape(filename, coords_list, dipole_size, connection_mode, connection_args, E0, w0, show_output, time_step=1e-4):
+    use_default_options(filename, frames=1, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+    use_beam(filename, "STRETCHER", E0=E0, w0=w0)
+    args_list = [[dipole_size]] * len(coords_list)
+    use_default_particles(filename, "cube", args_list, coords_list, connection_mode=connection_mode, connection_args=connection_args, material="FusedSilica")
+
 #=======================================================================
 # Particle configurations
 #=======================================================================
@@ -539,8 +545,9 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4):
     """
     Makes two counter-propagating Gaussian beams.
     """
-    use_gaussCSP_beam(filename, E0, w0, rotation=None)
-    use_gaussCSP_beam(filename, E0, w0, rotation="3.1415926536 0.0 .0.")
+    beam = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":"0e-6 0.0 0.0", "translationargs":None, "translationtype":None, "rotation":None}
+    beam_rotated = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":"0e-6 0.0 0.0", "translationargs":None, "translationtype":None, "rotation":"180 0 0"}
+    write_beams(filename, [beam, beam_rotated])
 
 #=======================================================================
 # Option configurations
