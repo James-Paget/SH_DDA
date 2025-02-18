@@ -1801,9 +1801,9 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             optcouple = None
 
     # (1) Set constants
-    stiffness = constants["spring"]
+    #stiffness = constants["spring"]
     BENDING   = constants["bending"]
-    stiffness_spec["default_value"] = stiffness # XXX check this is working ok, then can remove stiffness_spec?
+    #stiffness_spec["default_value"] = stiffness # XXX check this is working ok, then can remove stiffness_spec?
 
     # (2) Get Connections
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args, verbosity=verbosity)

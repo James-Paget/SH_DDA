@@ -3960,16 +3960,20 @@ match(sys.argv[1]):
                 case _:
                     print("Invalid transform function type, returning 0 coord: ")
                     return [0.0, 0.0, 0.0]
+                
+        ####
+        ## F_T <---- READINGS FROM HERE, NOT JUST F (OPTICAL ONLY)
+        ####
 
         # System variables
         filename = "Optical_stretcher"
         show_output = True
         show_stress = False
-        frames = 10
+        frames = 15
         time_step = 1e-4
         stiffness = 5e-8    # 5e-7
         bending = 5e-20     # 0.5e-18 # 5e-19
-        force_terms = ["optical", "spring", "bending"] #, "buckingham"
+        force_terms = ["optical"] #, "spring", "bending", "buckingham"
 
         # Particle variables
         dimension = 2.4e-6      # Base diameter of the full untransformed sphere
@@ -3977,7 +3981,7 @@ match(sys.argv[1]):
         critical_transform_factor = 2.0 # The max transform you want to apply, which sets the default separation of particles in the system
         particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         dipole_size = 100e-9
-        object_offset = [0.0, 0.0, 0.0]
+        object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
