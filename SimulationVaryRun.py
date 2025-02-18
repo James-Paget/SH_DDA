@@ -64,13 +64,18 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
         "wavelength": 1.0e-6,
         "dipole_radius": 40e-9,
         "time_step": 1e-4,
+        "polarisability_type": "RR",
 
         "vmd_output": True,
         "excel_output": True,
         "include_force": True,
         "include_couple": True,
+        "verbosity": 0,
+        "include_dipole_forces": False,
+        "force_terms": "optical",
 
         "show_output": True,
+        "show_stress":False,
         "frame_interval": 2,
         "max_size": 2e-6,
         "resolution": 201,
@@ -108,15 +113,15 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
     file.write(f"  frames: {parameters['frames']}\n")
 
     file.write("parameters:\n")
-    for arg in ["wavelength", "dipole_radius", "time_step"]:
+    for arg in ["wavelength", "dipole_radius", "time_step", "polarisability_type"]:
         file.write(f"  {arg}: {parameters[arg]}\n")
 
     file.write("output:\n")
-    for arg in ["vmd_output", "excel_output", "include_force", "include_couple"]:
+    for arg in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
         file.write(f"  {arg}: {parameters[arg]}\n")
 
     file.write("display:\n")
-    for arg in ["show_output", "frame_interval", "max_size", "resolution", "frame_min", "frame_max", "z_offset"]:
+    for arg in ["show_output", "show_stress", "frame_interval", "max_size", "resolution", "frame_min", "frame_max", "z_offset"]:
         file.write(f"  {arg}: {parameters[arg]}\n")
 
     ##
@@ -642,7 +647,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     # particle_numbers = list of particle numbers to be tested in sphere e.g. [1,2,3,4,8]
     #
     
-    particle_info = [];
+    particle_info = []
     place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
     parameters = {"frames": 1, "frame_max": 1, "show_output": True}
@@ -1839,9 +1844,9 @@ def simulations_refine(dimension, variables_list, separations_list, particle_siz
                 case "object_offsets": object_offset = indep_var
         
             # Generate YAML & Run Simulation
-
-            particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=show_output, beam=beam_type, makeCube=isObjectCube)
-            DM.main(YAML_name=filename, force_terms=force_terms, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
+            option_parameters["dipole_radius"] = dipole_size
+            particle_num = Generate_yaml.make_yaml_refine_sphere(filename, dimension, separations, particle_size, object_offset, particle_shape, place_regime, option_parameters, beam=beam_type, makeCube=isObjectCube)
+            DM.main(YAML_name=filename, force_terms=force_terms, include_dipole_forces=include_dipole_forces, polarisability_type=polarisability_type, verbosity=0)
 
 
             match particle_shape:
@@ -2130,7 +2135,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 for offset in object_offset_set:
                     # Setup and run simulation
                     Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type)
-                    DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
+                    DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability_type)
 
                     # Pull forces found
                     output_data = pull_file_data(
@@ -2174,7 +2179,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 for offset in object_offset_set:
                     # Setup and run simulation
                     Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type)
-                    DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
+                    DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability_type)
 
                     # Pull forces found
                     output_data = pull_file_data(
@@ -2219,7 +2224,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                     for offset in object_offset_set:
                         # Setup and run simulation
                         Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type)
-                        DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability)
+                        DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability)
 
                         # Pull forces found
                         output_data = pull_file_data(
@@ -2276,7 +2281,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 for separation in separations:
                     # Setup and run simulation
                     Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=object_offset, time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type, extra_args=[separation])
-                    DM.main(YAML_name=filename, force_terms=force_terms, polarizability_type=polarisability_type)
+                    DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability_type)
 
                     # Pull forces found
                     output_data = pull_file_data(
@@ -2312,8 +2317,8 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
     return np.array(data_set), data_set_labels, graphlabel_set
 
 
-def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape, beam="LAGUERRE", show_output=True, time_step=1e-4):
-    # Get the forces, particle number, and dipoles per particle for a single set of parameters for either a cuboid or sphere object.
+def simulation_single_cubeSphere(filename, dimensions, object_shape, separations, object_offset, particle_size, particle_shape, option_parameters, beam="LAGUERRE"):
+    # Get the forces, particle number, and dipoles per particle for a SINGLE set of parameters for either a cuboid or sphere object.
     parameters_stored = [
         {"type":"X", "args":["x", "y", "z"]},
         {"type":"F", "args":["Fx", "Fy", "Fz"]},
@@ -2323,14 +2328,15 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size
     read_frames = [
         0
     ]
-    show_stress = True
+    
     match object_shape:
-        case "sphere": particle_num = Generate_yaml.make_yaml_refine_sphere(filename, time_step, dimensions[0], separations, particle_size, dipole_size, object_offset, particle_shape, place_regime="squish", frames=1, show_output=show_output, beam=beam, show_stress=show_stress)
-        case "cube": particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam=beam, show_stress=show_stress)
+        case "sphere": particle_num = Generate_yaml.make_yaml_refine_sphere(filename, dimensions[0], separations, particle_size, object_offset, particle_shape, place_regime="squish", option_parameters=option_parameters, beam=beam)
+        case "cube": particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape, option_parameters, beam=beam)
         case _: sys.exit("UNIMPLEMENTED SHAPE object_shape")
     
     # Run simulation
-    DM.main(YAML_name=filename, force_terms=force_terms)
+    DM.main(YAML_name=filename)
+    dipole_size = option_parameters["dipole_radius"]
     match particle_shape:
         case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size) # get dipoles per particle.
         case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
@@ -2473,7 +2479,7 @@ def simulations_spheredisc_model(filename, variables_list, dda_forces_returned, 
         
             # Generate YAML & Run Simulation
             particle_num = Generate_yaml.make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
-            DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
+            DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarisability_type=polarisability_type, verbosity=0)
 
             print("PATICLE NUM IS ", particle_num)
             match particle_shape:
@@ -2555,7 +2561,7 @@ def simulations_spheredisc_model(filename, variables_list, dda_forces_returned, 
     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
     return data_set, data_set_params, particle_nums_set, dpp_nums_set
             
-def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forces_returned, forces_output, particle_selections, polarisability_type="RR", indep_vector_component=2, torque_centre=[0,0,0]):
+def simulations_refine_all(filename, variables_list, partial_yaml_func, forces_output, particle_selections, indep_vector_component=2, torque_centre=[0,0,0]):
     #
     # Calculates the forces/torques for a single frame based on a set of parameters. Arbitrary YAML, based on partial_yaml_func.
     # variables_list contains all of the parameters to be changed (dict). One is set to be the independent variable, to be plotted on the x-axis, all combinations of the other variables are taken and plotted on different graph lines.
@@ -2657,10 +2663,6 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
     data_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(data_set_length)], dtype=object)
     particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(int(var_set_length/len(indep_list)))], dtype=object)
     dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(int(var_set_length/len(indep_list)))], dtype=object)
-    
-    # Only make dipoles file if torque about given centre are needed.
-    if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
-    else: include_dipole_forces = False
 
     # Start the loop over all parameters to be varied across different lines of the graph.
     for params_i, params in enumerate(it.product(*line_vars)):
@@ -2695,7 +2697,7 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forc
         
             # Generate YAML & Run Simulation
             particle_num = partial_yaml_func(dimension=dimension, separations=separations, particle_size=particle_size, dipole_size=dipole_size, object_offset=object_offset, particle_shape=particle_shape, material=material)
-            DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarizability_type=polarisability_type, verbosity=0)
+            DM.main(YAML_name=filename)
 
             match particle_shape:
                 case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
@@ -3862,7 +3864,6 @@ match(sys.argv[1]):
         #
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
-        show_output     = False
         disc_radius     = [1.14e-6]    #1.14e-6 #1.09e-6                   # Radius of full disc
         particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
@@ -3871,24 +3872,31 @@ match(sys.argv[1]):
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
         dipole_sizes    = [75e-9]#[40e-9, 50e-9, 60e-9, 70e-9]#np.linspace(80e-9, 100e-9, 20)
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
-        dda_forces_returned     = ["optical"]
         particle_shapes         = ["sphere"]
         indep_vector_component  = 0              # Which component to plot when dealing with vector quantities to plot (Often not used)
         indep_var               = "separations_list"
         beam_type               = "LAGUERRE" 
-        include_dipole_forces   = False
         linestyle_var           = None
-        polarisability_type     = "RR"
         mode        = "sphere"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        materials = ["FusedSilica", "FusedSilica01"]
+        materials = ["FusedSilica"]
         fix_to_ring = False
         # NOTE; The following lists must be the same length.
         forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = [[0], [0]]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
         # forces_output= ["Fx", "Fy"]
         # particle_selections = [ [0],[0] ]
+
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": False,
+            "show_stress": False,
+            "force_terms": ["optical"],
+            "polarisability_type": "RR",
+        })
+        # Only make dipoles file if torque about given centre are needed.
+        if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: option_parameters["include_dipole_forces"] = True
+        else: option_parameters["include_dipole_forces"] = False
 
         #-----------------------
         #-----------------------
@@ -3906,15 +3914,13 @@ match(sys.argv[1]):
         # Only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         indep_name = variables_list["indep_var"]
         
-        partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output, fix_to_ring=fix_to_ring)
+        partial_yaml_func = partial(Generate_yaml.make_yaml_spheredisc_model, filename=filename, option_parameters=option_parameters, mode=mode, beam=beam_type, fix_to_ring=fix_to_ring)
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(
             filename,
             variables_list, 
             partial_yaml_func, 
-            dda_forces_returned, 
             forces_output, 
             particle_selections, 
-            polarisability_type, 
             indep_vector_component=indep_vector_component, 
             torque_centre=[0,0,0]
         )
@@ -3940,17 +3946,23 @@ match(sys.argv[1]):
         #====================================================================================
         # Save file
         filename = "SingleLaguerre"
-        force_terms=["optical"]              # ["optical", "spring", "bending", "buckingham"]
+        # force_terms=["optical"]              # ["optical", "spring", "bending", "buckingham"]
         # Args
         dimensions  =  [1.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
         object_shape = "sphere" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
-        num_particles_in_diameter = 10
+        num_particles_in_diameter = 8
         particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
         # particle_size = 0.15e-6 # NOTE *2 for diameter
         object_offset = [0.5e-6, 0e-6, 0e-6]
-        show_output = False
+        # show_output = False
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": True,
+            "show_stress": True,
+            "force_terms": ["optical"],
+            "frames": 1,
+        })
         #====================================================================================
         
         # Run
@@ -3958,7 +3970,7 @@ match(sys.argv[1]):
             dipole_size = particle_size
             print(f"WARNING: particle size smaller than dipoles size, setting dipole size to particle size ({particle_size})")
         print(f"\nSimulation for 1 frame of a {object_shape} object with cube particles.\nDimensions = {dimensions}, dipole size = {dipole_size}m, particle size = {particle_size:.3e}m, separations = {separations}m, object offset = {object_offset}m\n")
-        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, dipole_size, separations, object_offset, particle_size, particle_shape="cube", beam="LAGUERRE", show_output=show_output)
+        positions, forces, particle_num, dpp_num = simulation_single_cubeSphere(filename, dimensions, object_shape, separations, object_offset, particle_size, "cube", option_parameters, beam="LAGUERRE")
     
     case "force_torque_sim":
         #
@@ -3969,15 +3981,13 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
 
-        show_output     = False
-        dimensions       = [1200e-9]                     # Full width of sphere/cube
+        dimensions       = [1500e-9]                     # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
         particle_sizes  = [dimensions[0]/2]              # Single particle
         dipole_sizes    = np.linspace(60e-9, 95e-9, 5)  
         object_offsets  = [[0e-6, 0.0, 0.0e-6]]          # Offset the whole object
         particle_shapes = ["sphere"]
         materials = ["FusedSilica", "FusedSilica01"]
-        dda_forces_returned     = ["optical"]
         indep_var = "dipole_sizes"                       # Must be one of the keys in variables_list, excluding "indep_var".
         beam_type = "LAGUERRE"     
         object_shape = "cube"   
@@ -3989,13 +3999,23 @@ match(sys.argv[1]):
         forces_output= ["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...] - (get all particles, specific indices, or indices close to a position; then forces summed over all particles in the list)
 
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": False,
+            "show_stress": False,
+            "force_terms": ["optical"],
+        })
+
+        # Only make dipoles file if torque about given centre are needed.
+        if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: option_parameters["include_dipole_forces"] = True
+        else: option_parameters["include_dipole_forces"] = False
+
         # Make YAML function
         # partial_yaml_func args left to call: dimension, separations, particle_size, dipole_size, object_offset, particle_shape
         match object_shape:
             case "cube": isObjectCube = True
             case "sphere": isObjectCube = False
             case _: isObjectCube = False; print("WARNING, object shape set to sphere")
-        partial_yaml_func = partial(Generate_yaml.make_yaml_refine_sphere, makeCube=isObjectCube, filename=filename, frames=1, time_step=1e-4, place_regime=place_regime, show_output=show_output, beam=beam_type )
+        partial_yaml_func = partial(Generate_yaml.make_yaml_refine_sphere, makeCube=isObjectCube, filename=filename, place_regime=place_regime, beam=beam_type, option_parameters=option_parameters)
 
         #-----------------------
         #-----------------------
@@ -4011,7 +4031,7 @@ match(sys.argv[1]):
             "materials": materials
         }
 
-        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, variables_list, partial_yaml_func, dda_forces_returned, forces_output, particle_selections, polarisability_type="RR", indep_vector_component=2, torque_centre=torque_centre)
+        data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, variables_list, partial_yaml_func, forces_output, particle_selections, indep_vector_component=2, torque_centre=torque_centre)
 
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_var, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
 
@@ -4196,23 +4216,23 @@ match(sys.argv[1]):
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
         
-    case "stretcher_dipole_shapes":
-        filename = "Optical_stretcher"
-        show_output = True
-        frames = 2
-        time_step = 1e-4
+    # case "stretcher_dipole_shapes":
+    #     filename = "Optical_stretcher"
+    #     show_output = True
+    #     frames = 2
+    #     time_step = 1e-4
 
-        sphere_radius = 0.3e-6
-        dipole_size = 60e-9
-        connection_mode = "dist"
-        connection_args = "81e-9" # dipole diameter
-        E0 = 7e6 #1.5e7
-        w0 = 0.4
-        stiffness = 5e-8  # 5e-7
-        bending = 5e-20  # 0.5e-18 # 5e-19
-        force_terms = ["optical", "spring", "bending"] #, "buckingham"
+    #     sphere_radius = 0.3e-6
+    #     dipole_size = 60e-9
+    #     connection_mode = "dist"
+    #     connection_args = "81e-9" # dipole diameter
+    #     E0 = 7e6 #1.5e7
+    #     w0 = 0.4
+    #     stiffness = 5e-8  # 5e-7
+    #     bending = 5e-20  # 0.5e-18 # 5e-19
+    #     force_terms = ["optical", "spring", "bending"] #, "buckingham"
 
-        simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output)
+    #     simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output)
 
 
     case _:
