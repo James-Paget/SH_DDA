@@ -2,4 +2,5 @@
 *.so
 *.dylib
 *.o
+*.p
 *.xlsx
