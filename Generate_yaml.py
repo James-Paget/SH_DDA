@@ -263,8 +263,8 @@ def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphe
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
 
 
-def make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=1, time_step=1e-4, connection_mode="dist", connection_args=0.0, material="FusedSilica", show_output=False, show_stress=False):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size, show_stress=show_stress)
+def make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode="dist", connection_args=0.0, material="FusedSilica"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, "STRETCHER", E0=E0, w0=w0)
     num_particles = use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape=particle_shape, connection_mode=connection_mode, connection_args=connection_args, material=material)
     return num_particles

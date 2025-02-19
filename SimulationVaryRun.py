@@ -4136,21 +4136,12 @@ match(sys.argv[1]):
                 
         # System variables
         filename = "Optical_stretcher"
-        show_output = False
-        show_stress = False
-        frames = 1
-        time_step = 0.5e-4
-        stiffness = 5e-6
-        stiffness_spec={"type":"", "default_value":stiffness}
-        bending = 0.75e-19     # 0.5e-18 # 5e-19
-        force_terms = ["optical"] #,  "bending", "spring", "buckingham"
 
         # Particle variables
         dimension = 2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 2.0 # The max transform you want to apply, which sets the default separation of particles in the system
         particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
-        dipole_size = 100e-9
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
@@ -4164,9 +4155,20 @@ match(sys.argv[1]):
         E0 = 7.0e6 #4.75e6
         w0 = 0.5
 
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": True,
+            "show_stress": False,
+            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
+            "constants": {"bending": 0.75e-19}, # 5e-20  # 0.5e-18 # 5e-19
+            "stiffness_spec": {"type":"", "default_value": 5e-6}, #5e-8  # 5e-7
+            "dipole_radius": 100e-9,
+            "frames": 1,
+            "time_step": 10e-5, 
+        })
+
         # Single run version
-        # Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=frames, time_step=time_step, connection_mode=connection_mode, connection_args=connection_args, material=material, show_output=show_output, show_stress=show_stress)
-        # DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
+        # Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode=connection_mode, connection_args=connection_args, material=material)
+        # DM.main(filename)
 
         # Run a varying simulation over transforms
         # Specify all parameters in the xlsx file so a subset can be pulled later based on read_parameters. Gives information about the structure of the data in the file.
@@ -4198,8 +4200,8 @@ match(sys.argv[1]):
             print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
             
             transform_factor = transform_factor_list[i]
-            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=frames, time_step=time_step, connection_mode=connection_mode, connection_args=connection_args, material=material, show_output=show_output, show_stress=show_stress)
-            DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms, stiffness_spec=stiffness_spec)
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode=connection_mode, connection_args=connection_args, material=material)
+            DM.main(filename)
 
             ####
             ## Should implement this method to get forces instead, for now it is just being calculated manually
@@ -4255,9 +4257,20 @@ match(sys.argv[1]):
                         force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
                         if( (pos[0]+sys.float_info.epsilon > 0.0) and (pos[1]+sys.float_info.epsilon > 0.0) and (pos[2]+sys.float_info.epsilon > 0.0) ):   # If not +X,+Y,+Z corner, then sum forces
                             output += [force[0], force[1], force[2]]
+            for p in range(int(len(pulled_data)/6)): # I CHANGED THIS TO 6
+                pos = pulled_data[6*p] # ISNT THIS GETTING A FORCE?
+                output += [pulled_data[3*p+0], pulled_data[3*p+1], pulled_data[3*p+2]] 
             data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
             data_set[1][0].append(transform_factor_list[i]);data_set[1][1].append(output[1])    # Y force
             data_set[2][0].append(transform_factor_list[i]);data_set[2][1].append(output[2])    # Z force
+
+            ## OLD VERSION ####
+            # for p in range(int(len(pulled_data)/3)):
+            #     pos = pulled_data[6*p]
+            #     output += [pulled_data[3*p+0], pulled_data[3*p+1], pulled_data[3*p+2]] 
+            # data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
+            # data_set[1][0].append(transform_factor_list[i]);data_set[1][1].append(output[1])    # Y force
+            # data_set[2][0].append(transform_factor_list[i]);data_set[2][1].append(output[2])    # Z force
 
         # Plot forces for each step considered to see if equilibrium is being reached
         # data_set.pop(0)
