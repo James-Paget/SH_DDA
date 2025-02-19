@@ -232,7 +232,7 @@ def make_yaml_refine_cuboid(filename, dimensions, separations, object_offset, pa
     return num_particles
 
 def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, place_regime, prism_type, prism_args, frames=1, show_output=False, beam="LAGUERRE"):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     num_particles = use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
     return num_particles
@@ -244,10 +244,10 @@ def make_yaml_refine_sphere(filename, dimension, separations, particle_size, obj
     num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube, material=material)
     return num_particles
 
-def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, rotation=None, frames=1, show_output=False, beam="LAGUERRE", extra_args=[]):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+def make_yaml_single_dipole_exp(filename, test_type, test_args, object_offset, option_parameters, rotation=None, beam="LAGUERRE", extra_args=[]):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam, rotation=rotation)
-    num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset, extra_args=extra_args)
+    num_particles = use_single_dipole_exp(filename, test_type, test_args, option_parameters["dipole_radius"], object_offset=object_offset, extra_args=extra_args)
     return num_particles
 
 def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, object_offset, particle_shape, option_parameters, dipole_size=None, mode="disc", beam="LAGUERRE", material="FusedSilica", fix_to_ring=True):
