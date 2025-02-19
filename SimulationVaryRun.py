@@ -4156,16 +4156,17 @@ match(sys.argv[1]):
         E0 = 7.0e6 #4.75e6
         w0 = 0.5
 
+        coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor)
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
-            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
-            "constants": {"bending": 0.75e-19}, # 5e-20  # 0.5e-18 # 5e-19
+            "force_terms": ["optical", "spring"], #, "buckingham"
+            "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5e-6}, #5e-8  # 5e-7
-            "spring_nl_override": (2.0*particle_size)*np.sqrt(critical_transform_factor),       ## SHOULD REALLY PULL THIS FROM THE BASE SEPARATION CALCULATED INSIDE THE "get_stretch_sphere()" FUNCTION TO ENSURE ALWAYS IDENTICAL, BUT FOR NOW THIS SHOULD BE FINE ##
+            "equilibrium_shape": coords_List,
             "dipole_radius": 100e-9,
             "frames": 1,
-            "time_step": 10e-5, 
+            "time_step": 0.5e-4, 
         })
 
         # Single run version
