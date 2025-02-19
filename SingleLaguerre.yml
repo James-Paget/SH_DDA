@@ -1,5 +1,6 @@
 options:
   frames: 1
+  frames: 1
 parameters:
   wavelength: 1e-06
   dipole_radius: 7.5e-08
@@ -20,10 +21,12 @@ output:
   force_terms: o                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               p                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               t                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               i                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               c                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               a                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               l
 display:
   show_output: False
+  show_output: False
   show_stress: False
   frame_interval: 2
   resolution: 201
   frame_min: 0
+  frame_max: 1
   frame_max: 1
   z_offset: 0.0
 beams:
@@ -34,7 +37,9 @@ beams:
     w0: 0.6
     jones: POLARISATION_LCP
     translation: None
+    translation: None
     translationargs: None
+    translationtype: None
     translationtype: None
     rotation: None
 particles:
@@ -42,10 +47,13 @@ particles:
   default_material: FusedSilica
   connection_mode: dist
   connection_args: 0.0
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
   particle_list:
     part_0:
       material: FusedSilica
-      shape: sphere
+      shape: cube
       args: 1e-07
       coords: 1.14e-06 0.0 1e-06
       altcolour: True
