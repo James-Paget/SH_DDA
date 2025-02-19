@@ -4157,11 +4157,12 @@ match(sys.argv[1]):
         w0 = 0.5
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
             "constants": {"bending": 0.75e-19}, # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5e-6}, #5e-8  # 5e-7
+            "spring_nl_override": (2.0*particle_size)*np.sqrt(critical_transform_factor),       ## SHOULD REALLY PULL THIS FROM THE BASE SEPARATION CALCULATED INSIDE THE "get_stretch_sphere()" FUNCTION TO ENSURE ALWAYS IDENTICAL, BUT FOR NOW THIS SHOULD BE FINE ##
             "dipole_radius": 100e-9,
             "frames": 1,
             "time_step": 10e-5, 
