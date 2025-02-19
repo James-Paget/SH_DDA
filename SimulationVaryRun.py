@@ -4140,7 +4140,7 @@ match(sys.argv[1]):
         # Particle variables
         dimension = 2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 2.0 # The max transform you want to apply, which sets the default separation of particles in the system
+        critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
         particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         dipole_size = 100e-9
         object_offset = [0.0, 0.0, 0.0e-6]
@@ -4148,9 +4148,9 @@ match(sys.argv[1]):
         connection_mode = "manual"  #"dist", 0.0
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         particle_shape = "sphere"
-        forces_output= ["FTx", "FTy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = [[0], [0]]
-        force_reading = "XYZ_split"       #"Z_split", "XYZ_split"
+        #forces_output= ["FTx", "FTy", "FTz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        #particle_selections = [[0], [0]]
+        force_reading = "Z_split"       #"Z_split", "XYZ_split"
         
         # Beam variables
         E0 = 7.0e6 #4.75e6
@@ -4160,7 +4160,7 @@ match(sys.argv[1]):
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
-            "force_terms": ["optical", "spring"], #, "buckingham"
+            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
@@ -4198,7 +4198,7 @@ match(sys.argv[1]):
         graphlabel_set={"title":"Stretched sphere model", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
         data_set = [ [[],[]], [[],[]], [[],[]] ]
         datalabel_set = ["FTx", "FTy", "FTz"]
-        transform_factor_list = np.linspace(1.0, 2.0, 20)
+        transform_factor_list = np.linspace(1.0, critical_transform_factor, 20)
         for i in range(len(transform_factor_list)):
             print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
             

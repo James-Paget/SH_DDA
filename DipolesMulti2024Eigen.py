@@ -2113,6 +2113,12 @@ def main(YAML_name=None):
             case "bead_indices":
                 stiffness_spec[key] = val # stored in the yaml as a list of ints
 
+    if(equilibrium_shape!='None'):
+        for i in range(len(equilibrium_shape)):
+            for j in range(len(equilibrium_shape[i])):
+                equilibrium_shape[i][j] = float(equilibrium_shape[i][j])
+
+
     #===========================================================================
     # Read simulation options (this should be done externally)
     #===========================================================================
