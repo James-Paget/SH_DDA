@@ -14,7 +14,7 @@ output:
   include_dipole_forces: False
   force_terms: optical
 display:
-  show_output: True
+  show_output: False
   show_stress: False
   frame_interval: 2
   max_size: 2e-06

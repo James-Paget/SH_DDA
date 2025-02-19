@@ -650,7 +650,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     particle_info = []
     place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
-    parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
 
     record_parameters = ["F"]
     if(include_additionalForces):   # Record total forces instead of just optical forces
@@ -2101,7 +2101,7 @@ def simulations_refine_general(dimensions, variables_list, force_terms, time_ste
     parameter_text = ""
     return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
 
-def simulations_single_dipole(filename, read_parameters, beam_type, polarisability_type, test_type, test_args, dipole_size, object_offset, force_terms, time_step=1e-4, rotation=None, frames=1, show_output=False):
+def simulations_single_dipole(filename, read_parameters, beam_type, polarisability_type, test_type, test_args, object_offset, force_terms, option_parameters, rotation=None, frames=1):
     #
     # Test the forces experience by single dipole systems in different setups
     #
@@ -2134,8 +2134,8 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
                 for offset in object_offset_set:
                     # Setup and run simulation
-                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type)
-                    DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability_type)
+                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, object_offset=[offset, 0.0, 0.0], option_parameters=option_parameters, rotation=rotation, beam=beam_type)
+                    DM.main(YAML_name=filename)
 
                     # Pull forces found
                     output_data = pull_file_data(
@@ -2178,7 +2178,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
                 for offset in object_offset_set:
                     # Setup and run simulation
-                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type)
+                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, object_offset=[offset, 0.0, 0.0], option_parameters=option_parameters, rotation=rotation, beam=beam_type)
                     DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability_type)
 
                     # Pull forces found
@@ -2223,7 +2223,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                     data_set_Fz = [[], []]
                     for offset in object_offset_set:
                         # Setup and run simulation
-                        Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=[offset, 0.0, 0.0], time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type)
+                        Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, object_offset=[offset, 0.0, 0.0], option_parameters=option_parameters, rotation=rotation, beam=beam_type)
                         DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability)
 
                         # Pull forces found
@@ -2280,7 +2280,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, polarisabili
                 separations = np.linspace(lower_separation, upper_separation, separation_number)
                 for separation in separations:
                     # Setup and run simulation
-                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, dipole_size=dipole_size, object_offset=object_offset, time_step=time_step, rotation=rotation, frames=frames, show_output=show_output, beam=beam_type, extra_args=[separation])
+                    Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, object_offset=object_offset, option_parameters=option_parameters, rotation=rotation, beam=beam_type, extra_args=[separation])
                     DM.main(YAML_name=filename, force_terms=force_terms, polarisability_type=polarisability_type)
 
                     # Pull forces found
@@ -3753,17 +3753,20 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
 
-        show_output = False
-        time_step = 1e-4
-        frames = 1
         beam_type = "BESSEL"          # Which beam to use
         polarisability_type = "CM"    # Which polarisability to test
-        dipole_size = 100e-9          # Half-width/radius of dipole
         object_offset = [0.0, 0.0, 0.0]
         force_terms = ["optical"]
         test_type = "single"  # Particle setup to test
         linestyle_set = None
         rotation = None#"180 0.0 0.0"
+
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": False,
+            "time_step": 1e-4,
+            "dipole_size": 100e-9, # Half-width/radius of dipole
+            "frames": 1,
+        })
 
         # Test parameters
         match test_type:
@@ -3813,8 +3816,9 @@ match(sys.argv[1]):
                 test_args=[]
                 read_parameters=[]
 
+
         # Run simulation
-        data_set, data_set_labels, graphlabel_set = simulations_single_dipole(filename, read_parameters, beam_type, polarisability_type, test_type, test_args, dipole_size, object_offset, force_terms, time_step=time_step, rotation=rotation, frames=frames, show_output=show_output)
+        data_set, data_set_labels, graphlabel_set = simulations_single_dipole(filename, read_parameters, beam_type, polarisability_type, test_type, test_args, object_offset, force_terms, option_parameters, rotation=rotation)
         Display.plot_multi_data(data_set, data_set_labels, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)
 
     case "sphere_spheredisc_model":
