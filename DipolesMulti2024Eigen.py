@@ -2105,10 +2105,7 @@ def main(YAML_name=None):
             case "default_value" | "bead_value": 
                 stiffness_spec[key] = float(val)
             case "bead_indices":
-                stiffness_spec[key] = map(int, val.split(" ")) # XXX need to check this works
-
-
-    print(f"!!!\n\n\n\nCONSTANTS ARE {constants}\n stiffnes sepc is {stiffness_spec}")
+                stiffness_spec[key] = val # stored in the yaml as a list of ints
 
     #===========================================================================
     # Read simulation options (this should be done externally)

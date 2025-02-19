@@ -418,6 +418,8 @@ class DisplayObject (object):
         Inwards stresses are blue and outward are red.
 
         all_args are the shape args of each particle, however, only the 0th value of the 0th particle is used to get the cube radius.
+
+        Currently designed for a single frame simulation, SHOULD check where the other frame forces go.
         """
 
         ##
