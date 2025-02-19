@@ -3,10 +3,10 @@ options:
 parameters:
   wavelength: 1e-06
   dipole_radius: 1e-07
-  time_step: 5e-05
+  time_step: 0.0001
   polarisability_type: RR
   constants:
-    bending: 1e-19
+    bending: 7.5e-20
   stiffness_spec:
     type: 
     default_value: 5e-06
@@ -18,9 +18,9 @@ output:
   include_couple: True
   verbosity: 0
   include_dipole_forces: False
-  force_terms: optical spring bending buckingham
+  force_terms: optical spring bending
 display:
-  show_output: False
+  show_output: True
   show_stress: False
   frame_interval: 2
   resolution: 201

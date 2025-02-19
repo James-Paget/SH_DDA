@@ -263,7 +263,7 @@ def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphe
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
 
 
-def make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode="dist", connection_args=0.0, material="FusedSilica"):
+def make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, connection_mode="dist", connection_args=0.0, material="FusedSilica"):
     use_parameter_options(filename, option_parameters)
     use_beam(filename, "STRETCHER", E0=E0, w0=w0)
     num_particles = use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape=particle_shape, connection_mode=connection_mode, connection_args=connection_args, material=material)
@@ -1296,7 +1296,7 @@ def get_stretch_sphere(dimension, particle_size, transform_factor, critical_tran
                         connection_args += f"{i} {j} "
                         connection_args += f"{j} {i} "
 
-    # Modify this base sphere to get the ellpsoid / other shape to be generated
+    # Modify this base sphere to get the ellipsoid / other shape to be generated
     transformed_coords_list = []
     for coord in coords_list:
         transformed_coords_list.append(func_transform(coord, transform_factor))

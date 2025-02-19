@@ -2099,8 +2099,8 @@ def main(YAML_name=None):
     polarisability_type = paraminfo.get('polarisability_type', 'RR')
     constants = paraminfo.get('constants', {"bending":0.1e-18})
     stiffness_spec = paraminfo.get('stiffness_spec', {"type":"", "default_value":5e-6})
-    spring_nl_override = paraminfo.get('spring_nl_override', None)
 
+    spring_nl_override = paraminfo.get('spring_nl_override', None)
 
     # Cast dictionaries to correct types
     for key, val in constants.items():
@@ -2116,7 +2116,7 @@ def main(YAML_name=None):
                 stiffness_spec[key] = val # stored in the yaml as a list of ints
 
     # Cast to correct type -> NOTE; may not be necessary
-    if(spring_nl_override!=None):
+    if(spring_nl_override!=None and spring_nl_override!='None'):
         spring_nl_override = float(spring_nl_override)
 
     #===========================================================================
@@ -2191,6 +2191,8 @@ def main(YAML_name=None):
     vacuum_permittivity = 1
     k = 2 * np.pi / wavelength
     epm = 1.333 # water
+
+    # XXX move this into a function
     #a0 = (4 * np.pi * 8.85e-12) * (radius ** 3) * ((ep1 - 1) / (ep1 + 2))
     #a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - 1) / (ep1 + 2))
     #a0a = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1a - 1) / (ep1a + 2))
