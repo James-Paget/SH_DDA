@@ -153,7 +153,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 3 #20
+        samples = 4 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -418,6 +418,8 @@ class DisplayObject (object):
         Inwards stresses are blue and outward are red.
 
         all_args are the shape args of each particle, however, only the 0th value of the 0th particle is used to get the cube radius.
+
+        Currently designed for a single frame simulation, SHOULD check where the other frame forces go.
         """
 
         ##

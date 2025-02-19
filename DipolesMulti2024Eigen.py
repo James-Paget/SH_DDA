@@ -307,7 +307,7 @@ def displacement_matrix(array_of_positions):
     return displacement_matrix
 
 
-def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive, polarizability, beam_collection, k):
+def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive, polarisability, beam_collection, k):
 
     list_of_displacements = [u - v for u, v in it.combinations(array_of_positions, 2)]
     number_of_displacements = len(list_of_displacements)
@@ -345,7 +345,7 @@ def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles
         )
     for i in range(number_of_dipoles):  # creates D_jj matrices
         ii = i//number_of_dipoles_in_primitive
-        Ajj_array[i] = Ajj(polarizability[ii])
+        Ajj_array[i] = Ajj(polarisability[ii])
         # E_array[i] = np.array(
         #     [
         #         0,
@@ -377,7 +377,7 @@ def dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles
     return P_array
 
 
-def optical_force_array(array_of_particles, E0, dipole_radius, dipole_primitive, k, n_particles, a0, excel_output, include_couple, beam_collection, polarizability):
+def optical_force_array(array_of_particles, E0, dipole_radius, dipole_primitive, k, n_particles, a0, excel_output, include_couple, beam_collection, polarisability):
 #
 # Need to:
 # (0) change array_of_positions to array of particle positions
@@ -397,7 +397,7 @@ def optical_force_array(array_of_particles, E0, dipole_radius, dipole_primitive,
             array_of_positions[i*number_of_dipoles_in_primitive+j] = array_of_particles[i] + dipole_primitive[j]
     #print(array_of_positions)
 # (2):
-    p_array = dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive, polarizability, beam_collection, k)
+    p_array = dipole_moment_array(array_of_positions, E0, dipole_radius, number_of_dipoles_in_primitive, polarisability, beam_collection, k)
     # print(p_array)
     displacements_matrix = displacement_matrix(array_of_positions)
 
@@ -1717,7 +1717,79 @@ def get_polarisation_vector(jones):
             print("--- Unknown polarisation, please update 'get_polarisation_vector()' or change the polarisation used. Defaulting to [0,0,0] polarisation vector ---")
     return np.array(pol)
 
-def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
+
+def make_beam_collections_and_list(beaminfo, wavelength, verbosity, frames):
+    
+    beam_collection = Beams.create_beam_collection(beaminfo, wavelength, verbosity=verbosity)
+
+    
+    # Test if beam should be translated each time step (requiring new beam collections each time)
+    is_beam_changing = False
+    for beam_params in beaminfo.values():
+        if "translationargs" in beam_params.keys():
+            if beam_params["translationargs"] != "None" and beam_params["translation"] != beam_params["translationargs"]: # python None gets converted to "None" string when read from YAML
+                is_beam_changing = True
+
+    # If so, make a list of collections
+    if is_beam_changing:
+        #
+        # translationargs = args for translation
+        # translationtype  = regime to translate by e.g. "linear", "circle"
+        #       linear => translationargs={x y z}
+        #       circle => translationargs={N nx ny nz vx vy vz}
+        #               N = number of loops of circle to perform -> can be negative for reverse dir, and fractions for sectors
+        #               n = vector of normal to circular plane to move in
+        #               v = vector point to centre of circle from inital translation point (will let you determine how to traverse any circle with this point located on it)
+        #
+        number_of_timesteps = frames
+        beam_collection_list = []
+        beam_translations = {}
+        # Note, translations MUST come in and leave as strings
+
+        for beam_name in beaminfo.keys():
+            # Convert strings to float arrays
+            if beaminfo[beam_name]["translation"] == "None": # Ensure translation is defined
+                print(f"Set beam: {beam_name} translation to [0.0,0.0,0.0] from None")
+                beaminfo[beam_name]["translation"] = [0.0,0.0,0.0]
+            else:
+                beaminfo[beam_name]["translation"] = [float(x) for x in beaminfo[beam_name]["translation"].split()]
+
+            if beaminfo[beam_name]["translationargs"] == "None":
+                beaminfo[beam_name]["translationargs"] = beaminfo[beam_name]["translation"]
+            else:
+                beaminfo[beam_name]["translationargs"] = [float(x) for x in beaminfo[beam_name]["translationargs"].split()]
+            
+            # Specify points for translation
+            match beaminfo[beam_name]["translationtype"]:
+                case "linear":
+                    # Move in a straight line between two points
+                    beam_translations[beam_name] = np.linspace(beaminfo[beam_name]["translation"], beaminfo[beam_name]["translationargs"], number_of_timesteps)
+                case "circle":
+                    # Move around a circle N times
+                    beam_loops  = beaminfo[beam_name]["translationargs"][0]
+                    beam_origin    = [ beaminfo[beam_name]["translation"][0], beaminfo[beam_name]["translation"][1], beaminfo[beam_name]["translation"][2] ]
+                    beam_normal    = [ beaminfo[beam_name]["translationargs"][1], beaminfo[beam_name]["translationargs"][2], beaminfo[beam_name]["translationargs"][3] ]
+                    beam_centreDir = [ beaminfo[beam_name]["translationargs"][4], beaminfo[beam_name]["translationargs"][5], beaminfo[beam_name]["translationargs"][6] ]
+                    beam_theta_step= (beam_loops*2.0*np.pi)/(number_of_timesteps)
+                    beam_translations[beam_name] = np.zeros((number_of_timesteps,3), dtype=float)
+                    for i in range(number_of_timesteps):
+                        beam_translations[beam_name][i] = np.array(beam_origin) +np.array(beam_centreDir) -rotate_arbitrary(beam_theta_step*i, beam_centreDir, beam_normal)
+                case "point_set":
+                    pass
+                case _:
+                    print("-- YAML 'translationtype' not known;"+str(beaminfo[beam_name]["translationtype"])+" --")
+
+        for t in range(number_of_timesteps):
+            for (beam_name, beam_params) in beaminfo.items():
+                beaminfo[beam_name]["translation"] = " ".join([str(x) for x in beam_translations[beam_name][t]]) # join floats to a string, translationargs untouched an no longer needed.
+            beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength,verbosity=verbosity))
+            
+    # Else just use one collection like normal
+    else:
+        beam_collection_list = None
+    return beam_collection, beam_collection_list
+
+def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarisability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
     """
     shapes = List of shape types used
     args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
@@ -1801,9 +1873,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             optcouple = None
 
     # (1) Set constants
-    #stiffness = constants["spring"]
     BENDING   = constants["bending"]
-    #stiffness_spec["default_value"] = stiffness # XXX check this is working ok, then can remove stiffness_spec?
 
     # (2) Get Connections
     connection_indices = generate_connection_indices(position_vectors, connection_mode, connection_args, verbosity=verbosity)
@@ -1851,7 +1921,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             beam_collection = beam_collection_list[i]
 
 
-        dipoles_optical, optical, torques, couples = Dipoles.py_optical_force_torque_array(position_vectors, np.asarray(dipole_primitive_num), dipole_radius, dipole_primitives, inverse_polarizability, beam_collection)
+        dipoles_optical, optical, torques, couples = Dipoles.py_optical_force_torque_array(position_vectors, np.asarray(dipole_primitive_num), dipole_radius, dipole_primitives, inverse_polarisability, beam_collection)
 
         #couples = None
         #include_couple==False
@@ -1953,7 +2023,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
 # Start of program
 ###################################################################################
 
-def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_terms=["optical", "spring", "bending", "buckingham"], stiffness_spec={"type":"", "default_value":0}, polarizability_type="RR", include_dipole_forces=False, verbosity=0):
+def main(YAML_name=None):
     #
     # Runs the full program
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
@@ -1977,12 +2047,12 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
 
     if(YAML_name==None):
         # No name provided, hence use sys.argv[1] as the name
-        print("Using YAML: "+str(sys.argv[1])+".yml")
+        print(f"Using YAML: {sys.argv[1]}.yml")
         if int(len(sys.argv)) != 2:
-            sys.exit("Usage: python {} <FILESTEM>".format(sys.argv[0]))
+            sys.exit(f"Usage: python {sys.argv[0]} <FILESTEM>")
     else:
         # Name given, hence use this name provided as the YAML
-        print("Using YAML: "+str(YAML_name)+".yml")
+        print(f"Using YAML: {YAML_name}.yml")
         sys.argv[1] = YAML_name
 
     #===========================================================================
@@ -2019,6 +2089,24 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     wavelength = float(paraminfo['wavelength'])
     dipole_radius = float(paraminfo['dipole_radius'])
     timestep = float(paraminfo['time_step'])
+    polarisability_type = paraminfo.get('polarisability_type', 'RR')
+    constants = paraminfo.get('constants', {"bending":0.1e-18})
+    stiffness_spec = paraminfo.get('stiffness_spec', {"type":"", "default_value":5e-6})
+
+
+    # Cast dictionaries to correct types
+    for key, val in constants.items():
+        constants[key] = float(val)
+    
+    for key, val in stiffness_spec.items():
+        match key:
+            case "type": 
+                stiffness_spec[key] = str(val)
+            case "default_value" | "bead_value": 
+                stiffness_spec[key] = float(val)
+            case "bead_indices":
+                stiffness_spec[key] = val # stored in the yaml as a list of ints
+
     #===========================================================================
     # Read simulation options (this should be done externally)
     #===========================================================================
@@ -2030,6 +2118,9 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     excel_output = bool(outputinfo.get('excel_output',True))
     include_force = bool(outputinfo.get('include_force',True))
     include_couple = bool(outputinfo.get('include_couple',True))
+    verbosity = int(outputinfo.get('verbosity', 0))
+    include_dipole_forces = bool(outputinfo.get('include_dipole_forces',False))
+    force_terms = outputinfo.get('force_terms','optical').split(" ")
     #===========================================================================
     # Read display options (this should be done externally)
     #===========================================================================
@@ -2037,73 +2128,8 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
     # Read beam options and create beam collection
     #===========================================================================
-    beam_collection = Beams.create_beam_collection(beaminfo, wavelength, verbosity=verbosity)
-
     
-    # Test if beam should be translated each time step (requiring new beam collections each time)
-    is_beam_changing = False
-    for beam_params in beaminfo.values():
-        if "translationargs" in beam_params.keys():
-            if beam_params["translationargs"] != "None" and beam_params["translation"] != beam_params["translationargs"]: # python None gets converted to "None" string when read from YAML
-                is_beam_changing = True
-
-    # If so, make a list of collections
-    if is_beam_changing:
-        #
-        # translationargs = args for translation
-        # translationtype  = regime to translate by e.g. "linear", "circle"
-        #       linear => translationargs={x y z}
-        #       circle => translationargs={N nx ny nz vx vy vz}
-        #               N = number of loops of circle to perform -> can be negative for reverse dir, and fractions for sectors
-        #               n = vector of normal to circular plane to move in
-        #               v = vector point to centre of circle from inital translation point (will let you determine how to traverse any circle with this point located on it)
-        #
-        number_of_timesteps = frames
-        beam_collection_list = []
-        beam_translations = {}
-        # Note, translations MUST come in and leave as strings
-
-        for beam_name in beaminfo.keys():
-            # Convert strings to float arrays
-            if beaminfo[beam_name]["translation"] == "None": # Ensure translation is defined
-                print(f"Set beam: {beam_name} translation to [0.0,0.0,0.0] from None")
-                beaminfo[beam_name]["translation"] = [0.0,0.0,0.0]
-            else:
-                beaminfo[beam_name]["translation"] = [float(x) for x in beaminfo[beam_name]["translation"].split()]
-
-            if beaminfo[beam_name]["translationargs"] == "None":
-                beaminfo[beam_name]["translationargs"] = beaminfo[beam_name]["translation"]
-            else:
-                beaminfo[beam_name]["translationargs"] = [float(x) for x in beaminfo[beam_name]["translationargs"].split()]
-            
-            # Specify points for translation
-            match beaminfo[beam_name]["translationtype"]:
-                case "linear":
-                    # Move in a straight line between two points
-                    beam_translations[beam_name] = np.linspace(beaminfo[beam_name]["translation"], beaminfo[beam_name]["translationargs"], number_of_timesteps)
-                case "circle":
-                    # Move around a circle N times
-                    beam_loops  = beaminfo[beam_name]["translationargs"][0]
-                    beam_origin    = [ beaminfo[beam_name]["translation"][0], beaminfo[beam_name]["translation"][1], beaminfo[beam_name]["translation"][2] ]
-                    beam_normal    = [ beaminfo[beam_name]["translationargs"][1], beaminfo[beam_name]["translationargs"][2], beaminfo[beam_name]["translationargs"][3] ]
-                    beam_centreDir = [ beaminfo[beam_name]["translationargs"][4], beaminfo[beam_name]["translationargs"][5], beaminfo[beam_name]["translationargs"][6] ]
-                    beam_theta_step= (beam_loops*2.0*np.pi)/(number_of_timesteps)
-                    beam_translations[beam_name] = np.zeros((number_of_timesteps,3), dtype=float)
-                    for i in range(number_of_timesteps):
-                        beam_translations[beam_name][i] = np.array(beam_origin) +np.array(beam_centreDir) -rotate_arbitrary(beam_theta_step*i, beam_centreDir, beam_normal)
-                case "point_set":
-                    pass
-                case _:
-                    print("-- YAML 'translationtype' not known;"+str(beaminfo[beam_name]["translationtype"])+" --")
-
-        for t in range(number_of_timesteps):
-            for (beam_name, beam_params) in beaminfo.items():
-                beaminfo[beam_name]["translation"] = " ".join([str(x) for x in beam_translations[beam_name][t]]) # join floats to a string, translationargs untouched an no longer needed.
-            beam_collection_list.append(Beams.create_beam_collection(beaminfo,wavelength,verbosity=verbosity))
-            
-    # Else just use one collection like normal
-    else:
-        beam_collection_list = None
+    beam_collection, beam_collection_list = make_beam_collections_and_list(beaminfo, wavelength, verbosity, frames)
             
     # plot_T_M_integrand_torus(beam_collection, display)
 
@@ -2160,12 +2186,12 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #a = a0
 
     a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))
-    match polarizability_type:
+    match polarisability_type:
         case "CM":
-            polarizability = a0
+            polarisability = a0
         case "RR":
             #a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
-            polarizability = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
+            polarisability = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
         case "LDR":
             # From ADDA Manual; https://github.com/adda-team/adda/blob/master/doc/manual.pdf
             # Works best for lower imaginary refractive index components
@@ -2179,17 +2205,17 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
                 beam_prop = beaminfo[beamname]["rotation"]
                 beam_pol  = beaminfo[beamname]["jones"]
             S = np.dot(get_propagation_vector(beam_prop), get_polarisation_vector(beam_pol))     # a=Propagation direction, e=Polarisation vector (for beam), calculating sum(a_j*e_j)=a.e
-            polarizability = a0 / ( 1.0 - ((b1 +b2*np.dot(n, n) +b3*S*np.dot(n, n))*((k**2) / d) +((2 / 3) * 1j * k ** 3))*(a0/(4*np.pi*8.85e-12)) )
+            polarisability = a0 / ( 1.0 - ((b1 +b2*np.dot(n, n) +b3*S*np.dot(n, n))*((k**2) / d) +((2 / 3) * 1j * k ** 3))*(a0/(4*np.pi*8.85e-12)) )
         case _:
-            polarizability = np.ones(n_particles)
-            print("polarizability not recognised, defaulting to RR: "+str(polarizability_type))
+            polarisability = np.ones(n_particles)
+            print("polarisability not recognised, defaulting to RR: "+str(polarisability_type))
 
     if(verbosity >= 1):
-        print("polarizability: "+str(polarizability_type)+", "+str(polarizability))
+        print("polarisability: "+str(polarisability_type)+", "+str(polarisability))
       
-    #polarizability = np.ones(n_particles)
-    #inverse_polarizability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
-    inverse_polarizability = (1.0+0j)/polarizability
+    #polarisability = np.ones(n_particles)
+    #inverse_polarisability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
+    inverse_polarisability = (1.0+0j)/polarisability
     E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
 
     k_B = 1.38e-23
@@ -2207,7 +2233,7 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
     #===========================================================================
 
     initialT = time.time()
-    particles, dipoptpos, optpos, dipoptforces, optforces, optcouples, totforces, connection_indices = simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarizability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=verbosity)
+    particles, dipoptpos, optpos, dipoptforces, optforces, optcouples, totforces, connection_indices = simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarisability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=verbosity)
     finalT = time.time()
     if(verbosity >= 1):
         print("Elapsed time: {:8.6f} s".format(finalT-initialT))
@@ -2261,10 +2287,4 @@ def main(YAML_name=None, constants={"spring":5e-7, "bending":0.5e-18}, force_ter
             Output.make_excel_file_dipoles(filename_dipoles_xl,number_of_dipoles,frames,timestep,dipoptpos,dipoptforces)   # Output for just dipole data
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main(constants={"spring":5e-6, "bending":0.1e-18}, force_terms=["optical", "spring", "bending"], stiffness_spec={"type":"", "default_value":5e-6}, polarizability_type="RR", include_dipole_forces=False, verbosity=2)
-    ####
-    #### STIFFNESS IS NOW CONTROLLED BY STIFFNES_SPEC, CAN BE MOVED OUT OF CONSTANTS
-    ####
-    #### ADD POLARISABILITY TO MAIN -> OR MAKE PART OF YAML WHICH IS THEN READ FROM
-    ####    --> YAML APPROACH PROBABLY BETTER
-    ####
+    main()

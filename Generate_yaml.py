@@ -22,7 +22,7 @@ def generate_yaml(preset, filename="Preset"):
 
         case "TRANSLATE_BEAM":
             use_default_options(filename, frames=30, show_output=True)
-            use_laguerre3_beam(filename, translation=None, translationargs="1.5e-6 0 0")
+            use_laguerre3_beam(filename, translation=None, translationargs="1.5e-6 0 0", translationtype="linear") # can be linear or a circle
             use_tetrahedron(filename, 1e-6, 0.2e-6, [0,0,1], 0)
 
         case "TETRAHEDRON_BESSEL":
@@ -177,18 +177,18 @@ def make_yaml_filament(filename, frames=50, show_output=True, length=4e-6, radiu
     use_beam(filename, beam)
     use_filament(filename, length, radius, separation, particle_radius, rotation_axis, rotation_theta)
 
-def make_yaml_fibre_1d_sphere(filename, time_step=1e-4, frames=20, show_output=True, length=2e-6, particle_radius=0.2e-6, particle_number=10, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_1d_sphere(filename, option_parameters, length=2e-6, particle_radius=0.2e-6, particle_number=10, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     use_fibre_1d_sphere(filename, length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_1d_cylinder(filename, time_step=1e-4, frames=10, show_output=True, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_1d_cylinder(filename, option_parameters, length=3e-6, particle_length=0.4e-6, particle_radius=0.1e-6, particle_number=5, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_2d_sphere_hollowshell(filename, option_parameters, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
+    use_parameter_options(filename, option_parameters)
     #use_beam(filename, beam, translation="2.5e-6 0.0 0.0", translationargs="1.0e-6 0.0 0.0")  ### DOES NOT ALLOW PARAMETER VARIATION EASILY ###
     # use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationargs="2.5e-6 1.5e-6 0.0")
 
@@ -200,63 +200,65 @@ def make_yaml_fibre_2d_sphere_hollowshell(filename, time_step=1e-4, frames=1, sh
     # Varies depending on if beads are included within this function
     use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
 
-def make_yaml_fibre_2d_cylinder_hollowshell(filename, time_step=1e-4, frames=1, show_output=True, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_2d_cylinder_hollowshell(filename, option_parameters, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     use_fibre_2d_cylinder_hollowshell(filename, length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_thick_uni(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_radius=0.2e-6, particle_number_radial=4, particle_number_angular=6, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_2d_sphere_thick_uni(filename, option_parameters, length=3e-6, shell_radius=1e-6, shell_number=1, particle_radius=0.2e-6, particle_number_radial=4, particle_number_angular=6, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     use_fibre_2d_sphere_thick_uni(filename, length, shell_radius, shell_number, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_cylinder_thick_uni(filename, time_step=1e-4, frames=1, show_output=True, length=3e-6, shell_radius=1e-6, shell_number=1, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=6, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_2d_cylinder_thick_uni(filename, option_parameters, length=3e-6, shell_radius=1e-6, shell_number=1, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=6, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     use_fibre_2d_cylinder_thick_uni(filename, length, shell_radius, shell_number, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_shelllayers(filename, time_step=1e-4, frames=1, show_output=True, length=1.5e-6, shell_radius_max=1.5e-6, shell_number=2, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_2d_sphere_shelllayers(filename, option_parameters, length=1.5e-6, shell_radius_max=1.5e-6, shell_number=2, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     use_fibre_2d_sphere_shelllayers(filename, length, shell_radius_max, shell_number, particle_radius, particle_separation, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_cylinder_shelllayers(filename, time_step=1e-4, frames=1, show_output=True,  length=1.0e-6, shell_radius_max=1.5e-6, shell_number=2, particle_length=0.4e-6, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
-    use_default_options(filename, frames, show_output, time_step=time_step)
+def make_yaml_fibre_2d_cylinder_shelllayers(filename, option_parameters,  length=1.0e-6, shell_radius_max=1.5e-6, shell_number=2, particle_length=0.4e-6, particle_radius=0.15e-6, particle_separation=(np.pi*2.0*1.0e-6)/(10.0), connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     use_fibre_2d_cylinder_shelllayers(filename, length, shell_radius_max, shell_number, particle_length, particle_radius, particle_separation, connection_mode, connection_args)
 
-def make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=True, beam="LAGUERRE", show_stress=False):
-    use_default_options(filename, frames, show_output, time_step=time_step, dipole_radius=dipole_size, show_stress=show_stress)
+def make_yaml_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape, option_parameters, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     num_particles = use_refine_cuboid(filename, dimensions, separations, object_offset, particle_size, particle_shape)
     return num_particles
 
-def make_yaml_refine_arch_prism(filename, time_step, dimensions, separations, particle_size, dipole_size, deflection, object_offset, particle_shape, place_regime, prism_type, prism_args, frames=1, show_output=False, beam="LAGUERRE"):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+def make_yaml_refine_arch_prism(filename, dimensions, separations, particle_size, deflection, object_offset, particle_shape, place_regime, prism_type, prism_args, option_parameters, beam="LAGUERRE"):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     num_particles = use_refine_arch_prism(filename, dimensions, separations, deflection, object_offset, particle_size, particle_shape, place_regime, prism_type, prism_args)
     return num_particles
 
-def make_yaml_refine_sphere(filename, time_step, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, place_regime, frames=1, show_output=False, beam="LAGUERRE", makeCube=False, material="FusedSilica", show_stress=False):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size, show_stress=show_stress)
+def make_yaml_refine_sphere(filename, dimension, separations, particle_size, object_offset, particle_shape, place_regime, option_parameters, dipole_size=None, beam="LAGUERRE", makeCube=False, material="FusedSilica"):
+    if dipole_size != None: option_parameters["dipole_radius"] = dipole_size # keep the passed in dipoles size so that it can be varied despite partial functions
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube, material=material)
     return num_particles
 
-def make_yaml_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset, time_step, rotation=None, frames=1, show_output=False, beam="LAGUERRE", extra_args=[]):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+def make_yaml_single_dipole_exp(filename, test_type, test_args, object_offset, option_parameters, rotation=None, beam="LAGUERRE", extra_args=[]):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam, rotation=rotation)
-    num_particles = use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=object_offset, extra_args=extra_args)
+    num_particles = use_single_dipole_exp(filename, test_type, test_args, option_parameters["dipole_radius"], object_offset=object_offset, extra_args=extra_args)
     return num_particles
 
-def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode="disc", beam="LAGUERRE", time_step=1e-4, frames=1, show_output=False, material="FusedSilica", fix_to_ring=True):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, object_offset, particle_shape, option_parameters, dipole_size=None, mode="disc", beam="LAGUERRE", material="FusedSilica", fix_to_ring=True):
+    if dipole_size != None: option_parameters["dipole_radius"] = dipole_size # keep the passed in dipoles size so that it can be varied despite partial functions
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     num_particles = use_fill_spheredisc(filename, dimension, separations, particle_size, object_offset, particle_shape, mode=mode, material=material, fix_to_ring=fix_to_ring)
     return num_particles
 
-def make_yaml_stretcher_springs(filename, num_particles, sphere_radius, dipole_size, particle_radius, connection_mode, connection_args, E0, w0, show_output, frames, time_step=1e-4):
-    use_default_options(filename, frames=frames, show_output=show_output, time_step=time_step, dipole_radius=dipole_size)
+def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0):
+    use_parameter_options(filename, option_parameters)
     use_beam(filename, "STRETCHER", E0=E0, w0=w0)
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
 
@@ -571,48 +573,100 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4):
 # Option configurations
 #=======================================================================
 
-def use_default_options(filename, frames, show_output, wavelength=1e-6, dipole_radius=4e-8, time_step=0.0001, vmd_output=True, excel_output=True, include_force=True, include_couple=True, frame_interval=2, max_size=2e-6, resolution=201, frame_min=0, frame_max=None, z_offset=0.0, show_stress=False):
+def use_default_options(filename, frames, show_output, time_step=1e-4):
     """
     Make the default options, requiring just filename, frames, show_output
     """
+
+    # frames, show_output, wavelength=1e-6, dipole_radius=4e-8, time_step=0.0001, vmd_output=True, excel_output=True, include_force=True, include_couple=True, frame_interval=2, max_size=2e-6, resolution=201, frame_min=0, frame_max=None, z_offset=0.0, show_stress=False, verbosity=0, include_dipole_forces=False, polarisability_type="RR", force_terms=["optical", "spring", "bending"]
     # To clear the old YAML before writing the new
     # NOTE; Requires this function to be run before any other writes occur
     with open(f"{filename}.yml", "w") as _:
         pass
     # Continue writing in blank slate
-    if frame_max == None:
-        frame_max = frames
-    write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset, show_stress)
+    option_parameters = fill_yaml_options({"frames":frames, "show_output": show_output, "time_step":time_step})
+    write_options(filename, option_parameters)
+
+def use_parameter_options(filename, option_parameters):
+    """
+    Make the default options, requiring just filename, frames, show_output
+    """
+
+    # frames, show_output, wavelength=1e-6, dipole_radius=4e-8, time_step=0.0001, vmd_output=True, excel_output=True, include_force=True, include_couple=True, frame_interval=2, max_size=2e-6, resolution=201, frame_min=0, frame_max=None, z_offset=0.0, show_stress=False, verbosity=0, include_dipole_forces=False, polarisability_type="RR", force_terms=["optical", "spring", "bending"]
+    # To clear the old YAML before writing the new
+    # NOTE; Requires this function to be run before any other writes occur
+    with open(f"{filename}.yml", "w") as _:
+        pass
+    # Continue writing in blank slate
+    write_options(filename, option_parameters)
+
+def fill_yaml_options(non_default_params):
+    # Fills in the non default YAML options.
+    # Used to set the sets of options at the top of each YAML - so doesn't include beams or particles
+    option_parameters = {
+        "frames" : 1,
+        "wavelength": 1.0e-6,
+        "dipole_radius": 40e-9,
+        "time_step": 1e-4,
+        "polarisability_type": "RR",
+        "constants": {"bending":0.1e-18},
+        "stiffness_spec": {"type":"", "default_value":5e-6},
+
+        "vmd_output": True,
+        "excel_output": True,
+        "include_force": True,
+        "include_couple": True,
+        "verbosity": 0,
+        "include_dipole_forces": False,
+        "force_terms": ["optical", "spring", "bending", "buckingham"],
+
+        "show_output": True,
+        "show_stress": False,
+        "frame_interval": 2,
+        "max_size": 2e-6,
+        "resolution": 201,
+        "frame_min": 0,
+        "frame_max": 1,
+        "z_offset": 0.0e-6,
+    }
+    option_parameters.update(non_default_params)
+    if option_parameters["frame_max"] > option_parameters["frames"]: option_parameters["frame_max"] = option_parameters["frames"]
+    return option_parameters
 
 #=======================================================================
 # Core functions which write options, beams and particles
 #=======================================================================
 
-def write_options(filename, frames, wavelength, dipole_radius, time_step, vmd_output, excel_output, include_force, include_couple, show_output, frame_interval, max_size, resolution, frame_min, frame_max, z_offset, show_stress):
+def write_options(filename, option_parameters):
     """
     Base function to write the passed options to filename.
     """
+    # join forces terms into one string when writing.
+    if isinstance(option_parameters["force_terms"], list):
+        option_parameters["force_terms"] = " ".join(option_parameters["force_terms"]) # max options are ["optical", "spring", "bending", "buckingham"]
+
     with open(f"{filename}.yml", "a") as file:
         file.write(f"options:\n")
-        file.write(f"  frames: {frames}\n")
+        file.write(f"  frames: {option_parameters['frames']}\n")
+
         file.write(f"parameters:\n")
-        file.write(f"  wavelength: {wavelength}\n")
-        file.write(f"  dipole_radius: {dipole_radius}\n")
-        file.write(f"  time_step: {time_step}\n")
+        for var in ["wavelength", "dipole_radius", "time_step", "polarisability_type"]:
+            file.write(f"  {var}: {option_parameters[var]}\n")
+
+        # write dictionaries into parameters list:
+        for dict_name in ["constants", "stiffness_spec"]:
+            file.write(f"  {dict_name}:\n")
+            for key, val in option_parameters[dict_name].items():
+                file.write(f"    {key}: {val}\n")
+
         file.write(f"output:\n")
-        file.write(f"  vmd_output: {vmd_output}\n")
-        file.write(f"  excel_output: {excel_output}\n")
-        file.write(f"  include_force: {include_force}\n")
-        file.write(f"  include_couple: {include_couple}\n")
+        for var in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
+            file.write(f"  {var}: {option_parameters[var]}\n")
+
         file.write(f"display:\n")
-        file.write(f"  show_output: {show_output}\n")
-        file.write(f"  show_stress: {show_stress}\n")
-        file.write(f"  frame_interval: {frame_interval}\n")
-        file.write(f"  max_size: {max_size}\n")
-        file.write(f"  resolution: {resolution}\n")
-        file.write(f"  frame_min: {frame_min}\n")
-        file.write(f"  frame_max: {frame_max}\n")
-        file.write(f"  z_offset: {z_offset}\n")
+        for var in ["show_output", "show_stress", "frame_interval", "resolution", "frame_min", "frame_max", "z_offset"]:
+            file.write(f"  {var}: {option_parameters[var]}\n")
+
 
 def write_beams(filename, beams_list):
     """
