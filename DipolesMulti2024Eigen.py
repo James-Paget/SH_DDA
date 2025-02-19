@@ -913,15 +913,16 @@ def generate_naturallength_matrix(number_of_particles, connection_indices, initi
     # Generates a matrix of natural lengths for each particle pair
     #
     spring_naturallength_matrix = np.zeros( (number_of_particles, number_of_particles), dtype=float )
-    if(spring_nl_override==None):
-        for i,j in connection_indices:
-            spring_naturallength_matrix[i,j] = spring_nl_override
-            spring_naturallength_matrix[j,i] = spring_nl_override
-    else:
+    if(spring_nl_override=='None'):
         for i,j in connection_indices:
             spring_naturallength_element = generate_spring_naturallength_element(initial_shape[i], initial_shape[j])
             spring_naturallength_matrix[i,j] = spring_naturallength_element
             spring_naturallength_matrix[j,i] = spring_naturallength_element
+    else:
+        for i,j in connection_indices:
+            spring_naturallength_matrix[i,j] = spring_nl_override
+            spring_naturallength_matrix[j,i] = spring_nl_override
+        
     return spring_naturallength_matrix
 
 def spring_force_array(array_of_positions, connection_indices, spring_stiffness_matrix, spring_naturallength_matrix):
