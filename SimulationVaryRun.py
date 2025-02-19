@@ -4142,6 +4142,7 @@ match(sys.argv[1]):
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 2.0 # The max transform you want to apply, which sets the default separation of particles in the system
         particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        dipole_size = 100e-9
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
@@ -4200,8 +4201,8 @@ match(sys.argv[1]):
             print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
             
             transform_factor = transform_factor_list[i]
-            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode=connection_mode, connection_args=connection_args, material=material)
-            DM.main(filename)
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, dipole_size, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, frames=frames, time_step=time_step, connection_mode=connection_mode, connection_args=connection_args, material=material, show_output=show_output, show_stress=show_stress)
+            DM.main(filename)   #, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms, stiffness_spec=stiffness_spec
 
             ####
             ## Should implement this method to get forces instead, for now it is just being calculated manually

@@ -908,15 +908,20 @@ def generate_stiffness_matrix(number_of_particles, connection_indices, stiffness
         spring_stiffness_matrix[j,i] = spring_stiffness_element
     return spring_stiffness_matrix
 
-def generate_naturallength_matrix(number_of_particles, connection_indices, initial_shape):
+def generate_naturallength_matrix(number_of_particles, connection_indices, initial_shape, spring_nl_override=None):
     #
     # Generates a matrix of natural lengths for each particle pair
     #
     spring_naturallength_matrix = np.zeros( (number_of_particles, number_of_particles), dtype=float )
-    for i,j in connection_indices:
-        spring_naturallength_element = generate_spring_naturallength_element(initial_shape[i], initial_shape[j])
-        spring_naturallength_matrix[i,j] = spring_naturallength_element
-        spring_naturallength_matrix[j,i] = spring_naturallength_element
+    if(spring_nl_override==None):
+        for i,j in connection_indices:
+            spring_naturallength_matrix[i,j] = spring_nl_override
+            spring_naturallength_matrix[j,i] = spring_nl_override
+    else:
+        for i,j in connection_indices:
+            spring_naturallength_element = generate_spring_naturallength_element(initial_shape[i], initial_shape[j])
+            spring_naturallength_matrix[i,j] = spring_naturallength_element
+            spring_naturallength_matrix[j,i] = spring_naturallength_element
     return spring_naturallength_matrix
 
 def spring_force_array(array_of_positions, connection_indices, spring_stiffness_matrix, spring_naturallength_matrix):
@@ -1789,7 +1794,7 @@ def make_beam_collections_and_list(beaminfo, wavelength, verbosity, frames):
         beam_collection_list = None
     return beam_collection, beam_collection_list
 
-def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarisability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=2):
+def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarisability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, spring_nl_override=None, verbosity=2):
     """
     shapes = List of shape types used
     args   = List of arguments about system and particles; [dipole_radius, particle_parameters]
@@ -1885,7 +1890,9 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
 
     # (4) Get stiffness & natural length matrix
     spring_stiffness_matrix     = generate_stiffness_matrix(number_of_particles, connection_indices, stiffness_spec=stiffness_spec)
-    spring_naturallength_matrix = generate_naturallength_matrix(number_of_particles, connection_indices, initial_shape)
+    spring_naturallength_matrix = generate_naturallength_matrix(number_of_particles, connection_indices, initial_shape, spring_nl_override=spring_nl_override)
+    ########### MAKE SURE OVERRIDE WORKS ############
+    print("spring_naturallength_matrix = ",spring_naturallength_matrix)
 
     # (5) Get Equilibrium Angles
     ijkangles = get_equilibrium_angles(position_vectors, connection_indices)
@@ -2092,6 +2099,7 @@ def main(YAML_name=None):
     polarisability_type = paraminfo.get('polarisability_type', 'RR')
     constants = paraminfo.get('constants', {"bending":0.1e-18})
     stiffness_spec = paraminfo.get('stiffness_spec', {"type":"", "default_value":5e-6})
+    spring_nl_override = paraminfo.get('spring_nl_override', None)
 
 
     # Cast dictionaries to correct types
@@ -2106,6 +2114,10 @@ def main(YAML_name=None):
                 stiffness_spec[key] = float(val)
             case "bead_indices":
                 stiffness_spec[key] = val # stored in the yaml as a list of ints
+
+    # Cast to correct type -> NOTE; may not be necessary
+    if(spring_nl_override!=None):
+        spring_nl_override = float(spring_nl_override)
 
     #===========================================================================
     # Read simulation options (this should be done externally)
@@ -2233,7 +2245,7 @@ def main(YAML_name=None):
     #===========================================================================
 
     initialT = time.time()
-    particles, dipoptpos, optpos, dipoptforces, optforces, optcouples, totforces, connection_indices = simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarisability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, verbosity=verbosity)
+    particles, dipoptpos, optpos, dipoptforces, optforces, optcouples, totforces, connection_indices = simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarisability, beam_collection, viscosity, timestep, n_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, spring_nl_override=spring_nl_override, verbosity=verbosity)
     finalT = time.time()
     if(verbosity >= 1):
         print("Elapsed time: {:8.6f} s".format(finalT-initialT))

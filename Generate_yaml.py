@@ -573,7 +573,7 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4):
 # Option configurations
 #=======================================================================
 
-def use_default_options(filename, frames, show_output, time_step=1e-4):
+def use_default_options(filename, frames, show_output, time_step=1e-4, dipole_radius=40e-9, show_stress=False):
     """
     Make the default options, requiring just filename, frames, show_output
     """
@@ -584,7 +584,7 @@ def use_default_options(filename, frames, show_output, time_step=1e-4):
     with open(f"{filename}.yml", "w") as _:
         pass
     # Continue writing in blank slate
-    option_parameters = fill_yaml_options({"frames":frames, "show_output": show_output, "time_step":time_step})
+    option_parameters = fill_yaml_options({"frames":frames, "show_output": show_output, "time_step":time_step, "dipole_radius":dipole_radius, "show_stress":show_stress})
     write_options(filename, option_parameters)
 
 def use_parameter_options(filename, option_parameters):
@@ -611,6 +611,7 @@ def fill_yaml_options(non_default_params):
         "polarisability_type": "RR",
         "constants": {"bending":0.1e-18},
         "stiffness_spec": {"type":"", "default_value":5e-6},
+        "spring_nl_override": None,
 
         "vmd_output": True,
         "excel_output": True,
@@ -658,6 +659,9 @@ def write_options(filename, option_parameters):
             file.write(f"  {dict_name}:\n")
             for key, val in option_parameters[dict_name].items():
                 file.write(f"    {key}: {val}\n")
+        
+        # Write spring natural length override (specify custom single float natural length for all springs to use, not auto-generated)
+        file.write(f"  spring_nl_override: {option_parameters['spring_nl_override']}\n")
 
         file.write(f"output:\n")
         for var in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
