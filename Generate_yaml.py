@@ -611,7 +611,7 @@ def fill_yaml_options(non_default_params):
         "polarisability_type": "RR",
         "constants": {"bending":0.1e-18},
         "stiffness_spec": {"type":"", "default_value":5e-6},
-        "spring_nl_override": None,
+        "equilibrium_shape": None,
 
         "vmd_output": True,
         "excel_output": True,
@@ -661,7 +661,7 @@ def write_options(filename, option_parameters):
                 file.write(f"    {key}: {val}\n")
         
         # Write spring natural length override (specify custom single float natural length for all springs to use, not auto-generated)
-        file.write(f"  spring_nl_override: {option_parameters['spring_nl_override']}\n")
+        file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
 
         file.write(f"output:\n")
         for var in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
@@ -1266,6 +1266,36 @@ def get_stretch_sphere(dimension, particle_size, transform_factor, critical_tran
     #
     coords_list = []
 
+    # mesh_radius = dimension/2.0
+    # base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)
+    # #number_of_particles_side = int(np.floor( (mesh_radius-particle_size) / (2.0*particle_size) ))
+    # number_of_particles_side = int(np.floor( mesh_radius/base_separation ))
+    # number_of_particles = 2*number_of_particles_side +1
+
+    # # Generate some base sphere shape
+    # base_separation = dimension/number_of_particles
+    # for i in range(-number_of_particles_side, number_of_particles_side+1):
+    #     i_coord = i*base_separation
+    #     for j in range(-number_of_particles_side, number_of_particles_side+1):
+    #         j_coord = j*base_separation
+    #         for k in range(-number_of_particles_side, number_of_particles_side+1):
+    #             k_coord = k*base_separation
+    #             withinBounds = (i_coord**2 +j_coord**2 +k_coord**2) < mesh_radius**2
+    #             if(withinBounds):   # Check will fit within a base sphere shape
+    #                 coords_list.append([i_coord, j_coord, k_coord])
+
+    coords_list, connection_mode, connection_args = get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=connection_mode, connection_args=connection_args)
+
+    # Modify this base sphere to get the ellipsoid / other shape to be generated
+    transformed_coords_list = []
+    for coord in coords_list:
+        transformed_coords_list.append(func_transform(coord, transform_factor))
+
+    return transformed_coords_list, connection_args
+
+def get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=None, connection_args=None):
+    coords_list = []
+    
     mesh_radius = dimension/2.0
     base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)
     #number_of_particles_side = int(np.floor( (mesh_radius-particle_size) / (2.0*particle_size) ))
@@ -1273,7 +1303,7 @@ def get_stretch_sphere(dimension, particle_size, transform_factor, critical_tran
     number_of_particles = 2*number_of_particles_side +1
 
     # Generate some base sphere shape
-    base_separation = dimension/number_of_particles
+    base_separation = dimension/number_of_particles ################ WHY REDEFINED BASE_SEP ???? <---- REMOVE THIS BUT MAKE SURE WORKS
     for i in range(-number_of_particles_side, number_of_particles_side+1):
         i_coord = i*base_separation
         for j in range(-number_of_particles_side, number_of_particles_side+1):
@@ -1295,10 +1325,5 @@ def get_stretch_sphere(dimension, particle_size, transform_factor, critical_tran
                     if(dist <= base_separation*1.01):
                         connection_args += f"{i} {j} "
                         connection_args += f"{j} {i} "
-
-    # Modify this base sphere to get the ellipsoid / other shape to be generated
-    transformed_coords_list = []
-    for coord in coords_list:
-        transformed_coords_list.append(func_transform(coord, transform_factor))
-
-    return transformed_coords_list, connection_args
+    
+    return coords_list, connection_mode, connection_args
