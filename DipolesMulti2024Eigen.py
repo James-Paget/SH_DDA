@@ -548,7 +548,6 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[], verb
     mode (args): num (num_connections), line (), dist ()
     Defaults to no connections with mode="manual", args=[]
     """
-
     num_particles = len(array_of_positions)
     connection_indices = []
 
@@ -1791,6 +1790,44 @@ def make_beam_collections_and_list(beaminfo, wavelength, verbosity, frames):
         beam_collection_list = None
     return beam_collection, beam_collection_list
 
+def get_polarisability(polarisability_type, beaminfo, n_particles, dipole_radius, ep1, epm, k, ref_ind, verbosity):
+    #a0 = (4 * np.pi * 8.85e-12) * (radius ** 3) * ((ep1 - 1) / (ep1 + 2))
+    #a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - 1) / (ep1 + 2))
+    #a0a = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1a - 1) / (ep1a + 2))
+    #aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
+    #a = a0
+
+    a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))
+    match polarisability_type:
+        case "CM":
+            polarisability = a0
+        case "RR":
+            #a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
+            polarisability = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
+        case "LDR":
+            # From ADDA Manual; https://github.com/adda-team/adda/blob/master/doc/manual.pdf
+            # Works best for lower imaginary refractive index components
+            # NOTE; Currently assumes only 1 beam present
+            b1=1.8915316
+            b2=-0.1648469
+            b3=1.7700004
+            n = ref_ind[0]      # NOTE; Assumes all particles have the same material
+            d = dipole_radius   # dipole separation
+            for beamname in beaminfo.keys():    # Read propagation and polarisation for a single beam (will default ot reading last beam, should only use with 1 beam)
+                beam_prop = beaminfo[beamname]["rotation"]
+                beam_pol  = beaminfo[beamname]["jones"]
+            S = np.dot(get_propagation_vector(beam_prop), get_polarisation_vector(beam_pol))     # a=Propagation direction, e=Polarisation vector (for beam), calculating sum(a_j*e_j)=a.e
+            polarisability = a0 / ( 1.0 - ((b1 +b2*np.dot(n, n) +b3*S*np.dot(n, n))*((k**2) / d) +((2 / 3) * 1j * k ** 3))*(a0/(4*np.pi*8.85e-12)) )
+        case _:
+            polarisability = np.ones(n_particles)
+            print("polarisability not recognised, defaulting to RR: "+str(polarisability_type))
+
+    if(verbosity >= 1):
+        print("polarisability: "+str(polarisability_type)+", "+str(polarisability))
+
+    #polarisability = np.ones(n_particles)
+    return polarisability
+
 def simulation(frames, dipole_radius, excel_output, include_dipole_forces, include_force, include_couple, temperature, k_B, inverse_polarisability, beam_collection, viscosity, timestep, number_of_particles, positions, shapes, args, connection_mode, connection_args, constants, force_terms, stiffness_spec, beam_collection_list, equilibrium_shape=None, verbosity=2):
     """
     shapes = List of shape types used
@@ -1878,7 +1915,7 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
     BENDING   = constants["bending"]
 
     # (2) Get Initial Positions
-    if(equilibrium_shape!='None'):          # If a shape has been given in the YAML as being a 'rest' state for the springs & bending forces, then use this as an initial shape
+    if(equilibrium_shape!=None):          # If a shape has been given in the YAML as being a 'rest' state for the springs & bending forces, then use this as an initial shape
         initial_shape = np.array(equilibrium_shape)
     else:                                   # If no 'rest' shape (set of particle coordinates) is given, then assume the initial configuration of particles is this state
         initial_shape = np.array(position_vectors)
@@ -2099,6 +2136,8 @@ def main(YAML_name=None):
     stiffness_spec = paraminfo.get('stiffness_spec', {"type":"", "default_value":5e-6})
 
     equilibrium_shape = paraminfo.get('equilibrium_shape', None)
+    if equilibrium_shape == 'None': equilibrium_shape = None
+
 
     # Cast dictionaries to correct types
     for key, val in constants.items():
@@ -2113,7 +2152,7 @@ def main(YAML_name=None):
             case "bead_indices":
                 stiffness_spec[key] = val # stored in the yaml as a list of ints
 
-    if(equilibrium_shape!='None'):
+    if(equilibrium_shape!=None):
         for i in range(len(equilibrium_shape)):
             for j in range(len(equilibrium_shape[i])):
                 equilibrium_shape[i][j] = float(equilibrium_shape[i][j])
@@ -2140,7 +2179,6 @@ def main(YAML_name=None):
     #===========================================================================
     # Read beam options and create beam collection
     #===========================================================================
-    
     beam_collection, beam_collection_list = make_beam_collections_and_list(beaminfo, wavelength, verbosity, frames)
             
     # plot_T_M_integrand_torus(beam_collection, display)
@@ -2192,42 +2230,8 @@ def main(YAML_name=None):
     k = 2 * np.pi / wavelength
     epm = 1.333 # water
 
-    # XXX move this into a function
-    #a0 = (4 * np.pi * 8.85e-12) * (radius ** 3) * ((ep1 - 1) / (ep1 + 2))
-    #a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - 1) / (ep1 + 2))
-    #a0a = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1a - 1) / (ep1a + 2))
-    #aa = a0a / (1 - (2 / 3) * 1j * k ** 3 * a0a)
-    #a = a0
+    polarisability = get_polarisability(polarisability_type, beaminfo, n_particles, dipole_radius, ep1, epm, k, ref_ind, verbosity)
 
-    a0 = (4 * np.pi * 8.85e-12) * (dipole_radius ** 3) * ((ep1 - epm) / (ep1 + 2*epm))
-    match polarisability_type:
-        case "CM":
-            polarisability = a0
-        case "RR":
-            #a = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
-            polarisability = a0 / (1 - (2 / 3) * 1j * k ** 3 * a0/(4*np.pi*8.85e-12))
-        case "LDR":
-            # From ADDA Manual; https://github.com/adda-team/adda/blob/master/doc/manual.pdf
-            # Works best for lower imaginary refractive index components
-            # NOTE; Currently assumes only 1 beam present
-            b1=1.8915316
-            b2=-0.1648469
-            b3=1.7700004
-            n = ref_ind[0]      # NOTE; Assumes all particles have the same material
-            d = dipole_radius   # dipole separation
-            for beamname in beaminfo.keys():    # Read propagation and polarisation for a single beam (will default ot reading last beam, should only use with 1 beam)
-                beam_prop = beaminfo[beamname]["rotation"]
-                beam_pol  = beaminfo[beamname]["jones"]
-            S = np.dot(get_propagation_vector(beam_prop), get_polarisation_vector(beam_pol))     # a=Propagation direction, e=Polarisation vector (for beam), calculating sum(a_j*e_j)=a.e
-            polarisability = a0 / ( 1.0 - ((b1 +b2*np.dot(n, n) +b3*S*np.dot(n, n))*((k**2) / d) +((2 / 3) * 1j * k ** 3))*(a0/(4*np.pi*8.85e-12)) )
-        case _:
-            polarisability = np.ones(n_particles)
-            print("polarisability not recognised, defaulting to RR: "+str(polarisability_type))
-
-    if(verbosity >= 1):
-        print("polarisability: "+str(polarisability_type)+", "+str(polarisability))
-      
-    #polarisability = np.ones(n_particles)
     #inverse_polarisability = (1.0+0j)/a0 # added this for the C++ wrapper (Chaumet's alpha bar)
     inverse_polarisability = (1.0+0j)/polarisability
     E0 = None#0.0003e6  # V/m possibly # LEGACY REMOVE
@@ -2262,8 +2266,8 @@ def main(YAML_name=None):
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
         fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        quiver_setting = 1
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=quiver_setting, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list, time_step=timestep) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
+        # quiver_setting = 0
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_tracer=False, include_connections=False, beam_collection_list=beam_collection_list, time_step=timestep) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
 
     if display.show_stress==True:
         display.plot_stresses(positions, optforces, shapes, args, beam_collection, include_quiver=False)

@@ -665,7 +665,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
         run_command = "python DipolesMulti2024Eigen.py "+filename
         run_command = run_command.split(" ")
         print("=== Log ===")
-        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+        result = subprocess.run(run_command) #, stdout=subprocess.DEVNULL
 
         #Pull data from xlsx into a local list in python
         record_particle_info(filename, particle_info, record_parameters=record_parameters)
@@ -3600,184 +3600,184 @@ match(sys.argv[1]):
         Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
 
 
-    case "refine_sphere_model":
-        #
-        # Consider a spherical mesh modelled with primitive objects such as spheres or cubes
-        # Allows for plots to be found for these situations with several varying parameters at once
-        #
+    # case "refine_sphere_model":
+    #     #
+    #     # Consider a spherical mesh modelled with primitive objects such as spheres or cubes
+    #     # Allows for plots to be found for these situations with several varying parameters at once
+    #     #
 
-        # Save file
-        filename = "SingleLaguerre"
+    #     # Save file
+    #     filename = "SingleLaguerre"
 
-        #-----------------------
-        #-----------------------
-        # Variable args
+    #     #-----------------------
+    #     #-----------------------
+    #     # Variable args
 
-        #
-        # Cube of cubes & cube of spheres tending to force of perfect system (1particle cube, inf cube dipoles)
-        #
-        # show_output     = False
-        # dimension       = 200e-9    # Radius of the total spherical mesh
-        # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        # particle_sizes  = [0.2e-7] # Radius or half-width
-        # dipole_sizes    = np.linspace(10e-9, 20e-9, 30) # np.linspace(10e-9, 50e-9, 30)
-        # object_offsets  = [[1.0e-6, 0.0, 0.0e-6]]       # Offset the whole object
-        # force_measure_point = [1.15e-6, 0.0, 0.0]       # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
-        # force_terms     = ["optical"]
-        # particle_shapes = ["cube"]
-        # indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
-        # force_filter=["Fx", "Fy", "Fmag"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
-        # indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
-        # beam_type = "LAGUERRE"          #"GAUSS_CSP"
-        # place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
-        # include_dipole_forces = False
-        # linestyle_var = "dipole_sizes"
-
-
-        #
-        # Force on cube as it moves in a Bessel beam --> Comparing to single dipole particle with RR, LDR or CM
-        #
-        show_output     = False
-        dimension       = 200e-9    # Full width of sphere/cube
-        separations_list= [[0.0e-6, 0.0, 0.0]]
-        particle_sizes  = [100e-9] # Radius or half-width
-        dipole_sizes    = np.linspace(9e-9, 100e-9, 200)#[12.5e-9, 25e-9, 50e-9, 100e-9]
-        object_offsets  = [[1.0e-6, 0.0, 0.0]]#[[i*0.06e-6, 0.0, 0.0] for i in range(25)]       # Offset the whole object
-        force_measure_point = [1.15e-6, 0.0, 0.0]       # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
-        force_terms     = ["optical"]
-        particle_shapes = ["cube","sphere"]
-        indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
-        force_filter=["Fz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
-        indep_var = "dipole_sizes"#"object_offsets"
-        beam_type = "BESSEL" 
-        place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
-        include_dipole_forces = False
-        linestyle_var = None#"dipole_sizes"
-        polarisability_type = "CM"
-
-        #
-        # Testing plots to ensure working correctly
-        #
-        # show_output     = False
-        # dimension       = 200e-9    # Full width of sphere/cube
-        # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
-        # particle_sizes  = [1e-7, 100e-9]#[0.2e-7, 0.6e-7, 1.0e-7]#np.linspace(0.2e-7, 1.0e-7, 20)#np.linspace(0.04e-6, 0.1e-6, 25)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
-        # dipole_sizes    = np.linspace(10e-9, 50e-9, 4)#np.linspace(10e-9, 60e-9, 20)#[30e-9, 40e-9, 50e-9]
-        # object_offsets  = [[1.0e-6, 0.0, 0.0e-6]]      # Offset the whole object
-        # particle_shapes = ["cube"]
-        # force_terms     = ["optical"]
-        # indep_vector_component = 0
-        # force_measure_point = [1.15e-6, 0.0, 0.0]
-        # force_filter= ["Fx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
-        # indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
-        # beam_type = "LAGUERRE"          #"GAUSS_CSP"
-        # place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
-        # include_dipole_forces = False
-        # linestyle_var = None # (it will pick the best) "particle_sizes"
-        # polarisability_type = "RR"
-
-        #-----------------------
-        #-----------------------
-
-        variables_list = {
-            "indep_var": indep_var, # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes, deflections
-            "dipole_sizes": dipole_sizes,
-            "separations_list": separations_list,
-            "particle_sizes": particle_sizes,
-            "particle_shapes": particle_shapes,
-            "object_offsets": object_offsets
-        }
-
-        indep_name = variables_list["indep_var"]
-
-        # Run
-        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine(
-            dimension, 
-            variables_list,
-            separations_list, 
-            particle_sizes, 
-            dipole_sizes, 
-            object_offsets, 
-            force_terms, 
-            particle_shapes, 
-            place_regime,
-            beam_type,
-            include_dipole_forces,
-            polarisability_type=polarisability_type,
-            force_measure_point=force_measure_point,
-            show_output=show_output,
-            indep_vector_component=indep_vector_component,
-            isObjectCube=True
-        )
-
-        # Format output and make legend/title strings
-        titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "all", [dimension, dimension, dimension])
-        data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-
-        xAxis_varname, xAxis_units = display_var(indep_name)
-        graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} 
-        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
-
-        # Plot particle number and dipoles per particle against the independent variable.
-        # pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
-        # particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
-        # Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
-        # dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
-        # Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
+    #     #
+    #     # Cube of cubes & cube of spheres tending to force of perfect system (1particle cube, inf cube dipoles)
+    #     #
+    #     # show_output     = False
+    #     # dimension       = 200e-9    # Radius of the total spherical mesh
+    #     # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
+    #     # particle_sizes  = [0.2e-7] # Radius or half-width
+    #     # dipole_sizes    = np.linspace(10e-9, 20e-9, 30) # np.linspace(10e-9, 50e-9, 30)
+    #     # object_offsets  = [[1.0e-6, 0.0, 0.0e-6]]       # Offset the whole object
+    #     # force_measure_point = [1.15e-6, 0.0, 0.0]       # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+    #     # force_terms     = ["optical"]
+    #     # particle_shapes = ["cube"]
+    #     # indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
+    #     # force_filter=["Fx", "Fy", "Fmag"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+    #     # indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
+    #     # beam_type = "LAGUERRE"          #"GAUSS_CSP"
+    #     # place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
+    #     # include_dipole_forces = False
+    #     # linestyle_var = "dipole_sizes"
 
 
+    #     #
+    #     # Force on cube as it moves in a Bessel beam --> Comparing to single dipole particle with RR, LDR or CM
+    #     #
+    #     show_output     = False
+    #     dimension       = 200e-9    # Full width of sphere/cube
+    #     separations_list= [[0.0e-6, 0.0, 0.0]]
+    #     particle_sizes  = [100e-9] # Radius or half-width
+    #     dipole_sizes    = np.linspace(9e-9, 100e-9, 200)#[12.5e-9, 25e-9, 50e-9, 100e-9]
+    #     object_offsets  = [[1.0e-6, 0.0, 0.0]]#[[i*0.06e-6, 0.0, 0.0] for i in range(25)]       # Offset the whole object
+    #     force_measure_point = [1.15e-6, 0.0, 0.0]       # NOTE; This is the position measured at AFTER all shifts applied (e.g. measure at Dimensions[0]/2.0 would be considering the end of the rod, NOT the centre)
+    #     force_terms     = ["optical"]
+    #     particle_shapes = ["cube","sphere"]
+    #     indep_vector_component = 0          # Which component to plot when dealing with vector quantities to plot (Often not used)
+    #     force_filter=["Fz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+    #     indep_var = "dipole_sizes"#"object_offsets"
+    #     beam_type = "BESSEL" 
+    #     place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
+    #     include_dipole_forces = False
+    #     linestyle_var = None#"dipole_sizes"
+    #     polarisability_type = "CM"
+
+    #     #
+    #     # Testing plots to ensure working correctly
+    #     #
+    #     # show_output     = False
+    #     # dimension       = 200e-9    # Full width of sphere/cube
+    #     # separations_list= [[0.0e-6, 0.0, 0.0]]   #[[i*0.01*1.0e-6, 0.0, 0.0] for i in range(100)]
+    #     # particle_sizes  = [1e-7, 100e-9]#[0.2e-7, 0.6e-7, 1.0e-7]#np.linspace(0.2e-7, 1.0e-7, 20)#np.linspace(0.04e-6, 0.1e-6, 25)#np.linspace(0.06125e-6, 0.25e-6, 10)      # Radius or half-width
+    #     # dipole_sizes    = np.linspace(10e-9, 50e-9, 4)#np.linspace(10e-9, 60e-9, 20)#[30e-9, 40e-9, 50e-9]
+    #     # object_offsets  = [[1.0e-6, 0.0, 0.0e-6]]      # Offset the whole object
+    #     # particle_shapes = ["cube"]
+    #     # force_terms     = ["optical"]
+    #     # indep_vector_component = 0
+    #     # force_measure_point = [1.15e-6, 0.0, 0.0]
+    #     # force_filter= ["Fx"]     # options are ["Fmag","Fx", "Fy", "Fz", "Fpoint", "Fpoint_perDip", "F_T"] 
+    #     # indep_var = "dipole_sizes"    #"dipole_sizes"    #"particle_sizes"
+    #     # beam_type = "LAGUERRE"          #"GAUSS_CSP"
+    #     # place_regime = "squish"             # Format to place particles within the overall rod; "squish", "spaced", ...
+    #     # include_dipole_forces = False
+    #     # linestyle_var = None # (it will pick the best) "particle_sizes"
+    #     # polarisability_type = "RR"
+
+    #     #-----------------------
+    #     #-----------------------
+
+    #     variables_list = {
+    #         "indep_var": indep_var, # Must be one of the other keys: dipole_sizes, separations_list, particle_sizes, particle_shapes, deflections
+    #         "dipole_sizes": dipole_sizes,
+    #         "separations_list": separations_list,
+    #         "particle_sizes": particle_sizes,
+    #         "particle_shapes": particle_shapes,
+    #         "object_offsets": object_offsets
+    #     }
+
+    #     indep_name = variables_list["indep_var"]
+
+    #     # Run
+    #     parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine(
+    #         dimension, 
+    #         variables_list,
+    #         separations_list, 
+    #         particle_sizes, 
+    #         dipole_sizes, 
+    #         object_offsets, 
+    #         force_terms, 
+    #         particle_shapes, 
+    #         place_regime,
+    #         beam_type,
+    #         include_dipole_forces,
+    #         polarisability_type=polarisability_type,
+    #         force_measure_point=force_measure_point,
+    #         show_output=show_output,
+    #         indep_vector_component=indep_vector_component,
+    #         isObjectCube=True
+    #     )
+
+    #     # Format output and make legend/title strings
+    #     titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, "all", [dimension, dimension, dimension])
+    #     data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name, N=7)
+    #     linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+
+    #     xAxis_varname, xAxis_units = display_var(indep_name)
+    #     graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{xAxis_varname} {xAxis_units}", "yAxis":"Force /N"} 
+    #     Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
+
+    #     # Plot particle number and dipoles per particle against the independent variable.
+    #     # pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
+    #     # particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
+    #     # Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
+    #     # dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
+    #     # Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
 
 
 
-    case "refine_cuboid_general":
-        #====================================================================================
-        # Save file
-        filename = "SingleLaguerre"
-        # Args
-        dimensions  =  [0.8e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
-        force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
-        force_filter=["Fmag", "Fy", "Fx"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
-        indep_name = "dipole_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
-        particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
-        # Iterables
-        separations_list = [[0,0,0]] # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+
+
+    # case "refine_cuboid_general":
+    #     #====================================================================================
+    #     # Save file
+    #     filename = "SingleLaguerre"
+    #     # Args
+    #     dimensions  =  [0.8e-6]*3 #[0.8e-6, 0.8e-6, 0.8e-6]  # Full Dimensions of each side of the cuboid
+    #     force_terms=["optical"]                # ["optical", "spring", "bending", "buckingham"]
+    #     force_filter=["Fmag", "Fy", "Fx"]                    # Options are ["Fmag","Fx", "Fy", "Fz"]
+    #     indep_name = "dipole_sizes"          # Options: dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets
+    #     particle_selection = "all"          # Options are "all", "central" or a list of ints (manual)
+    #     # Iterables
+    #     separations_list = [[0,0,0]] # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
         
-        ### DIPS FRACTIONS OF PARTICLE SIZE
-        # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)  
-        # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
+    #     ### DIPS FRACTIONS OF PARTICLE SIZE
+    #     # particle_sizes = np.linspace(0.16e-6, 0.2e-6, 1)  
+    #     # dipole_sizes = [2*particle_sizes[0]/n - 1e-12 for n in [1,2,3,4,5,6,7,8]]
         
-        ### NORMAL
-        # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
-        dipole_sizes = np.linspace(40e-9, 100e-9, 40)         
-        particle_sizes = np.linspace(0.1e-6, 0.3e-6, 3)
+    #     ### NORMAL
+    #     # separations_list = [[s, s, s] for s in np.linspace(0, 0.5e-6, 10)]  # Separation in each axis of the cuboid, as a total separation (e.g. more particles => smaller individual separation between each)
+    #     dipole_sizes = np.linspace(40e-9, 100e-9, 40)         
+    #     particle_sizes = np.linspace(0.1e-6, 0.3e-6, 3)
 
-        particle_shapes = ["cube"] 
-        object_offsets = [[1e-6, 0e-6, 0e-6]]
-        #====================================================================================
+    #     particle_shapes = ["cube"] 
+    #     object_offsets = [[1e-6, 0e-6, 0e-6]]
+    #     #====================================================================================
         
-        # Run
-        variables_list = {"indep_var": indep_name, "dipole_sizes": dipole_sizes,"separations_list": separations_list,"particle_sizes": particle_sizes,"particle_shapes": particle_shapes,"object_offsets": object_offsets}
-        parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
+    #     # Run
+    #     variables_list = {"indep_var": indep_name, "dipole_sizes": dipole_sizes,"separations_list": separations_list,"particle_sizes": particle_sizes,"particle_shapes": particle_shapes,"object_offsets": object_offsets}
+    #     parameter_text, data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_general(dimensions, variables_list, force_terms, show_output=False , indep_vector_component=0, particle_selection=particle_selection) # indep_vector_component only used for when indep var is a vector (e.g.object_offsets): Set what component to plot against
         
-        # Format output then plot graph
-        titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
-        data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
-        linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-        graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
-        Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
+    #     # Format output then plot graph
+    #     titlestrbase, legend_params = get_titlelegend(variables_list, indep_name, particle_selection, dimensions)
+    #     data_set, datalabel_set, filtered_i = filter_data_set(force_filter, data_set, data_set_params, legend_params, indep_name)
+    #     linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=None, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
+    #     graphlabel_set = {"title":"Forces"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Force /N"} 
+    #     Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set) 
         
-        # Plot particle number and dipoles per particle against the independent variable.
-        pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
-        particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
-        Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
-        dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
-        Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
+    #     # Plot particle number and dipoles per particle against the independent variable.
+    #     pd_legend_labels = make_param_strs(data_set_params, legend_params, indep_name)
+    #     particlelabel_set = {"title":"Particle number"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Particle number"}
+    #     Display.plot_multi_data(particle_nums_set, pd_legend_labels, graphlabel_set=particlelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) # jumps of len(force_filter)
+    #     dipolelabel_set = {"title":"Dipoles per particle"+titlestrbase, "xAxis":f"{display_var(indep_name)[0]} {display_var(indep_name)[1]}", "yAxis":"Dipoles per particle"}
+    #     Display.plot_multi_data(dpp_nums_set, pd_legend_labels, graphlabel_set=dipolelabel_set, linestyle_set=linestyle_set[::len(force_filter)], datacolor_set=datacolor_set[::len(force_filter)]) 
 
-        # Can be used to filter the dipole sizes: (Should change to filter for maxs/mins)
-        # volumes = calc_SphereOrCube_volumes(dipole_sizes, particle_sizes[0], isSphere=False) # particle_size is 0th!
-        # filtered_dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, dipole_sizes, num=10, target_volume=None)
-        # Display.plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=filtered_dipole_sizes, best_volumes=filtered_volumes)
+    #     # Can be used to filter the dipole sizes: (Should change to filter for maxs/mins)
+    #     # volumes = calc_SphereOrCube_volumes(dipole_sizes, particle_sizes[0], isSphere=False) # particle_size is 0th!
+    #     # filtered_dipole_sizes, filtered_volumes, error = filter_dipole_sizes(volumes, dipole_sizes, num=10, target_volume=None)
+    #     # Display.plot_volumes_against_dipoleSize(dipole_sizes, volumes, best_sizes=filtered_dipole_sizes, best_volumes=filtered_volumes)
 
 
     case "single_dipole_exp":
@@ -3997,7 +3997,7 @@ match(sys.argv[1]):
         object_shape = "sphere" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
-        num_particles_in_diameter = 8
+        num_particles_in_diameter = 5
         particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
         # particle_size = 0.15e-6 # NOTE *2 for diameter
         object_offset = [0.5e-6, 0e-6, 0e-6]
@@ -4007,6 +4007,7 @@ match(sys.argv[1]):
             "show_stress": True,
             "force_terms": ["optical"],
             "frames": 1,
+            "quiver_setting": 2,
         })
         #====================================================================================
         
@@ -4184,7 +4185,7 @@ match(sys.argv[1]):
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
         num_factors_tested = 20
-        particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        particle_size = 200e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
@@ -4201,8 +4202,9 @@ match(sys.argv[1]):
 
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": False,
+            "show_output": True,
             "show_stress": False,
+            "quiver_setting": 0,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-8  # 5e-7
@@ -4210,6 +4212,7 @@ match(sys.argv[1]):
             "dipole_radius": 100e-9,
             "frames": 1,
             "time_step": 0.5e-4, 
+            "beam_planes": [["z", 0], ["x", 0]], #
         })
 
         # Single run version
