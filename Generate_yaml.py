@@ -127,7 +127,7 @@ def make_yaml_tetrahedron(filename, frames=50, show_output=True, tetrahedron_rad
     use_beam(filename, beam)
     use_tetrahedron(filename, tetrahedron_radius, particle_radius, rotation_axis, rotation_theta)
 
-def make_yaml_icosahedron(filename, frames=5, show_output=True, icosahedron_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+def make_yaml_icosahedron(filename, frames=20, show_output=True, icosahedron_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
     use_default_options(filename, frames, show_output)
     use_beam(filename, beam)
     use_icosahedron(filename, icosahedron_radius, particle_radius, rotation_axis, rotation_theta)
@@ -629,6 +629,8 @@ def fill_yaml_options(non_default_params):
         "frame_min": 0,
         "frame_max": 1,
         "z_offset": 0.0e-6,
+        "beam_planes": [["z", 0.0]],
+        "quiver_setting": 1,
     }
     option_parameters.update(non_default_params)
     if option_parameters["frame_max"] > option_parameters["frames"]: option_parameters["frame_max"] = option_parameters["frames"]
@@ -661,14 +663,14 @@ def write_options(filename, option_parameters):
                 file.write(f"    {key}: {val}\n")
         
         # Write spring natural length override (specify custom single float natural length for all springs to use, not auto-generated)
-        file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
+        # file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
 
         file.write(f"output:\n")
         for var in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
             file.write(f"  {var}: {option_parameters[var]}\n")
 
         file.write(f"display:\n")
-        for var in ["show_output", "show_stress", "frame_interval", "resolution", "frame_min", "frame_max", "z_offset"]:
+        for var in ["show_output", "show_stress", "frame_interval", "resolution", "frame_min", "frame_max", "z_offset", "beam_planes", "quiver_setting"]:
             file.write(f"  {var}: {option_parameters[var]}\n")
 
 

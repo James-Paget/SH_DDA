@@ -20,7 +20,8 @@ class DisplayObject (object):
                 "resolution":201,
                 "frame_min":0,
                 "frame_max":1000, # ignore and default to "frames"
-                "z_offset":'0.0e-6'
+                "beam_planes": [["z", 0,0]], # list of pair of values giving the axis and value of the beam plane.
+                "quiver_setting": 1
                 }
 
     def __init__(self,displayinfo,frames):
@@ -33,7 +34,8 @@ class DisplayObject (object):
             self.resolution = int(DisplayObject.defaults['resolution']) # number of points in each direction of plot
             self.frame_min = int(DisplayObject.defaults['frame_min']) # starting frame for animation
             self.frame_max = frames # will default to number of frames
-            self.z_offset = float(DisplayObject.defaults['z_offset']) # this is the z value for the intensity plot
+            self.beam_planes = DisplayObject.defaults['beam_planes']
+            self.quiver_setting = DisplayObject.defaults['quiver_setting']
         else:
             # Read from file
             self.show_output = bool(displayinfo.get('show_output',DisplayObject.defaults['show_output']))
@@ -43,7 +45,8 @@ class DisplayObject (object):
             self.resolution = int(displayinfo.get('resolution',DisplayObject.defaults['resolution']))
             self.frame_min = abs(int(displayinfo.get('frame_min',DisplayObject.defaults['frame_min'])))
             self.frame_max = min(frames,int(displayinfo.get('frame_max',frames)))
-            self.z_offset = float(displayinfo.get('z_offset',DisplayObject.defaults['z_offset']))
+            self.beam_planes = displayinfo.get('beam_planes',DisplayObject.defaults['beam_planes'])
+            self.quiver_setting = displayinfo.get('quiver_setting',DisplayObject.defaults['quiver_setting'])
 
 
     def get_intensity_points(self, beam_collection, n=None):
@@ -59,27 +62,43 @@ class DisplayObject (object):
         E = np.zeros(3,dtype=np.complex128)
         upper = self.max_size
         lower = -upper
-        x = np.linspace(lower, upper, nx)
-        y = np.linspace(lower, upper, ny)
-        X, Y = np.meshgrid(x, y)
-        for j in range(ny):
-            for i in range(nx):
-                Beams.all_incident_fields((x[i], x[j], self.z_offset), beam_collection, E)
-                Ex[j][i] = E[0]
-                Ey[j][i] = E[1]
-                Ez[j][i] = E[2]
 
-        Z = np.zeros(X.shape) + self.z_offset
-        I = np.square(np.abs(Ex)) + np.square(np.abs(Ey)) + np.square(np.abs(Ez))
-        I0 = np.max(I)
-        return X, Y, Z, I, I0
+        # assumes z has the same range as x and y.
+        p1 = np.linspace(lower, upper, nx)
+        p2 = np.linspace(lower, upper, ny)
+        P1, P2 = np.meshgrid(p1, p2)
+        values = []
+        for plane in self.beam_planes:
+            P3 = np.zeros(P1.shape) + plane[1]
+            for j in range(ny):
+                for i in range(nx):
+                    match plane[0]:
+                        case "x": 
+                            x, y, z = plane[1], p1[i], p2[j]
+                            X, Y, Z = P3, P1, P2
+                        case "y": 
+                            x, y, z = p1[i], plane[1], p2[j]
+                            X, Y, Z = P1, P3, P2
+                        case "z": 
+                            x, y, z = p1[i], p2[j], plane[1]
+                            X, Y, Z = P1, P2, P3
+                        case _: print(f"Error, planes must be x,y,z; not {plane[1]}")
+                    Beams.all_incident_fields((x, y, z), beam_collection, E)
+                    Ex[j][i] = E[0]
+                    Ey[j][i] = E[1]
+                    Ez[j][i] = E[2]
+
+            I = np.square(np.abs(Ex)) + np.square(np.abs(Ey)) + np.square(np.abs(Ez))
+            I0 = np.max(I)
+            values.append([X, Y, Z, I, I0])
+        return values
 
     def plot_intensity(self, beam_collection):
         #I = []
         #fig, ax = plt.subplots(1, num_plots)
         upper = self.max_size
         lower = -upper
-        _,_,_, I, I0 = self.get_intensity_points(beam_collection)
+        _,_,_, I, I0 = self.get_intensity_points(beam_collection)[0] # [0] just gets default ["z",0] value from the list.
         print(np.shape(I))
 
         fig = plt.figure()
@@ -133,14 +152,15 @@ class DisplayObject (object):
         
         upper = self.max_size
         lower = -upper
-        X, Y, Z, I, I0 = self.get_intensity_points(beam_collection)
+        values = self.get_intensity_points(beam_collection)
 
         # Make figure objects
         fig = plt.figure()
         zlower = lower
         zupper = upper
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
-        cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
+        for X,Y,Z,I,I0 in values:
+            cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
 
         ax.set_aspect('equal','box')
         ax.set_xlabel("x (m)")
@@ -266,7 +286,7 @@ class DisplayObject (object):
         return np.array(x), np.array(y), np.array(z)
     
 
-    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], quiver_setting=0, include_tracer=True, include_connections=True, quiver_scale=6e5, beam_collection_list=None, time_step=1e-4):
+    def animate_system3d(self, positions, shapes, args, colours, fig=None, ax=None, connection_indices=[], ignore_coords=[], forces=[], include_tracer=True, include_connections=True, quiver_scale=6e5, beam_collection_list=None, time_step=1e-4):
         #
         # Plots particles with optional quiver (force forces) and tracer (for positions) plots too
         # NOTE; If a quiver plot is wanted, a list of forces must be provided as well (in the format of optforces)
@@ -278,17 +298,12 @@ class DisplayObject (object):
         
         # Animation function
         def update(t):
+            
             # Clear old plot elements (particles, quivers, etc)
+            
             for plot in plots:
                 plot.remove()
             plots.clear()
-
-            # save_frames = [0]
-
-            # if save_frames == []:
-            #     # Add frame counter
-            #     textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-            #     plots.append(textplot)
 
             # Add new particle plot elements
             #colours[62] = "#fc3232"
@@ -328,7 +343,7 @@ class DisplayObject (object):
                         plots.append(line)
             
             # Add new quiver plot elements
-            if (quiver_setting!=0):
+            if (self.quiver_setting!=0):
                 if( len(forces) == 0 ):
                     print("!! No forces provided, Unable to plot quiver plot !!")
                 else:
@@ -343,11 +358,11 @@ class DisplayObject (object):
                             case "Z":
                                 force_z = np.zeros(force_z.shape)
                     
-                    if quiver_setting == 1: # As normal: forces on each particle
+                    if self.quiver_setting == 1: # As normal: forces on each particle
                         quiver = ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
                         plots.append(quiver)
 
-                    elif quiver_setting == 2:
+                    elif self.quiver_setting == 2:
                         force_x_avg = np.average(force_x)
                         force_y_avg = np.average(force_y)
                         force_z_avg = np.average(force_z)
@@ -370,12 +385,20 @@ class DisplayObject (object):
 
 
             if(beam_collection_list!=None):
-                X, Y, Z, I, I0 = self.get_intensity_points(beam_collection_list[t], n=61) # lowered resolution otherwise the animation slows down.
-                beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
-                plots.append(beam_plane)
+                values = self.get_intensity_points(beam_collection_list[t], n=61) # lowered resolution otherwise the animation slows down.
+                for X, Y, Z, I, I0 in values:
+                    beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
+                    plots.append(beam_plane)
 
-            # if t in save_frames:
-            #     plt.savefig("myImage.png", format="png", dpi=1200)
+            save_frames = []
+            if len(save_frames)==0:
+                # Add frame counter
+                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+                plots.append(textplot)
+
+            if t in save_frames:
+                save_frames.remove(t)
+                plt.savefig("myImage.png", format="png", dpi=1200)
 
         # Initialise
         positions = np.array(positions)
@@ -413,8 +436,10 @@ class DisplayObject (object):
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 
-        #if(steps > 1):
-        ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
+
+        if(steps > 0):
+            ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
+
         plt.show()
 
 
@@ -461,8 +486,9 @@ class DisplayObject (object):
         ax.set_ylabel("y (m)")
 
         # Plot beam
-        X, Y, Z, I, I0 = self.get_intensity_points(beam_collection, n=61)
-        ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.25)
+        values = self.get_intensity_points(beam_collection, n=61)
+        for X, Y, Z, I, I0 in values:
+            ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.25)
 
         # Shift forces to be relative to the net force on the object.
         shifted_forces = forces[0] - np.average(forces[0], axis=0)
