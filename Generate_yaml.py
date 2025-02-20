@@ -1287,9 +1287,8 @@ def get_stretch_sphere(dimension, particle_size, transform_factor, critical_tran
     coords_list, connection_mode, connection_args = get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=connection_mode, connection_args=connection_args)
 
     # Modify this base sphere to get the ellipsoid / other shape to be generated
-    transformed_coords_list = []
-    for coord in coords_list:
-        transformed_coords_list.append(func_transform(coord, transform_factor))
+    coords_list = np.array(coords_list)
+    transformed_coords_list = func_transform(coords_list, transform_factor)
 
     return transformed_coords_list, connection_args
 
