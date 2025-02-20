@@ -4150,13 +4150,13 @@ match(sys.argv[1]):
         particle_shape = "sphere"
         #forces_output= ["FTx", "FTy", "FTz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         #particle_selections = [[0], [0]]
-        force_reading = "Z_split"       #"Z_split", "XYZ_split"
+        force_reading = "RT_Z_split"       #"Z_split", "XYZ_split", "RT_Z_split"
         
         # Beam variables
         E0 = 7.0e6 #4.75e6
         w0 = 0.5
 
-        coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor)
+        coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
@@ -4195,16 +4195,16 @@ match(sys.argv[1]):
         parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
         read_frames = [0]
 
-        graphlabel_set={"title":"Stretched sphere model", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
+        graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
         data_set = [ [[],[]], [[],[]], [[],[]] ]
         datalabel_set = ["FTx", "FTy", "FTz"]
         transform_factor_list = np.linspace(1.0, critical_transform_factor, 20)
         for i in range(len(transform_factor_list)):
-            print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
+            print("\nProgress; "+str(i)+"/"+str(len(transform_factor_list)))
             
             transform_factor = transform_factor_list[i]
             particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, connection_mode=connection_mode, connection_args=connection_args, material=material)
-            DM.main(filename)   #, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms, stiffness_spec=stiffness_spec
+            DM.main(filename)
 
             ####
             ## Should implement this method to get forces instead, for now it is just being calculated manually
@@ -4240,8 +4240,8 @@ match(sys.argv[1]):
                     uhp_output = np.zeros(3)
                     lhp_output = np.zeros(3)
                     for p in range(int(len(pulled_data)/pulled_val_num)):
-                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
+                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         if( not((-sys.float_info.epsilon < pos[2]) and (pos[2] < sys.float_info.epsilon)) ):   # If outside the central layer
                             if( pos[2] > 0.0 ):     # If in upper half plane, sum forces
                                 uhp_output += [force[0], force[1], force[2]]
@@ -4251,15 +4251,29 @@ match(sys.argv[1]):
                     # Add magnitude of these forces together
                     output += [ (uhp_output[0]),  (uhp_output[1]),  (uhp_output[2])]
                     output += [-(lhp_output[0]), -(lhp_output[1]), -(lhp_output[2])]
+
                 case "XYZ_split":
                     #
                     # Just sum force in the positive XYZ corner, assume symmetry for others hence this will show force pushing / pulling on either side
                     #
                     for p in range(int(len(pulled_data)/pulled_val_num)):
-                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
+                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         if( (pos[0]+sys.float_info.epsilon > 0.0) and (pos[1]+sys.float_info.epsilon > 0.0) and (pos[2]+sys.float_info.epsilon > 0.0) ):   # If not +X,+Y,+Z corner, then sum forces
                             output += [force[0], force[1], force[2]]
+
+                case "RT_Z_split":
+                    #
+                    # x,y forces replaced by r,theta. z forces summed if in UHP, else minused.
+                    #
+                    datalabel_set = ["FTr", "FTtheta", "FTz"]
+                    sign = lambda x: 1 if x>=0 else -1
+                    for p in range(int(len(pulled_data)/pulled_val_num)):
+                        force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
+                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
+                        theta = np.arctan2(pos[1], pos[0])
+                        force[0], force[1] = force[0]*np.cos(theta) + force[1]*np.sin(theta), -force[0]*np.sin(theta) + force[1]*np.cos(theta) # decompose x,y into r,theta
+                        output += [force[0], force[1], force[2] * sign(pos[2])]
 
             data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
             data_set[1][0].append(transform_factor_list[i]);data_set[1][1].append(output[1])    # Y force
