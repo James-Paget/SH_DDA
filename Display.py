@@ -283,9 +283,12 @@ class DisplayObject (object):
                 plot.remove()
             plots.clear()
 
-            # Add frame counter
-            textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-            plots.append(textplot)
+            save_frames = [0]
+
+            if save_frames == []:
+                # Add frame counter
+                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+                plots.append(textplot)
 
             # Add new particle plot elements
             #colours[62] = "#fc3232"
@@ -370,6 +373,9 @@ class DisplayObject (object):
                 X, Y, Z, I, I0 = self.get_intensity_points(beam_collection_list[t], n=61) # lowered resolution otherwise the animation slows down.
                 beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
                 plots.append(beam_plane)
+
+            if t in save_frames:
+                plt.savefig("myImage.png", format="png", dpi=1200)
 
         # Initialise
         positions = np.array(positions)

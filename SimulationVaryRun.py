@@ -4178,12 +4178,11 @@ match(sys.argv[1]):
         filename = "Optical_stretcher"
 
         # Particle variables
-        dimension = 2.4e-6      # Base diameter of the full untransformed sphere
+        dimension = 2.0e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 3.5 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 30
-        particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
-        dipole_size = 100e-9
+        critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
+        num_factors_tested = 20
+        particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
@@ -4191,18 +4190,18 @@ match(sys.argv[1]):
         particle_shape = "sphere"
         #forces_output= ["FTx", "FTy", "FTz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         #particle_selections = [[0], [0]]
-        force_reading = "RT_Z_split"       #"Z_split", "XYZ_split", "RT_Z_split"
-        transform_type = "inverse_area" # "linear", "inverse_area"
+        force_reading = "XYZ_split"       #"Z_split", "XYZ_split", "RT_Z_split"
+        transform_type = "linear" # "linear", "inverse_area"
         
         # Beam variables
-        E0 = 7.0e6 #4.75e6
+        E0 = 8.0e6 #4.75e6
         w0 = 0.5
 
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
-            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
+            "force_terms": ["optical"], #, "buckingham"  , "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
@@ -4303,7 +4302,7 @@ match(sys.argv[1]):
                     for p in range(int(len(pulled_data)/pulled_val_num)):
                         force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
                         pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
-                        if( (pos[0]+sys.float_info.epsilon > 0.0) and (pos[1]+sys.float_info.epsilon > 0.0) and (pos[2]+sys.float_info.epsilon > 0.0) ):   # If not +X,+Y,+Z corner, then sum forces
+                        if( (pos[0] > sys.float_info.epsilon) and (pos[1] > sys.float_info.epsilon) and (pos[2] > sys.float_info.epsilon) ):   # If not +X,+Y,+Z corner, then sum forces
                             output += [force[0], force[1], force[2]]
 
                 case "RT_Z_split":
