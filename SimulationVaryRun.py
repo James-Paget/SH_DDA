@@ -4131,8 +4131,11 @@ match(sys.argv[1]):
                     # Linear transform
                     transformed_coords_list = coordinates * [1/np.sqrt(transform_factor), 1/np.sqrt(transform_factor), transform_factor]
                     return transformed_coords_list
-
-                
+                    #return [coordinate[0]/np.sqrt(transform_factor), coordinate[1]/np.sqrt(transform_factor), coordinate[2]*transform_factor]
+                case "singular":
+                    # Transform just one axis
+                    transformed_coords_list = coordinates * [transform_factor, 1.0, 1.0]
+                    return transformed_coords_list      
                 case "inverse_area":
                     # z stretch inversely proportional to the z-layer's area; like springs in parallel
                     # assumes the shape is symmetric in z, so pairs of ±z planes are transformed at a time
@@ -4169,7 +4172,6 @@ match(sys.argv[1]):
                             # print(f"now at {transformed_coords_list[upper_z_indices,2]}\n")
 
                     return transformed_coords_list
-                
                 case _:
                     print("Invalid transform function type, returning 0 coord: ")
                     return [0.0, 0.0, 0.0]
@@ -4178,7 +4180,7 @@ match(sys.argv[1]):
         filename = "Optical_stretcher"
 
         # Particle variables
-        dimension = 2.0e-6      # Base diameter of the full untransformed sphere
+        dimension = 2.0e-6#2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
         num_factors_tested = 20
@@ -4201,9 +4203,9 @@ match(sys.argv[1]):
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
-            "force_terms": ["optical"], #, "buckingham"  , "spring", "bending"
+            "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 5e-6}, #5e-8  # 5e-7
+            "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
             "dipole_radius": 100e-9,
             "frames": 1,
@@ -4241,7 +4243,6 @@ match(sys.argv[1]):
         datalabel_set = ["FTx", "FTy", "FTz"]
         transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
         func_transform_partial = partial(func_transform, transform_type=transform_type)
-
         for i in range(len(transform_factor_list)):
             print("\nProgress; "+str(i)+"/"+str(len(transform_factor_list)))
             
@@ -4325,7 +4326,7 @@ match(sys.argv[1]):
 
         # Plot forces for each step considered to see if equilibrium is being reached
         # data_set.pop(0)
-        # data_set.pop(0)
+        # data_set.pop(2)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
         
