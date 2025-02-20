@@ -4130,6 +4130,9 @@ match(sys.argv[1]):
                 case "linear":
                     # Linear transform
                     return [coordinate[0]/np.sqrt(transform_factor), coordinate[1]/np.sqrt(transform_factor), coordinate[2]*transform_factor]
+                case "singular":
+                    # Transform just one axis
+                    return [coordinate[0]*transform_factor, coordinate[1], coordinate[2]]
                 case _:
                     print("Invalid transform function type, returning 0 coord: ")
                     return [0.0, 0.0, 0.0]
@@ -4138,11 +4141,10 @@ match(sys.argv[1]):
         filename = "Optical_stretcher"
 
         # Particle variables
-        dimension = 2.4e-6      # Base diameter of the full untransformed sphere
+        dimension = 2.0e-6#2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
-        particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
-        dipole_size = 100e-9
+        particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
@@ -4150,24 +4152,25 @@ match(sys.argv[1]):
         particle_shape = "sphere"
         #forces_output= ["FTx", "FTy", "FTz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         #particle_selections = [[0], [0]]
-        force_reading = "Z_split"       #"Z_split", "XYZ_split"
+        force_reading = "XYZ_split"       #"Z_split", "XYZ_split"
         
         # Beam variables
-        E0 = 7.0e6 #4.75e6
+        E0 = 8.0e6 #4.75e6
         w0 = 0.5
 
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor)
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
-            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
+            "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 5e-6}, #5e-8  # 5e-7
+            "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
             "dipole_radius": 100e-9,
             "frames": 1,
             "time_step": 0.5e-4, 
         })
+        run_number=20
 
         # Single run version
         # Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode=connection_mode, connection_args=connection_args, material=material)
@@ -4198,7 +4201,7 @@ match(sys.argv[1]):
         graphlabel_set={"title":"Stretched sphere model", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
         data_set = [ [[],[]], [[],[]], [[],[]] ]
         datalabel_set = ["FTx", "FTy", "FTz"]
-        transform_factor_list = np.linspace(1.0, critical_transform_factor, 20)
+        transform_factor_list = np.linspace(1.0, critical_transform_factor, run_number)
         for i in range(len(transform_factor_list)):
             print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
             
@@ -4258,7 +4261,7 @@ match(sys.argv[1]):
                     for p in range(int(len(pulled_data)/pulled_val_num)):
                         pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
-                        if( (pos[0]+sys.float_info.epsilon > 0.0) and (pos[1]+sys.float_info.epsilon > 0.0) and (pos[2]+sys.float_info.epsilon > 0.0) ):   # If not +X,+Y,+Z corner, then sum forces
+                        if( (pos[0] > sys.float_info.epsilon) and (pos[1] > sys.float_info.epsilon) and (pos[2] > sys.float_info.epsilon) ):   # If not +X,+Y,+Z corner, then sum forces
                             output += [force[0], force[1], force[2]]
 
             data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
@@ -4268,7 +4271,7 @@ match(sys.argv[1]):
 
         # Plot forces for each step considered to see if equilibrium is being reached
         # data_set.pop(0)
-        # data_set.pop(0)
+        # data_set.pop(2)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
         

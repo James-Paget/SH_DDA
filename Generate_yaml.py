@@ -1303,7 +1303,6 @@ def get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_
     number_of_particles = 2*number_of_particles_side +1
 
     # Generate some base sphere shape
-    base_separation = dimension/number_of_particles ################ WHY REDEFINED BASE_SEP ???? <---- REMOVE THIS BUT MAKE SURE WORKS
     for i in range(-number_of_particles_side, number_of_particles_side+1):
         i_coord = i*base_separation
         for j in range(-number_of_particles_side, number_of_particles_side+1):

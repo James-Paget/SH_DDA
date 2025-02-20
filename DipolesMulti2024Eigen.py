@@ -2262,7 +2262,7 @@ def main(YAML_name=None):
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
         fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        quiver_setting = 0
+        quiver_setting = 1
         display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, quiver_setting=quiver_setting, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list, time_step=timestep) # quiver_setting - 0 = no quiver; 1 = force on each particle; 2 = F-F_total on each particle & average force at centre of mass
 
     if display.show_stress==True:
