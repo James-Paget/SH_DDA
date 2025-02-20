@@ -304,7 +304,7 @@ class DisplayObject (object):
             for plot in plots:
                 plot.remove()
             plots.clear()
-            
+
             # Add new particle plot elements
             #colours[62] = "#fc3232"
             for i in range(num_particles):
@@ -436,8 +436,10 @@ class DisplayObject (object):
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 
+
         if(steps > 0):
             ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
+
         plt.show()
 
 

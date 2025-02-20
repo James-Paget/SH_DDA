@@ -65,6 +65,7 @@ def generate_yaml(filename, particle_list, parameters_arg, beam_type="BEAMTYPE_L
         "dipole_radius": 40e-9,
         "time_step": 1e-4,
         "polarisability_type": "RR",
+        "equilibrium_shape":None,
 
         "vmd_output": True,
         "excel_output": True,
@@ -4132,7 +4133,10 @@ match(sys.argv[1]):
                     # Linear transform
                     transformed_coords_list = coordinates * [1/np.sqrt(transform_factor), 1/np.sqrt(transform_factor), transform_factor]
                     return transformed_coords_list
-                    #return [coordinate[0]/np.sqrt(transform_factor), coordinate[1]/np.sqrt(transform_factor), coordinate[2]*transform_factor]
+                    # transformed_coords_list = []
+                    # for i in range(len(coordinates)):
+                    #     transformed_coords_list.append([coordinates[i][0]/np.sqrt(transform_factor), coordinates[i][1]/np.sqrt(transform_factor), coordinates[i][2]*transform_factor])
+                    # return transformed_coords_list
                 case "singular":
                     # Transform just one axis
                     transformed_coords_list = coordinates * [transform_factor, 1.0, 1.0]
