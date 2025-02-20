@@ -127,7 +127,7 @@ def make_yaml_tetrahedron(filename, frames=50, show_output=True, tetrahedron_rad
     use_beam(filename, beam)
     use_tetrahedron(filename, tetrahedron_radius, particle_radius, rotation_axis, rotation_theta)
 
-def make_yaml_icosahedron(filename, frames=20, show_output=True, icosahedron_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+def make_yaml_icosahedron(filename, frames=5, show_output=True, icosahedron_radius=1e-6, particle_radius=0.2e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
     use_default_options(filename, frames, show_output)
     use_beam(filename, beam)
     use_icosahedron(filename, icosahedron_radius, particle_radius, rotation_axis, rotation_theta)
