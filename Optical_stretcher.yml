@@ -1,0 +1,86 @@
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 1e-07
+  time_step: 5e-05
+  polarisability_type: RR
+  constants:
+    bending: 7.5e-20
+  stiffness_spec:
+    type: 
+    default_value: 5e-06
+  equilibrium_shape: None
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+  verbosity: 0
+  include_dipole_forces: False
+  force_terms: optical spring bending
+display:
+  show_output: True
+  show_stress: False
+  frame_interval: 2
+  resolution: 201
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+beams:
+  # Z offset stretcher
+  # beam_0:
+  #   beamtype: BEAMTYPE_GAUSS_CSP
+  #   E0: 8000000.0
+  #   order: 3
+  #   w0: 0.5
+  #   jones: POLARISATION_LCP
+  #   translation: 0.0 0.0 1.125e-6
+  #   translationargs: None
+  #   translationtype: None
+  #   rotation: 0.0 0.0
+  # beam_1:
+  #   beamtype: BEAMTYPE_GAUSS_CSP
+  #   E0: 8000000.0
+  #   order: 3
+  #   w0: 0.5
+  #   jones: POLARISATION_LCP
+  #   translation: 0.0 0.0 0.875e-6
+  #   translationargs: None
+  #   translationtype: None
+  #   rotation: 180.0 0.0
+
+
+  # Y offset stretcher
+  beam_0:
+    beamtype: BEAMTYPE_GAUSS_CSP
+    E0: 8000000.0
+    order: 3
+    w0: 0.5
+    jones: POLARISATION_LCP
+    translation: 0.0 0.0 0.0e-6
+    translationargs: None
+    translationtype: None
+    rotation: 90.0 0.0
+  beam_1:
+    beamtype: BEAMTYPE_GAUSS_CSP
+    E0: 8000000.0
+    order: 3
+    w0: 0.5
+    jones: POLARISATION_RCP
+    translation: 0.0 0.0 0.0e-6
+    translationargs: None
+    translationtype: None
+    rotation: -90.0 0.0
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: dist
+  connection_args: 0.0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: sphere
+      args: 1e-07
+      coords: 0.0 0.0 0.0
+      altcolour: True

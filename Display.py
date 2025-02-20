@@ -283,12 +283,12 @@ class DisplayObject (object):
                 plot.remove()
             plots.clear()
 
-            save_frames = [0]
+            # save_frames = [0]
 
-            if save_frames == []:
-                # Add frame counter
-                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-                plots.append(textplot)
+            # if save_frames == []:
+            #     # Add frame counter
+            #     textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+            #     plots.append(textplot)
 
             # Add new particle plot elements
             #colours[62] = "#fc3232"
@@ -374,8 +374,8 @@ class DisplayObject (object):
                 beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
                 plots.append(beam_plane)
 
-            if t in save_frames:
-                plt.savefig("myImage.png", format="png", dpi=1200)
+            # if t in save_frames:
+            #     plt.savefig("myImage.png", format="png", dpi=1200)
 
         # Initialise
         positions = np.array(positions)
@@ -413,6 +413,7 @@ class DisplayObject (object):
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
 
+        #if(steps > 1):
         ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
         plt.show()
 
