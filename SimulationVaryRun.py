@@ -4145,10 +4145,11 @@ match(sys.argv[1]):
                     accumulated_factor = 0
 
                     for z_plane in z_values: # note, these are ABS z values.
+                        print("for transform ", transform_factor, "; accum factor is", accumulated_factor)
                         upper_z_indices = np.argwhere(abs(coordinates[:,2]-z_plane) <= eps)
                         lower_z_indices = np.argwhere(abs(coordinates[:,2]+z_plane) <= eps)
 
-                        effective_transform_factor = transform_factor/len(upper_z_indices)
+                        effective_transform_factor = 1 + (transform_factor-1)/len(upper_z_indices)
 
                         # transform x,y values by the factor.
                         transformed_coords_list[upper_z_indices] *= [1/np.sqrt(effective_transform_factor), 1/np.sqrt(effective_transform_factor), 1]
@@ -4161,9 +4162,11 @@ match(sys.argv[1]):
                         
                         else:
                             shift = plane_spacing * ( (effective_transform_factor - 1)/2 + accumulated_factor )
+                            # print(f"starts at {transformed_coords_list[upper_z_indices,2]}, shift by {shift}")
                             transformed_coords_list[upper_z_indices,2] += shift
                             transformed_coords_list[lower_z_indices,2] -= shift
                             accumulated_factor += (effective_transform_factor - 1)
+                            # print(f"now at {transformed_coords_list[upper_z_indices,2]}\n")
 
                     return transformed_coords_list
                 
@@ -4177,8 +4180,8 @@ match(sys.argv[1]):
         # Particle variables
         dimension = 2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 2.0 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 5
+        critical_transform_factor = 3.5 # The max transform you want to apply, which sets the default separation of particles in the system
+        num_factors_tested = 30
         particle_size = 200e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         dipole_size = 100e-9
         object_offset = [0.0, 0.0, 0.0e-6]
@@ -4197,7 +4200,7 @@ match(sys.argv[1]):
 
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
