@@ -263,9 +263,9 @@ def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphe
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
 
 
-def make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, connection_mode="dist", connection_args=0.0, material="FusedSilica"):
+def make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, connection_mode="dist", connection_args=0.0, material="FusedSilica", z_offset=0.0):
     use_parameter_options(filename, option_parameters)
-    use_beam(filename, "STRETCHER", E0=E0, w0=w0)
+    use_beam(filename, "STRETCHER", E0=E0, w0=w0, z_offset=z_offset)
     num_particles = use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape=particle_shape, connection_mode=connection_mode, connection_args=connection_args, material=material)
     return num_particles
 
@@ -526,7 +526,7 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 # Beam configurations
 #=======================================================================
 
-def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None, E0=1.5e7, w0=0.4):
+def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None, E0=1.5e7, w0=0.4, z_offset=0):
     match beam:
         case "GAUSS_CSP":
             use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype, rotation=rotation)
@@ -535,7 +535,7 @@ def use_beam(filename, beam, translation=None, translationargs=None, translation
         case "BESSEL":
             use_bessel_beam(filename, translation, translationargs, translationtype, rotation=rotation)
         case "STRETCHER":
-            use_stretcher_beam(filename, E0, w0)
+            use_stretcher_beam(filename, E0, w0, z_offset)
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
 
@@ -560,12 +560,12 @@ def use_bessel_beam(filename, translation, translationargs, translationtype=None
     beam = {"beamtype":"BEAMTYPE_BESSEL", "E0":1.5e7, "order":1, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
     write_beams(filename, [beam])
 
-def use_stretcher_beam(filename, E0=1.5e7, w0=0.4):
+def use_stretcher_beam(filename, E0=1.5e7, w0=0.4, z_offset=0):
     """
     Makes two counter-propagating Gaussian beams.
     """
-    beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":None, "translationargs":None, "translationtype":None, "rotation":None}
-    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":None, "translationargs":None, "translationtype":None, "rotation":"180 0.0 0.0"}
+    beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":f"0.0 0.0 {z_offset}", "translationargs":None, "translationtype":None, "rotation":None}
+    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":f"0.0 0.0 {z_offset}", "translationargs":None, "translationtype":None, "rotation":"180 0.0 0.0"} # positive translation as rotated after
     write_beams(filename, [beam1, beam2])
 
 

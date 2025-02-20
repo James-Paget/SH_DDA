@@ -4108,6 +4108,7 @@ match(sys.argv[1]):
             "dipole_radius": 40e-9,
             "frames": 30,
             "time_step": 10e-5, 
+            "resolution": 401,
         })
 
         print(f"\ntime step = {option_parameters['time_step']}, stiffness = {option_parameters['stiffness_spec']['default_value']}, bending = {option_parameters['constants']['bending']}, particle number = {num_particles}, dipole size = {option_parameters['dipole_radius']}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0}, beam width = {w0}\n")
@@ -4199,6 +4200,7 @@ match(sys.argv[1]):
         #particle_selections = [[0], [0]]
         force_reading = "XYZ_split"       #"Z_split", "XYZ_split", "RT_Z_split"
         transform_type = "linear" # "linear", "inverse_area"
+        z_offset = 1e-6
         
         # Beam variables
         E0 = 8.0e6 #4.75e6
@@ -4216,7 +4218,8 @@ match(sys.argv[1]):
             "dipole_radius": 100e-9,
             "frames": 1,
             "time_step": 0.5e-4, 
-            "beam_planes": [["z", 0], ["x", 0]], #
+            "beam_planes": [["x", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+            "beam_alpha": 0.6,
         })
 
         # Single run version
@@ -4254,7 +4257,7 @@ match(sys.argv[1]):
             print("\nProgress; "+str(i)+"/"+str(len(transform_factor_list)))
             
             transform_factor = transform_factor_list[i]
-            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform_partial, object_offset, connection_mode=connection_mode, connection_args=connection_args, material=material)
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform_partial, object_offset, connection_mode=connection_mode, connection_args=connection_args, material=material, z_offset=z_offset)
             DM.main(filename)
 
             ####
