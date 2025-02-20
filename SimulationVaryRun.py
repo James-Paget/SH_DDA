@@ -4121,18 +4121,57 @@ match(sys.argv[1]):
         # Spring forces are also used to allow an equilibrium to be reached
         #
 
-        def func_transform(coordinate, transform_factor, transform_type="linear"):
+        def func_transform(coordinates, transform_factor, transform_type="linear"):
             #
-            # coordinate = [x,y,z] position of particle to be transformed
+            # coordinates = [[x,y,z],...] positions of particles to be transformed
             # transform_factor=1.0 => no transform for linear map, >1.0 => stretching of Z axis, shrinking other XY, vice verse for <1.0
             #
             match transform_type:
                 case "linear":
                     # Linear transform
-                    return [coordinate[0]/np.sqrt(transform_factor), coordinate[1]/np.sqrt(transform_factor), coordinate[2]*transform_factor]
+                    transformed_coords_list = coordinates * [1/np.sqrt(transform_factor), 1/np.sqrt(transform_factor), transform_factor]
+                    return transformed_coords_list
+                    #return [coordinate[0]/np.sqrt(transform_factor), coordinate[1]/np.sqrt(transform_factor), coordinate[2]*transform_factor]
                 case "singular":
                     # Transform just one axis
-                    return [coordinate[0]*transform_factor, coordinate[1], coordinate[2]]
+                    transformed_coords_list = coordinates * [transform_factor, 1.0, 1.0]
+                    return transformed_coords_list      
+                case "inverse_area":
+                    # z stretch inversely proportional to the z-layer's area; like springs in parallel
+                    # assumes the shape is symmetric in z, so pairs of ±z planes are transformed at a time
+
+                    eps = sys.float_info.epsilon
+                    transformed_coords_list = np.array(coordinates)
+                    z_values = np.sort(np.unique(np.abs(coordinates[:,2]))) # get all unique absolute values of planes, then sort for the lowest.
+                    print("z_values are", z_values)
+                    plane_spacing = z_values[1] # XXX !!! assumes there are enough layers
+                    accumulated_factor = 0
+
+                    for z_plane in z_values: # note, these are ABS z values.
+                        print("for transform ", transform_factor, "; accum factor is", accumulated_factor)
+                        upper_z_indices = np.argwhere(abs(coordinates[:,2]-z_plane) <= eps)
+                        lower_z_indices = np.argwhere(abs(coordinates[:,2]+z_plane) <= eps)
+
+                        effective_transform_factor = 1 + (transform_factor-1)/len(upper_z_indices)
+
+                        # transform x,y values by the factor.
+                        transformed_coords_list[upper_z_indices] *= [1/np.sqrt(effective_transform_factor), 1/np.sqrt(effective_transform_factor), 1]
+                        transformed_coords_list[lower_z_indices] *= [1/np.sqrt(effective_transform_factor), 1/np.sqrt(effective_transform_factor), 1]
+
+                        # shift z values based on effective_transform_factor and the stretches of previous planes.
+                        if np.abs(z_plane) < eps:
+                            # special behaviour for 0th plane - it doesn't need to shift, but it stretching with still affect others.
+                            accumulated_factor += (effective_transform_factor - 1)/2
+                        
+                        else:
+                            shift = plane_spacing * ( (effective_transform_factor - 1)/2 + accumulated_factor )
+                            # print(f"starts at {transformed_coords_list[upper_z_indices,2]}, shift by {shift}")
+                            transformed_coords_list[upper_z_indices,2] += shift
+                            transformed_coords_list[lower_z_indices,2] -= shift
+                            accumulated_factor += (effective_transform_factor - 1)
+                            # print(f"now at {transformed_coords_list[upper_z_indices,2]}\n")
+
+                    return transformed_coords_list
                 case _:
                     print("Invalid transform function type, returning 0 coord: ")
                     return [0.0, 0.0, 0.0]
@@ -4144,6 +4183,7 @@ match(sys.argv[1]):
         dimension = 2.0e-6#2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
+        num_factors_tested = 20
         particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
@@ -4152,13 +4192,14 @@ match(sys.argv[1]):
         particle_shape = "sphere"
         #forces_output= ["FTx", "FTy", "FTz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         #particle_selections = [[0], [0]]
-        force_reading = "XYZ_split"       #"Z_split", "XYZ_split"
+        force_reading = "XYZ_split"       #"Z_split", "XYZ_split", "RT_Z_split"
+        transform_type = "linear" # "linear", "inverse_area"
         
         # Beam variables
         E0 = 8.0e6 #4.75e6
         w0 = 0.5
 
-        coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor)
+        coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
@@ -4170,7 +4211,6 @@ match(sys.argv[1]):
             "frames": 1,
             "time_step": 0.5e-4, 
         })
-        run_number=20
 
         # Single run version
         # Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode=connection_mode, connection_args=connection_args, material=material)
@@ -4198,16 +4238,17 @@ match(sys.argv[1]):
         parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
         read_frames = [0]
 
-        graphlabel_set={"title":"Stretched sphere model", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
+        graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
         data_set = [ [[],[]], [[],[]], [[],[]] ]
         datalabel_set = ["FTx", "FTy", "FTz"]
-        transform_factor_list = np.linspace(1.0, critical_transform_factor, run_number)
+        transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
+        func_transform_partial = partial(func_transform, transform_type=transform_type)
         for i in range(len(transform_factor_list)):
-            print("\nProgress;"+str(i)+"/"+str(len(transform_factor_list)))
+            print("\nProgress; "+str(i)+"/"+str(len(transform_factor_list)))
             
             transform_factor = transform_factor_list[i]
-            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, connection_mode=connection_mode, connection_args=connection_args, material=material)
-            DM.main(filename)   #, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms, stiffness_spec=stiffness_spec
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform_partial, object_offset, connection_mode=connection_mode, connection_args=connection_args, material=material)
+            DM.main(filename)
 
             ####
             ## Should implement this method to get forces instead, for now it is just being calculated manually
@@ -4243,8 +4284,8 @@ match(sys.argv[1]):
                     uhp_output = np.zeros(3)
                     lhp_output = np.zeros(3)
                     for p in range(int(len(pulled_data)/pulled_val_num)):
-                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
+                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         if( not((-sys.float_info.epsilon < pos[2]) and (pos[2] < sys.float_info.epsilon)) ):   # If outside the central layer
                             if( pos[2] > 0.0 ):     # If in upper half plane, sum forces
                                 uhp_output += [force[0], force[1], force[2]]
@@ -4254,15 +4295,29 @@ match(sys.argv[1]):
                     # Add magnitude of these forces together
                     output += [ (uhp_output[0]),  (uhp_output[1]),  (uhp_output[2])]
                     output += [-(lhp_output[0]), -(lhp_output[1]), -(lhp_output[2])]
+
                 case "XYZ_split":
                     #
                     # Just sum force in the positive XYZ corner, assume symmetry for others hence this will show force pushing / pulling on either side
                     #
                     for p in range(int(len(pulled_data)/pulled_val_num)):
-                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
+                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
                         if( (pos[0] > sys.float_info.epsilon) and (pos[1] > sys.float_info.epsilon) and (pos[2] > sys.float_info.epsilon) ):   # If not +X,+Y,+Z corner, then sum forces
                             output += [force[0], force[1], force[2]]
+
+                case "RT_Z_split":
+                    #
+                    # x,y forces replaced by r,theta. z forces summed if in UHP, else minused.
+                    #
+                    datalabel_set = ["FTr", "FTtheta", "FTz"]
+                    sign = lambda x: 1 if x>=sys.float_info.epsilon else ( -1 if x<=-sys.float_info.epsilon else 0) # sign, but =0 very close to x=0
+                    for p in range(int(len(pulled_data)/pulled_val_num)):
+                        force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
+                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
+                        theta = np.arctan2(pos[1], pos[0])
+                        force[0], force[1] = force[0]*np.cos(theta) + force[1]*np.sin(theta), -force[0]*np.sin(theta) + force[1]*np.cos(theta) # decompose x,y into r,theta
+                        output += [force[0], force[1], force[2] * sign(pos[2])]
 
             data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
             data_set[1][0].append(transform_factor_list[i]);data_set[1][1].append(output[1])    # Y force
