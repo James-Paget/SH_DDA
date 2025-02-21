@@ -526,7 +526,7 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 # Beam configurations
 #=======================================================================
 
-def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None, E0=1.5e7, w0=0.4):
+def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None, E0=1.5e7, w0=0.4, z_offset=0):
     match beam:
         case "GAUSS_CSP":
             use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype, rotation=rotation)
@@ -536,6 +536,7 @@ def use_beam(filename, beam, translation=None, translationargs=None, translation
             use_bessel_beam(filename, translation, translationargs, translationtype, rotation=rotation)
         case "STRETCHER":
             use_stretcher_beam(filename, E0, w0, translation)
+
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
 

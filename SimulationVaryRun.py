@@ -1971,137 +1971,137 @@ def simulations_refine(dimension, variables_list, separations_list, particle_siz
     return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
 
 
-def simulations_refine_general(dimensions, variables_list, force_terms, time_step=1e-4, show_output=False, indep_vector_component=2, particle_selection="all"):
-    #
-    # Consider an object of given parameters, vary its aspects, take force measurements for each scenario
-    # particle_selection can be "all", "central" or [int]
-    #
+# def simulations_refine_general(dimensions, variables_list, force_terms, time_step=1e-4, show_output=False, indep_vector_component=2, particle_selection="all"):
+#     #
+#     # Consider an object of given parameters, vary its aspects, take force measurements for each scenario
+#     # particle_selection can be "all", "central" or [int]
+#     #
 
-    # Specify parameters for data pulling later
-    parameters_stored = [
-        {"type":"X", "args":["x", "y", "z"]},
-        {"type":"F", "args":["Fx", "Fy", "Fz"]},
-        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
-        {"type":"C", "args":["Cx", "Cy", "Cz"]}
-    ]
-    read_frames = [
-        0
-    ]
+#     # Specify parameters for data pulling later
+#     parameters_stored = [
+#         {"type":"X", "args":["x", "y", "z"]},
+#         {"type":"F", "args":["Fx", "Fy", "Fz"]},
+#         {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
+#         {"type":"C", "args":["Cx", "Cy", "Cz"]}
+#     ]
+#     read_frames = [
+#         0
+#     ]
     
-    # get list of variables from the dictionary.
-    dipole_sizes = variables_list["dipole_sizes"]
-    separations_list = variables_list["separations_list"]
-    particle_sizes = variables_list["particle_sizes"]
-    particle_shapes = variables_list["particle_shapes"]
-    object_offsets = variables_list["object_offsets"]
-    # get the independent variable (the one to be plotted against)
-    indep_name = variables_list["indep_var"]
-    indep_list = np.array(variables_list[indep_name] )
+#     # get list of variables from the dictionary.
+#     dipole_sizes = variables_list["dipole_sizes"]
+#     separations_list = variables_list["separations_list"]
+#     particle_sizes = variables_list["particle_sizes"]
+#     particle_shapes = variables_list["particle_shapes"]
+#     object_offsets = variables_list["object_offsets"]
+#     # get the independent variable (the one to be plotted against)
+#     indep_name = variables_list["indep_var"]
+#     indep_list = np.array(variables_list[indep_name] )
 
-    # Based on the indep var, set what variable are varied over different lines of the graph.
-    match indep_name:
-        case "dipole_sizes": 
-            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets]
-            indep_axis_list = indep_list
-        case "separations_list": 
-            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets]
-            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot agaisnt
-        case "particle_sizes": 
-            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets]
-            indep_axis_list = indep_list
-        case "particle_shapes": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets]
-            indep_axis_list = indep_list
-        case "object_offsets": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes]
-            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot agaisnt
+#     # Based on the indep var, set what variable are varied over different lines of the graph.
+#     match indep_name:
+#         case "dipole_sizes": 
+#             line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets]
+#             indep_axis_list = indep_list
+#         case "separations_list": 
+#             line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets]
+#             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot agaisnt
+#         case "particle_sizes": 
+#             line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets]
+#             indep_axis_list = indep_list
+#         case "particle_shapes": 
+#             line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets]
+#             indep_axis_list = indep_list
+#         case "object_offsets": 
+#             line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes]
+#             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot agaisnt
 
 
-    # Begin calculations
-    print("Performing refinement calculation for cuboid")
-    data_set = []
-    data_set_params = []
-    particle_nums_set = []
-    dpp_nums_set = []
-    num_indep = len(indep_axis_list)
+#     # Begin calculations
+#     print("Performing refinement calculation for cuboid")
+#     data_set = []
+#     data_set_params = []
+#     particle_nums_set = []
+#     dpp_nums_set = []
+#     num_indep = len(indep_axis_list)
 
-    # Iterate though every combination of variables that are varied across the lines of the graph.
-    for params in it.product(*line_vars):
+#     # Iterate though every combination of variables that are varied across the lines of the graph.
+#     for params in it.product(*line_vars):
 
-        forceMag_data = np.array([ indep_axis_list, np.zeros(num_indep) ])  
-        forceX_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
-        forceY_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
-        forceZ_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
-        particle_nums = np.array([ indep_axis_list, np.zeros(num_indep) ])
-        dpp_nums = np.array([ indep_axis_list, np.zeros(num_indep) ])
+#         forceMag_data = np.array([ indep_axis_list, np.zeros(num_indep) ])  
+#         forceX_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
+#         forceY_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
+#         forceZ_data = np.array([ indep_axis_list, np.zeros(num_indep) ])
+#         particle_nums = np.array([ indep_axis_list, np.zeros(num_indep) ])
+#         dpp_nums = np.array([ indep_axis_list, np.zeros(num_indep) ])
 
-        match indep_name:
-            case "dipole_sizes": separations, particle_size, particle_shape, object_offset = params
-            case "separations_list": dipole_size, particle_size, particle_shape, object_offset = params
-            case "particle_sizes": dipole_size, separations, particle_shape, object_offset = params
-            case "particle_shapes": dipole_size, separations, particle_size, object_offset = params
-            case "object_offsets": dipole_size, separations, particle_size, particle_shape = params
+#         match indep_name:
+#             case "dipole_sizes": separations, particle_size, particle_shape, object_offset = params
+#             case "separations_list": dipole_size, particle_size, particle_shape, object_offset = params
+#             case "particle_sizes": dipole_size, separations, particle_shape, object_offset = params
+#             case "particle_shapes": dipole_size, separations, particle_size, object_offset = params
+#             case "object_offsets": dipole_size, separations, particle_size, particle_shape = params
 
-        # Iterate over independent variable to calculate the forces on every particle.
-        for i, indep_var in enumerate(indep_list):
-            match indep_name:
-                case "dipole_sizes": dipole_size = indep_var
-                case "separations_list": separations = indep_var
-                case "particle_sizes": particle_size = indep_var
-                case "particle_shapes": particle_shape = indep_var
-                case "object_offsets": object_offset = indep_var
+#         # Iterate over independent variable to calculate the forces on every particle.
+#         for i, indep_var in enumerate(indep_list):
+#             match indep_name:
+#                 case "dipole_sizes": dipole_size = indep_var
+#                 case "separations_list": separations = indep_var
+#                 case "particle_sizes": particle_size = indep_var
+#                 case "particle_shapes": particle_shape = indep_var
+#                 case "object_offsets": object_offset = indep_var
         
-            # Generate YAML for set of particles and beams
-            particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
-            # Run simulation
-            DM.main(YAML_name=filename, force_terms=force_terms)
-            match particle_shape:
-                case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
-                case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
-                case _: sys.exit("UNIMPLEMENTED SHAPE")
+#             # Generate YAML for set of particles and beams
+#             particle_num = Generate_yaml.make_yaml_refine_cuboid(filename, time_step, dimensions, dipole_size, separations, object_offset, particle_size, particle_shape, frames=1, show_output=show_output, beam="LAGUERRE")
+#             # Run simulation
+#             DM.main(YAML_name=filename, force_terms=force_terms)
+#             match particle_shape:
+#                 case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
+#                 case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
+#                 case _: sys.exit("UNIMPLEMENTED SHAPE")
 
-            # Calculate what particles to sum the forces over.
-            particle_list = select_particle_indices(filename, particle_selection, parameters_stored, read_frames)
-            read_parameters = [{"type":"F", "particle":p, "subtype":st} for p, st in it.product(particle_list, [0,1,2])]
+#             # Calculate what particles to sum the forces over.
+#             particle_list = select_particle_indices(filename, particle_selection, parameters_stored, read_frames)
+#             read_parameters = [{"type":"F", "particle":p, "subtype":st} for p, st in it.product(particle_list, [0,1,2])]
 
-            # Pull data needed from this frame, add it to another list tracking
-            output_data = pull_file_data(
-                filename, 
-                parameters_stored, 
-                read_frames, 
-                read_parameters, 
-                invert_output=False
-            )
-            #print("read_parameters = ",read_parameters)
-            for p_i in range(len(particle_list)):
-                # print("     -> output_data[0]      = ", output_data[0])
-                # print("     -> output_data[0, 3*p_i+0] = ", output_data[0, 3*p_i+0])
-                # print("p=",p_i)
-                # print("3p=",3*p_i)
-                # Calculate required quantities
-                recorded_force = np.array([output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
+#             # Pull data needed from this frame, add it to another list tracking
+#             output_data = pull_file_data(
+#                 filename, 
+#                 parameters_stored, 
+#                 read_frames, 
+#                 read_parameters, 
+#                 invert_output=False
+#             )
+#             #print("read_parameters = ",read_parameters)
+#             for p_i in range(len(particle_list)):
+#                 # print("     -> output_data[0]      = ", output_data[0])
+#                 # print("     -> output_data[0, 3*p_i+0] = ", output_data[0, 3*p_i+0])
+#                 # print("p=",p_i)
+#                 # print("3p=",3*p_i)
+#                 # Calculate required quantities
+#                 recorded_force = np.array([output_data[0, 3*p_i+0], output_data[0, 3*p_i+1], output_data[0, 3*p_i+2]])    # Only pulling at a single frame, => only 1 list inside output, holding each 
                 
-                # Store quantities
-                forceX_data[1][i] += recorded_force[0]
-                forceY_data[1][i] += recorded_force[1]
-                forceZ_data[1][i] += recorded_force[2]
+#                 # Store quantities
+#                 forceX_data[1][i] += recorded_force[0]
+#                 forceY_data[1][i] += recorded_force[1]
+#                 forceZ_data[1][i] += recorded_force[2]
 
-            forceMag_data[1][i] = np.sqrt(forceX_data[1][i]**2 + forceY_data[1][i]**2 + forceZ_data[1][i]**2) # Magnitude of the net force.
-            particle_nums[1][i] = particle_num
-            dpp_nums[1][i] = dpp_num
+#             forceMag_data[1][i] = np.sqrt(forceX_data[1][i]**2 + forceY_data[1][i]**2 + forceZ_data[1][i]**2) # Magnitude of the net force.
+#             particle_nums[1][i] = particle_num
+#             dpp_nums[1][i] = dpp_num
 
-        data_set.append(np.array(forceMag_data))
-        data_set.append(np.array(forceX_data))
-        data_set.append(np.array(forceY_data))
-        data_set.append(np.array(forceZ_data))
-        data_set_params.append(params)
-        particle_nums_set.append(np.array(particle_nums))
-        dpp_nums_set.append(np.array(dpp_nums))
+#         data_set.append(np.array(forceMag_data))
+#         data_set.append(np.array(forceX_data))
+#         data_set.append(np.array(forceY_data))
+#         data_set.append(np.array(forceZ_data))
+#         data_set_params.append(params)
+#         particle_nums_set.append(np.array(particle_nums))
+#         dpp_nums_set.append(np.array(dpp_nums))
         
 
-    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
-    parameter_text = ""
-    return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
+#     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+#     parameter_text = ""
+#     return parameter_text, np.array(data_set), data_set_params, np.array(particle_nums_set), np.array(dpp_nums_set)
 
 def simulations_single_dipole(filename, read_parameters, beam_type, test_type, test_args, object_offset, option_parameters, rotation=None):
     #
@@ -2364,206 +2364,206 @@ def simulation_single_cubeSphere(filename, dimensions, object_shape, separations
     
     return positions, forces, particle_num, dpp_num
 
-def simulations_spheredisc_model(filename, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
-    #
-    # Consider an object of given parameters. Default to cube object, but can be sphere
-    # variables_list contains all of the parameters to be changed (dict).
-    # dda_forces_returned are the forces returned from the DDA - usually ["optical"]. object_shape is either "sphere" or "cube"
-    # beam_type is str for the beam, usually "LAGUERRE"
-    # forces_output is the force types returned, subset of ["Fmag", "Fx", "Fy", "Fz", "Cmag", "Cx", "Cy", "Cz"]
-    # particle_selections is a list of string keywords ("all"), ints (particle indices), or float vectors ([0,0,0], particle closest to this point)
-    #
-    # Return data_set, data_set_params, particle_nums_set, dpp_nums_set
-    # data set is [ [[indep var list], [force list]] for F, p in zip(forces_output, particle_selections) for each set of line parameters]
-    # other returns give different data for the same pattern.
-    #
+# def simulations_spheredisc_model(filename, variables_list, dda_forces_returned, beam_type, forces_output, particle_selections, include_dipole_forces=False, polarisability_type="RR", mode="disc", torque_centre=[0.0, 0.0, 0.0], indep_vector_component=2, time_step=1e-4, frames=1, show_output=True):    
+#     #
+#     # Consider an object of given parameters. Default to cube object, but can be sphere
+#     # variables_list contains all of the parameters to be changed (dict).
+#     # dda_forces_returned are the forces returned from the DDA - usually ["optical"]. object_shape is either "sphere" or "cube"
+#     # beam_type is str for the beam, usually "LAGUERRE"
+#     # forces_output is the force types returned, subset of ["Fmag", "Fx", "Fy", "Fz", "Cmag", "Cx", "Cy", "Cz"]
+#     # particle_selections is a list of string keywords ("all"), ints (particle indices), or float vectors ([0,0,0], particle closest to this point)
+#     #
+#     # Return data_set, data_set_params, particle_nums_set, dpp_nums_set
+#     # data set is [ [[indep var list], [force list]] for F, p in zip(forces_output, particle_selections) for each set of line parameters]
+#     # other returns give different data for the same pattern.
+#     #
 
-    if len(forces_output) != len(particle_selections): sys.exit(f"ERROR, forces_output and particle_selections must be the same length, not {len(forces_output)} and {len(particle_selections)}.")
+#     if len(forces_output) != len(particle_selections): sys.exit(f"ERROR, forces_output and particle_selections must be the same length, not {len(forces_output)} and {len(particle_selections)}.")
     
-    # Specify all parameters in the file so a subset can be pulled later based on read_parameters
-    parameters_stored = [
-        {"type":"X", "args":["x", "y", "z"]},
-        {"type":"F", "args":["Fx", "Fy", "Fz"]},
-        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]}, # (total force including hydrodynamics, not used here)
-        {"type":"C", "args":["Cx", "Cy", "Cz"]}
-    ]
-    parameters_stored_torque = [
-        {"type":"X", "args":["x", "y", "z"]},
-        {"type":"F", "args":["Fx", "Fy", "Fz"]},
-    ]
-    read_frames = [0]
-    # Record what parameters each force output would require
-    read_parameters_lookup = {
-        "Fmag": [["F",0], ["F",1], ["F",2]],
-        "Fx":   [["F",0]],
-        "Fy":   [["F",1]],
-        "Fz":   [["F",2]],
-        "Cmag": [["C",0], ["C",1], ["C",2]],
-        "Cx":   [["C",0]],
-        "Cy":   [["C",1]],
-        "Cz":   [["C",2]],
-        "Tmag": [["X",0], ["X",1], ["X",2], ["F",0], ["F",1], ["F",2]], # normal order
-        "Tx":   [["X",1], ["X",2], ["F",1], ["F",2]], # y,z,Fy,Fz
-        "Ty":   [["X",2], ["X",0], ["F",2], ["F",0]], # z,x,Fz,Fx
-        "Tz":   [["X",0], ["X",1], ["F",0], ["F",1]], # x,y,Fx,Fy
-    }
-    # Pull variables from list supplied
-    dipole_sizes = variables_list["dipole_sizes"]
-    separations_list = variables_list["separations_list"]
-    particle_sizes = variables_list["particle_sizes"]
-    particle_shapes = variables_list["particle_shapes"]
-    object_offsets = variables_list["object_offsets"]
-    dimensions = variables_list["dimensions"]
-    # get the independent variable (the one to be plotted against)
-    indep_name = variables_list["indep_var"]
-    indep_list = np.array(variables_list[indep_name])
-    # Based on the indep var, set what variable are varied over different lines of the graph.
-    match indep_name:
-        case "dipole_sizes": 
-            line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets, dimensions]
-            indep_axis_list = indep_list
-        case "separations_list": 
-            line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets, dimensions]
-            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
-        case "particle_sizes": 
-            line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets, dimensions]
-            indep_axis_list = indep_list
-        case "particle_shapes": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets, dimensions]
-            indep_axis_list = indep_list
-        case "object_offsets": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, dimensions]
-            indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
-        case "dimensions": 
-            line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets]
-            indep_axis_list = indep_list # note, this is 1D (sphere and cube only)
+#     # Specify all parameters in the file so a subset can be pulled later based on read_parameters
+#     parameters_stored = [
+#         {"type":"X", "args":["x", "y", "z"]},
+#         {"type":"F", "args":["Fx", "Fy", "Fz"]},
+#         {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]}, # (total force including hydrodynamics, not used here)
+#         {"type":"C", "args":["Cx", "Cy", "Cz"]}
+#     ]
+#     parameters_stored_torque = [
+#         {"type":"X", "args":["x", "y", "z"]},
+#         {"type":"F", "args":["Fx", "Fy", "Fz"]},
+#     ]
+#     read_frames = [0]
+#     # Record what parameters each force output would require
+#     read_parameters_lookup = {
+#         "Fmag": [["F",0], ["F",1], ["F",2]],
+#         "Fx":   [["F",0]],
+#         "Fy":   [["F",1]],
+#         "Fz":   [["F",2]],
+#         "Cmag": [["C",0], ["C",1], ["C",2]],
+#         "Cx":   [["C",0]],
+#         "Cy":   [["C",1]],
+#         "Cz":   [["C",2]],
+#         "Tmag": [["X",0], ["X",1], ["X",2], ["F",0], ["F",1], ["F",2]], # normal order
+#         "Tx":   [["X",1], ["X",2], ["F",1], ["F",2]], # y,z,Fy,Fz
+#         "Ty":   [["X",2], ["X",0], ["F",2], ["F",0]], # z,x,Fz,Fx
+#         "Tz":   [["X",0], ["X",1], ["F",0], ["F",1]], # x,y,Fx,Fy
+#     }
+#     # Pull variables from list supplied
+#     dipole_sizes = variables_list["dipole_sizes"]
+#     separations_list = variables_list["separations_list"]
+#     particle_sizes = variables_list["particle_sizes"]
+#     particle_shapes = variables_list["particle_shapes"]
+#     object_offsets = variables_list["object_offsets"]
+#     dimensions = variables_list["dimensions"]
+#     # get the independent variable (the one to be plotted against)
+#     indep_name = variables_list["indep_var"]
+#     indep_list = np.array(variables_list[indep_name])
+#     # Based on the indep var, set what variable are varied over different lines of the graph.
+#     match indep_name:
+#         case "dipole_sizes": 
+#             line_vars = [separations_list, particle_sizes, particle_shapes, object_offsets, dimensions]
+#             indep_axis_list = indep_list
+#         case "separations_list": 
+#             line_vars = [dipole_sizes, particle_sizes, particle_shapes, object_offsets, dimensions]
+#             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
+#         case "particle_sizes": 
+#             line_vars = [dipole_sizes, separations_list, particle_shapes, object_offsets, dimensions]
+#             indep_axis_list = indep_list
+#         case "particle_shapes": 
+#             line_vars = [dipole_sizes, separations_list, particle_sizes, object_offsets, dimensions]
+#             indep_axis_list = indep_list
+#         case "object_offsets": 
+#             line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, dimensions]
+#             indep_axis_list = indep_list[:,indep_vector_component] # vector var so pick which component to plot against
+#         case "dimensions": 
+#             line_vars = [dipole_sizes, separations_list, particle_sizes, particle_shapes, object_offsets]
+#             indep_axis_list = indep_list # note, this is 1D (sphere and cube only)
             
     
-    print("Performing sphere-disc calculation")
-    data_set_params = []
-    num_indep = len(indep_axis_list)
-    # Iterate though every combination of variables that are varied across the lines of the graph.
-    var_set_length = len(indep_list)
-    for i in line_vars: # count total number of variable combinations
-        var_set_length *= len(i)
+#     print("Performing sphere-disc calculation")
+#     data_set_params = []
+#     num_indep = len(indep_axis_list)
+#     # Iterate though every combination of variables that are varied across the lines of the graph.
+#     var_set_length = len(indep_list)
+#     for i in line_vars: # count total number of variable combinations
+#         var_set_length *= len(i)
 
-    num_expts_per_param = len(forces_output)
-    data_set_length = int(var_set_length * num_expts_per_param/len(indep_list))
+#     num_expts_per_param = len(forces_output)
+#     data_set_length = int(var_set_length * num_expts_per_param/len(indep_list))
 
-    data_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(data_set_length)], dtype=object)
-    particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
-    dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
+#     data_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(data_set_length)], dtype=object)
+#     particle_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
+#     dpp_nums_set = np.array([[indep_axis_list, np.zeros(num_indep)] for _ in range(var_set_length)], dtype=object)
 
-    # Only make dipoles file if torque about given centre are needed.
-    if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
-    else: include_dipole_forces = False
+#     # Only make dipoles file if torque about given centre are needed.
+#     if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: include_dipole_forces = True
+#     else: include_dipole_forces = False
 
-    # START OF LOOP OVER PARAMS
-    for params_i, params in enumerate(it.product(*line_vars)):
-        data_set_params.append(params)
+#     # START OF LOOP OVER PARAMS
+#     for params_i, params in enumerate(it.product(*line_vars)):
+#         data_set_params.append(params)
 
-        match indep_name:
-            case "dipole_sizes": separations, particle_size, particle_shape, object_offset, dimension = params
-            case "separations_list": dipole_size, particle_size, particle_shape, object_offset, dimension = params
-            case "particle_sizes": dipole_size, separations, particle_shape, object_offset, dimension = params
-            case "particle_shapes": dipole_size, separations, particle_size, object_offset, dimension = params
-            case "object_offsets": dipole_size, separations, particle_size, particle_shape, dimension = params
-            case "dimensions": dipole_size, separations, particle_size, particle_shape, object_offset = params
+#         match indep_name:
+#             case "dipole_sizes": separations, particle_size, particle_shape, object_offset, dimension = params
+#             case "separations_list": dipole_size, particle_size, particle_shape, object_offset, dimension = params
+#             case "particle_sizes": dipole_size, separations, particle_shape, object_offset, dimension = params
+#             case "particle_shapes": dipole_size, separations, particle_size, object_offset, dimension = params
+#             case "object_offsets": dipole_size, separations, particle_size, particle_shape, dimension = params
+#             case "dimensions": dipole_size, separations, particle_size, particle_shape, object_offset = params
 
-        # Iterate over independent variable to get the data for each line.
-        for i, indep_var in enumerate(indep_list):
-            print("\nProgress;"+str( "="*(int(np.floor(10*(i+ params_i*len(indep_list))/var_set_length))) )+str("-"*(int(np.floor(10*(1.0- (i+ params_i*len(indep_list))/var_set_length)))) )+"; "+str((i+ params_i*len(indep_list)))+"/"+str(var_set_length))
-            match indep_name:
-                case "dipole_sizes": dipole_size = indep_var
-                case "separations_list": separations = indep_var
-                case "particle_sizes": particle_size = indep_var
-                case "particle_shapes": particle_shape = indep_var
-                case "object_offsets": object_offset = indep_var
-                case "dimensions": dimension = indep_var
+#         # Iterate over independent variable to get the data for each line.
+#         for i, indep_var in enumerate(indep_list):
+#             print("\nProgress;"+str( "="*(int(np.floor(10*(i+ params_i*len(indep_list))/var_set_length))) )+str("-"*(int(np.floor(10*(1.0- (i+ params_i*len(indep_list))/var_set_length)))) )+"; "+str((i+ params_i*len(indep_list)))+"/"+str(var_set_length))
+#             match indep_name:
+#                 case "dipole_sizes": dipole_size = indep_var
+#                 case "separations_list": separations = indep_var
+#                 case "particle_sizes": particle_size = indep_var
+#                 case "particle_shapes": particle_shape = indep_var
+#                 case "object_offsets": object_offset = indep_var
+#                 case "dimensions": dimension = indep_var
         
-            # Generate YAML & Run Simulation
-            particle_num = Generate_yaml.make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
-            DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarisability_type=polarisability_type, verbosity=0)
+#             # Generate YAML & Run Simulation
+#             particle_num = Generate_yaml.make_yaml_spheredisc_model(filename, dimension, separations, particle_size, dipole_size, object_offset, particle_shape, mode=mode, beam=beam_type, time_step=time_step, frames=frames, show_output=show_output)
+#             DM.main(YAML_name=filename, force_terms=dda_forces_returned, include_dipole_forces=include_dipole_forces, polarisability_type=polarisability_type, verbosity=0)
 
-            print("PATICLE NUM IS ", particle_num)
-            match particle_shape:
-                case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
-                case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
-                case _: sys.exit("UNIMPLEMENTED SHAPE")
+#             print("PATICLE NUM IS ", particle_num)
+#             match particle_shape:
+#                 case "sphere": dpp_num = DM.sphere_size([particle_size], dipole_size)
+#                 case "cube": dpp_num = DM.cube_size([particle_size], dipole_size)
+#                 case _: sys.exit("UNIMPLEMENTED SHAPE")
 
-            #------------------
-            #------------------
-            # Simulation has run so have all the forces. Now do all experiments with force and particle selections
-            for expt_i in range(num_expts_per_param):
-                force_type = forces_output[expt_i]
-                particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
-                read_parameters_args = read_parameters_lookup[force_type]
-                read_parameters = []
+#             #------------------
+#             #------------------
+#             # Simulation has run so have all the forces. Now do all experiments with force and particle selections
+#             for expt_i in range(num_expts_per_param):
+#                 force_type = forces_output[expt_i]
+#                 particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
+#                 read_parameters_args = read_parameters_lookup[force_type]
+#                 read_parameters = []
 
-                # Lookup values from <filename>.xlsx
-                if force_type[0] == "F" or force_type[0] == "C":
-                    for p in particles:
-                        if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
-                        read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
+#                 # Lookup values from <filename>.xlsx
+#                 if force_type[0] == "F" or force_type[0] == "C":
+#                     for p in particles:
+#                         if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+#                         read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
 
-                    pulled_data = pull_file_data(
-                        filename, 
-                        parameters_stored, 
-                        read_frames, 
-                        read_parameters
-                    )
+#                     pulled_data = pull_file_data(
+#                         filename, 
+#                         parameters_stored, 
+#                         read_frames, 
+#                         read_parameters
+#                     )
                 
-                # Lookup values from <filename>_dipoles.xlsx
-                elif force_type[0] == "T":
-                    for p in particles:
-                        if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
-                        # Now, loop over all dipoles in each desired particle.
-                        for d in range(dpp_num):
-                            read_parameters.extend([{"type":f, "particle":p*dpp_num+d, "subtype":s} for f,s in read_parameters_args])
+#                 # Lookup values from <filename>_dipoles.xlsx
+#                 elif force_type[0] == "T":
+#                     for p in particles:
+#                         if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+#                         # Now, loop over all dipoles in each desired particle.
+#                         for d in range(dpp_num):
+#                             read_parameters.extend([{"type":f, "particle":p*dpp_num+d, "subtype":s} for f,s in read_parameters_args])
 
-                    pulled_data = pull_file_data(
-                        filename+"_dipoles", 
-                        parameters_stored_torque, 
-                        read_frames, 
-                        read_parameters
-                    )
+#                     pulled_data = pull_file_data(
+#                         filename+"_dipoles", 
+#                         parameters_stored_torque, 
+#                         read_frames, 
+#                         read_parameters
+#                     )
 
-                # Calculate output from results
-                value_list = pulled_data[0] # frame 0
-                match force_type:
-                    case "Fmag" | "Cmag":
-                        output = np.zeros(3)
-                        for p in range(len(particles)):
-                            output += [pulled_data[0, 3*p+0], pulled_data[0, 3*p+1], pulled_data[0, 3*p+2]]
-                        output = np.linalg.norm(output)
+#                 # Calculate output from results
+#                 value_list = pulled_data[0] # frame 0
+#                 match force_type:
+#                     case "Fmag" | "Cmag":
+#                         output = np.zeros(3)
+#                         for p in range(len(particles)):
+#                             output += [pulled_data[0, 3*p+0], pulled_data[0, 3*p+1], pulled_data[0, 3*p+2]]
+#                         output = np.linalg.norm(output)
 
-                    case "Tx" | "Ty" | "Tz":
-                        if force_type == "Tx": centre = torque_centre[1], torque_centre[2]
-                        elif force_type == "Ty": centre = torque_centre[2], torque_centre[0]
-                        elif force_type == "Tz": centre = torque_centre[0], torque_centre[1]
-                        output = 0
-                        for d in range(len(particles) * dpp_num):
-                            output += (value_list[4*d+0]-centre[0]) * value_list[4*d+3] - (value_list[4*d+1]-centre[0]) * value_list[4*d+2] # order for cross product comes from read_parameters_args
-                        # output *=2 # TEMP XXX REMOVE
-                    case "Tmag":
-                        output = np.zero(3)
-                        for d in range(len(particles) * dpp_num):
-                            output += np.cross(value_list[4*d+0:4*d+3] - torque_centre, value_list[4*d+3:4*d+6]) # order for cross product comes from read_parameters_args
-                        output = np.linalg.norm(output)
+#                     case "Tx" | "Ty" | "Tz":
+#                         if force_type == "Tx": centre = torque_centre[1], torque_centre[2]
+#                         elif force_type == "Ty": centre = torque_centre[2], torque_centre[0]
+#                         elif force_type == "Tz": centre = torque_centre[0], torque_centre[1]
+#                         output = 0
+#                         for d in range(len(particles) * dpp_num):
+#                             output += (value_list[4*d+0]-centre[0]) * value_list[4*d+3] - (value_list[4*d+1]-centre[0]) * value_list[4*d+2] # order for cross product comes from read_parameters_args
+#                         # output *=2 # TEMP XXX REMOVE
+#                     case "Tmag":
+#                         output = np.zero(3)
+#                         for d in range(len(particles) * dpp_num):
+#                             output += np.cross(value_list[4*d+0:4*d+3] - torque_centre, value_list[4*d+3:4*d+6]) # order for cross product comes from read_parameters_args
+#                         output = np.linalg.norm(output)
                     
-                    # Normally just sum all the force components in pulled_data
-                    case _:
-                        output = np.sum(pulled_data[0])
+#                     # Normally just sum all the force components in pulled_data
+#                     case _:
+#                         output = np.sum(pulled_data[0])
                     
-                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
-            #------------------
-            #------------------
+#                 data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+#             #------------------
+#             #------------------
             
-            particle_nums_set[params_i, 1, i] = particle_num
-            dpp_nums_set[params_i, 1, i] = dpp_num
+#             particle_nums_set[params_i, 1, i] = particle_num
+#             dpp_nums_set[params_i, 1, i] = dpp_num
 
-    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
-    return data_set, data_set_params, particle_nums_set, dpp_nums_set
+#     # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+#     return data_set, data_set_params, particle_nums_set, dpp_nums_set
             
 def simulations_refine_all(filename, variables_list, partial_yaml_func, forces_output, particle_selections, indep_vector_component=2, torque_centre=[0,0,0]):
     #
@@ -2712,11 +2712,11 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, forces_o
             dpp_nums_set[params_i, 1, i] = dpp_num
 
             # Simulation has run so have all the forces. Now do all experiments with force and particle selections
-            data_set = get_forces_via_lookup(filename, data_set, particle_num, num_expts_per_param, i, params_i, forces_output, particle_selections, read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque, torque_centre=torque_centre)
+            data_set = get_forces_via_lookup(filename, data_set, particle_num, i, params_i, forces_output, particle_selections, read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque, torque_centre=torque_centre, dpp_num=dpp_num)
             
     return data_set, data_set_params, particle_nums_set, dpp_nums_set
 
-def get_forces_via_lookup(filename, data_set, particle_num, num_expts_per_param, i, params_i, forces_output, particle_selections, read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None):
+def get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_output, particle_selections, read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None, dpp_num=None):
     #
     # Gets the forces specified for the particles specified from some file
     #
@@ -2724,27 +2724,18 @@ def get_forces_via_lookup(filename, data_set, particle_num, num_expts_per_param,
     # i = iteration through indepent variables (in context of the parameter varying method)
     #       These both control where elements should be placed in the output data_set
     #
+    num_expts_per_param = len(expt_output)
     for expt_i in range(num_expts_per_param):
-        force_type = forces_output[expt_i]
+        expt_type = expt_output[expt_i]
         particles = select_particle_indices(filename, particle_selections[expt_i], parameters_stored, read_frames=[0])
-        read_parameters_args = read_parameters_lookup[force_type]
+        read_parameters_args = read_parameters_lookup[expt_type]
         read_parameters = []
 
-        # Lookup values from <filename>.xlsx
-        if force_type[0] == "F" or force_type[0] == "C":
-            for p in particles:
-                if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
-                read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
-
-            pulled_data = pull_file_data(
-                filename, 
-                parameters_stored, 
-                read_frames, 
-                read_parameters
-            )
         
-        # Lookup values from <filename>_dipoles.xlsx
-        elif force_type[0] == "T":
+        if expt_type[0] == "T": 
+            # Look up torques in a different file.
+            # !! NOTE Careful not to start non-torque expts with "T"
+            # Lookup values from <filename>_dipoles.xlsx
             for p in particles:
                 if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
                 # Now, loop over all dipoles in each desired particle.
@@ -2758,36 +2749,107 @@ def get_forces_via_lookup(filename, data_set, particle_num, num_expts_per_param,
                 read_frames, 
                 read_parameters
             )
+        
+        else:
+            # Default is the normal xlsx, and look up used passed in params from read_parameters_lookup[expt_type]
+            # Lookup values from <filename>.xlsx
+            for p in particles:
+                if p >= particle_num: p=particle_num-1; print(f"WARNING, set particle index to {particle_num}")
+                read_parameters.extend([{"type":f, "particle":p, "subtype":s} for f,s in read_parameters_args])
 
+            pulled_data = pull_file_data(
+                filename, 
+                parameters_stored, 
+                read_frames, 
+                read_parameters
+            )
+        
         # Calculate output from results
         value_list = pulled_data[0] # frame 0
-        match force_type:
+        match expt_type:
+            # These used in refine_all
             case "Fmag" | "Cmag":
                 output = np.zeros(3)
                 for p in range(int(len(value_list)/3)):
                     output += [value_list[3*p+0], value_list[3*p+1], value_list[3*p+2]] 
                 output = np.linalg.norm(output)
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
 
             case "Tx" | "Ty" | "Tz":
-                if force_type == "Tx": centre = torque_centre[1], torque_centre[2]
-                elif force_type == "Ty": centre = torque_centre[2], torque_centre[0]
-                elif force_type == "Tz": centre = torque_centre[0], torque_centre[1]
+                if expt_type == "Tx": centre = torque_centre[1], torque_centre[2]
+                elif expt_type == "Ty": centre = torque_centre[2], torque_centre[0]
+                elif expt_type == "Tz": centre = torque_centre[0], torque_centre[1]
                 output = 0
                 for d in range(len(particles) * dpp_num):
                     output += (value_list[4*d+0]-centre[0]) * value_list[4*d+3] - (value_list[4*d+1]-centre[0]) * value_list[4*d+2] # order for cross product comes from read_parameters_args
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
 
             case "Tmag":
-                output = np.zero(3)
+                output = np.zeros(3)
                 for d in range(len(particles) * dpp_num):
                     output += np.cross(value_list[4*d+0:4*d+3] - torque_centre, value_list[4*d+3:4*d+6]) # order for cross product comes from read_parameters_args
                 output = np.linalg.norm(output)
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+
+            # These used in stretcher: note listed as one expt, but cases designed so 3 (x,y,z) outputs are put into data set.
+
+            case "Z_split":
+                #
+                # Sum forces on the upper and lower half planes separately, then add magnitudes together at the end => opposing forces
+                # on each side won't cancel, but double-up
+                #
+                output = np.zeros(3)
+                uhp_output = np.zeros(3)
+                lhp_output = np.zeros(3)
+                for p in range(int(len(value_list)/6)):
+                    force = value_list[ p*6+0 : p*6+3 ]
+                    pos   = value_list[ p*6+3 : p*6+6 ]
+                    if( not((-sys.float_info.epsilon < pos[2]) and (pos[2] < sys.float_info.epsilon)) ):   # If outside the central layer
+                        if( pos[2] > 0.0 ):     # If in upper half plane, sum forces
+                            uhp_output += [force[0], force[1], force[2]]
+                        else:                   # If in lower half plane, sum forces
+                            lhp_output += [force[0], force[1], force[2]]
+                    # Ignore forces at the central plane of the system
+                # Add magnitude of these forces together
+                output += [ (uhp_output[0]),  (uhp_output[1]),  (uhp_output[2])]
+                output += [-(lhp_output[0]), -(lhp_output[1]), -(lhp_output[2])]
+                # note currently params_i*num_expts_per_param + expt_i = 0
+                data_set[params_i*num_expts_per_param + expt_i : params_i*num_expts_per_param + expt_i +3, 1, i] = output
+
+            case "XYZ_split":
+                #
+                # Just sum force in the positive XYZ corner, assume symmetry for others hence this will show force pushing / pulling on either side
+                #
+                output = np.zeros(3)
+                for p in range(int(len(value_list)/6)):
+                    force = value_list[ p*6+0 : p*6+3 ]
+                    pos   = value_list[ p*6+3 : p*6+6 ]
+                    if( (pos[0] > sys.float_info.epsilon) and (pos[1] > sys.float_info.epsilon) and (pos[2] > sys.float_info.epsilon) ):   # If not +X,+Y,+Z corner, then sum forces
+                        output += [force[0], force[1], force[2]]
+                # note currently params_i*num_expts_per_param + expt_i = 0
+                data_set[params_i*num_expts_per_param + expt_i : params_i*num_expts_per_param + expt_i +3, 1, i] = output
+
+            case "RTZ_split":
+                #
+                # x,y forces replaced by r,theta. z forces summed if in UHP, else minused.
+                #
+                output = np.zeros(3)
+                sign = lambda x: 1 if x>=sys.float_info.epsilon else ( -1 if x<=-sys.float_info.epsilon else 0) # sign, but =0 very close to x=0
+                for p in range(int(len(value_list)/6)):
+                    force = value_list[ p*6+0 : p*6+3 ]
+                    pos   = value_list[ p*6+3 : p*6+6 ]
+                    theta = np.arctan2(pos[1], pos[0])
+                    force[0], force[1] = force[0]*np.cos(theta) + force[1]*np.sin(theta), -force[0]*np.sin(theta) + force[1]*np.cos(theta) # decompose x,y into r,theta
+                    output += [force[0], force[1], force[2] * sign(pos[2])]
+                # note currently params_i*num_expts_per_param + expt_i = 0
+                data_set[params_i*num_expts_per_param + expt_i : params_i*num_expts_per_param + expt_i +3, 1, i] = output
+
 
             # For most force_types, just sum all the force components in value_list
             case _:
                 output = np.sum(value_list)
-            
-        # record output for each param and expt, then for each indep value.
-        data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+
     return data_set
 
 
@@ -3917,7 +3979,7 @@ match(sys.argv[1]):
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 20
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [75e-9]#[40e-9, 50e-9, 60e-9, 70e-9]#np.linspace(80e-9, 100e-9, 20)
+        dipole_sizes    = [75e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         particle_shapes         = ["sphere"]
         indep_vector_component  = 0              # Which component to plot when dealing with vector quantities to plot (Often not used)
@@ -4110,12 +4172,32 @@ match(sys.argv[1]):
             "dipole_radius": 40e-9,
             "frames": 30,
             "time_step": 10e-5, 
+            "resolution": 401,
         })
 
         print(f"\ntime step = {option_parameters['time_step']}, stiffness = {option_parameters['stiffness_spec']['default_value']}, bending = {option_parameters['constants']['bending']}, particle number = {num_particles}, dipole size = {option_parameters['dipole_radius']}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0}, beam width = {w0}\n")
         
         Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0)
         DM.main(filename)
+
+        
+    # case "stretcher_dipole_shapes":
+    #     filename = "Optical_stretcher"
+    #     show_output = True
+    #     frames = 2
+    #     time_step = 1e-4
+
+    #     sphere_radius = 0.3e-6
+    #     dipole_size = 60e-9
+    #     connection_mode = "dist"
+    #     connection_args = "81e-9" # dipole diameter
+    #     E0 = 7e6 #1.5e7
+    #     w0 = 0.4
+    #     stiffness = 5e-8  # 5e-7
+    #     bending = 5e-20  # 0.5e-18 # 5e-19
+    #     force_terms = ["optical", "spring", "bending"] #, "buckingham"
+
+    #     simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output)
 
 
     case "stretcher_springs_cubic_sphere":
@@ -4199,8 +4281,9 @@ match(sys.argv[1]):
         particle_shape = "sphere"
         #forces_output= ["FTx", "FTy", "FTz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         #particle_selections = [[0], [0]]
-        force_reading = "XYZ_split"       #"Z_split", "XYZ_split", "RT_Z_split"
+        force_reading = "RTZ_split"       #"Z_split", "XYZ_split", "RTZ_split"
         transform_type = "linear" # "linear", "inverse_area"
+        z_offset = 1e-6
         
         # Beam variables
         E0 = 8.0e6 #4.75e6
@@ -4209,8 +4292,8 @@ match(sys.argv[1]):
 
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
-            "show_stress": True,
+            "show_output": False,
+            "show_stress": False,
             "quiver_setting": 0,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
@@ -4219,144 +4302,42 @@ match(sys.argv[1]):
             "dipole_radius": 100e-9,
             "frames": 1,
             "time_step": 0.5e-4, 
-            "beam_planes": [["z", 0], ["x", 0]],
+            "beam_planes": [["x", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+            "beam_alpha": 0.6,
         })
-
-        # Single run version
-        # Generate_yaml.make_yaml_stretch_sphere(filename, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, option_parameters, connection_mode=connection_mode, connection_args=connection_args, material=material)
-        # DM.main(filename)
 
         # Run a varying simulation over transforms
         # Specify all parameters in the xlsx file so a subset can be pulled later based on read_parameters. Gives information about the structure of the data in the file.
+        
         read_parameters_lookup = {
-            "Fmag": [["F",0], ["F",1], ["F",2]],
-            "Fx":   [["F",0]],
-            "Fy":   [["F",1]],
-            "Fz":   [["F",2]],
-            "FTx":  [["FT",0]],
-            "FTy":  [["FT",1]],
-            "FTz":  [["FT",2]],
-            "Cmag": [["C",0], ["C",1], ["C",2]],
-            "Cx":   [["C",0]],
-            "Cy":   [["C",1]],
-            "Cz":   [["C",2]],
-            "Tmag": [["X",0], ["X",1], ["X",2], ["F",0], ["F",1], ["F",2]], # normal order
-            "Tx":   [["X",1], ["X",2], ["F",1], ["F",2]], # y,z,Fy,Fz
-            "Ty":   [["X",2], ["X",0], ["F",2], ["F",0]], # z,x,Fz,Fx
-            "Tz":   [["X",0], ["X",1], ["F",0], ["F",1]], # x,y,Fx,Fy
+            "Z_split":   [["FT",0], ["FT",1], ["FT",2], ["X",0], ["X",1], ["X",2]],
+            "XYZ_split": [["FT",0], ["FT",1], ["FT",2], ["X",0], ["X",1], ["X",2]],
+            "RTZ_split": [["FT",0], ["FT",1], ["FT",2], ["X",0], ["X",1], ["X",2]], 
         }
         parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
         read_frames = [0]
 
         graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
-        data_set = [ [[],[]], [[],[]], [[],[]] ]
-        datalabel_set = ["FTx", "FTy", "FTz"]
+        datalabel_set = ["FTx", "FTy", "FTz"] if force_reading != "RTZ_split" else ["FTr", "FTtheta", "FTz"]
         transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
+        num_transforms = len(transform_factor_list)
+        data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)
         func_transform_partial = partial(func_transform, transform_type=transform_type)
+
+        params_i = 0
+        expt_output = [force_reading] # NOTE listed as one expt, but cases designed so 3 (x,y,z) outputs are put into data set.
+
         for i in range(len(transform_factor_list)):
-            print("\nProgress; "+str(i)+"/"+str(len(transform_factor_list)))
-            
-            transform_factor = transform_factor_list[i]
-            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
+            print("\nProgress; "+str(i)+"/"+str(num_transforms))
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor_list[i], critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
             DM.main(filename)
-
-            ####
-            ## Should implement this method to get forces instead, for now it is just being calculated manually
-            ####
-            # num_expts_per_param = 3
-            # params_i = 0
-            # get_forces_via_lookup(filename, data_set, particle_num, num_expts_per_param, i, params_i, forces_output, particle_selections, read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None)
-
-            # Pull all forces for 0th frame
-            read_parameters = []
-            for p in range(particle_num):
-                read_parameters.append({"type":"FT", "particle":p, "subtype":0})
-                read_parameters.append({"type":"FT", "particle":p, "subtype":1})
-                read_parameters.append({"type":"FT", "particle":p, "subtype":2})
-                read_parameters.append({"type":"X", "particle":p, "subtype":0})
-                read_parameters.append({"type":"X", "particle":p, "subtype":1})
-                read_parameters.append({"type":"X", "particle":p, "subtype":2})
-            pulled_data = pull_file_data(
-                filename, 
-                parameters_stored, 
-                read_frames, 
-                read_parameters
-            )[0]
-            # Read total force on entire system, BUT in 2 sections so magnitudes don't cancel
-            output = np.zeros(3)
-            pulled_val_num = 6      # Pulls [FTX, FTY, FTZ, X, Y, Z] for each particle
-            match force_reading:
-                case "Z_split":
-                    #
-                    # Sum forces on the upper and lower half planes separately, then add magnitudes together at the end => opposing forces
-                    # on each side won't cancel, but double-up
-                    #
-                    uhp_output = np.zeros(3)
-                    lhp_output = np.zeros(3)
-                    for p in range(int(len(pulled_data)/pulled_val_num)):
-                        force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
-                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
-                        if( not((-sys.float_info.epsilon < pos[2]) and (pos[2] < sys.float_info.epsilon)) ):   # If outside the central layer
-                            if( pos[2] > 0.0 ):     # If in upper half plane, sum forces
-                                uhp_output += [force[0], force[1], force[2]]
-                            else:                   # If in lower half plane, sum forces
-                                lhp_output += [force[0], force[1], force[2]]
-                        # Ignore forces at the central plane of the system
-                    # Add magnitude of these forces together
-                    output += [ (uhp_output[0]),  (uhp_output[1]),  (uhp_output[2])]
-                    output += [-(lhp_output[0]), -(lhp_output[1]), -(lhp_output[2])]
-
-                case "XYZ_split":
-                    #
-                    # Just sum force in the positive XYZ corner, assume symmetry for others hence this will show force pushing / pulling on either side
-                    #
-                    for p in range(int(len(pulled_data)/pulled_val_num)):
-                        force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
-                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
-                        if( (pos[0] > sys.float_info.epsilon) and (pos[1] > sys.float_info.epsilon) and (pos[2] > sys.float_info.epsilon) ):   # If not +X,+Y,+Z corner, then sum forces
-                            output += [force[0], force[1], force[2]]
-
-                case "RT_Z_split":
-                    #
-                    # x,y forces replaced by r,theta. z forces summed if in UHP, else minused.
-                    #
-                    datalabel_set = ["FTr", "FTtheta", "FTz"]
-                    sign = lambda x: 1 if x>=sys.float_info.epsilon else ( -1 if x<=-sys.float_info.epsilon else 0) # sign, but =0 very close to x=0
-                    for p in range(int(len(pulled_data)/pulled_val_num)):
-                        force = pulled_data[ p*pulled_val_num+0 : p*pulled_val_num+3 ]
-                        pos   = pulled_data[ p*pulled_val_num+3 : p*pulled_val_num+6 ]
-                        theta = np.arctan2(pos[1], pos[0])
-                        force[0], force[1] = force[0]*np.cos(theta) + force[1]*np.sin(theta), -force[0]*np.sin(theta) + force[1]*np.cos(theta) # decompose x,y into r,theta
-                        output += [force[0], force[1], force[2] * sign(pos[2])]
-
-            data_set[0][0].append(transform_factor_list[i]);data_set[0][1].append(output[0])    # X force
-            data_set[1][0].append(transform_factor_list[i]);data_set[1][1].append(output[1])    # Y force
-            data_set[2][0].append(transform_factor_list[i]);data_set[2][1].append(output[2])    # Z force
-
+            data_set = get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_output, ["all"], read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None)
 
         # Plot forces for each step considered to see if equilibrium is being reached
         # data_set.pop(0)
         # data_set.pop(2)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
-        
-    # case "stretcher_dipole_shapes":
-    #     filename = "Optical_stretcher"
-    #     show_output = True
-    #     frames = 2
-    #     time_step = 1e-4
-
-    #     sphere_radius = 0.3e-6
-    #     dipole_size = 60e-9
-    #     connection_mode = "dist"
-    #     connection_args = "81e-9" # dipole diameter
-    #     E0 = 7e6 #1.5e7
-    #     w0 = 0.4
-    #     stiffness = 5e-8  # 5e-7
-    #     bending = 5e-20  # 0.5e-18 # 5e-19
-    #     force_terms = ["optical", "spring", "bending"] #, "buckingham"
-
-    #     simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output)
 
 
     case _:
