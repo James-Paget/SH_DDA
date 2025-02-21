@@ -564,9 +564,11 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4):
     """
     Makes two counter-propagating Gaussian beams.
     """
-    beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":None, "translationargs":None, "translationtype":None, "rotation":None}
-    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":None, "translationargs":None, "translationtype":None, "rotation":"180 0.0 0.0"}
-    write_beams(filename, [beam1, beam2])
+    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":"0.5e-6 0.0 0.0", "translationargs":None, "translationtype":None, "rotation":"0.0 0.0"}
+    write_beams(filename, [beam])
+    # beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":None, "translationargs":None, "translationtype":None, "rotation":None}
+    # beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":None, "translationargs":None, "translationtype":None, "rotation":"180 0.0 0.0"}
+    # write_beams(filename, [beam1, beam2])
 
 
 #=======================================================================

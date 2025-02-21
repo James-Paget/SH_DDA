@@ -672,13 +672,14 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
         record_particle_info(filename, particle_info, record_parameters=record_parameters)
     #Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
-    parameter_text = "\n".join(
-        (
-            "Spheres",
-            "R_placed   (m)= "+str(place_radius),
-            "R_particle (m)= "+str(particle_radii)
-        )
-    )
+    # parameter_text = "\n".join(
+    #     (
+    #         "Spheres",
+    #         "R_placed   (m)= "+str(place_radius),
+    #         "R_particle (m)= "+str(particle_radii)
+    #     )
+    # )
+    parameter_text = ""
     return parameter_text
 
 def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slider_range, filename):
@@ -3177,10 +3178,10 @@ if int(len(sys.argv)) != 2:
 match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre"
-        #1,2,3,4,5,6,7,8,9,10,11,12
+        #1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
         particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
+        #Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     case "torusInCircle":
         filename = "SingleLaguerre"
@@ -3994,20 +3995,21 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
         # force_terms=["optical"]              # ["optical", "spring", "bending", "buckingham"]
         # Args
-        dimensions  =  [1.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
+        dimensions  =  [2.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
         object_shape = "sphere" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
-        num_particles_in_diameter = 5
+        num_particles_in_diameter = 15
         particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
+        dipole_size=particle_size  # Done to fix the dipoles to reduce computation time
         # particle_size = 0.15e-6 # NOTE *2 for diameter
         object_offset = [0.5e-6, 0e-6, 0e-6]
         # show_output = False
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": True,
             "force_terms": ["optical"],
-            "frames": 1,
+            "beam_planes": [['z',0]],
             "quiver_setting": 2,
         })
         #====================================================================================
@@ -4188,8 +4190,8 @@ match(sys.argv[1]):
         dimension = 2.0e-6#2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 20
-        particle_size = 200e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        num_factors_tested = 3
+        particle_size = 50e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
@@ -4206,17 +4208,17 @@ match(sys.argv[1]):
 
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
-            "show_stress": False,
+            "show_output": False,
+            "show_stress": True,
             "quiver_setting": 0,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
-            "dipole_radius": 100e-9,
+            "dipole_radius": 50e-9,
             "frames": 1,
             "time_step": 0.5e-4, 
-            "beam_planes": [["z", 0], ["x", 0]], #
+            "beam_planes": [], #["z", 0], ["x", 0]
         })
 
         # Single run version

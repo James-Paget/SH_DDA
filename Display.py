@@ -160,12 +160,15 @@ class DisplayObject (object):
         zupper = upper
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
         for X,Y,Z,I,I0 in values:
-            cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
+            #
+            # Brighten beam visualisation
+            #
+            cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.8)
 
         ax.set_aspect('equal','box')
-        ax.set_xlabel("x (m)")
-        ax.set_ylabel("y (m)")
-        ax.set_zlabel("z (m)")
+        ax.set_xlabel("x [m]")
+        ax.set_ylabel("y [m]")
+        ax.set_zlabel("z [m]")
         # cbar = fig.colorbar(cs)
         # ax.set_title("z = {:.1e}".format(z[k]))
         return fig,ax
@@ -173,7 +176,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 4 #20
+        samples = 20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -393,12 +396,13 @@ class DisplayObject (object):
             save_frames = []
             if len(save_frames)==0:
                 # Add frame counter
-                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-                plots.append(textplot)
+                #textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+                #plots.append(textplot)
+                pass
 
             if t in save_frames:
                 save_frames.remove(t)
-                plt.savefig("myImage.png", format="png", dpi=1200)
+            plt.savefig("myImage.png", format="png", dpi=1200)
 
         # Initialise
         positions = np.array(positions)
@@ -415,8 +419,8 @@ class DisplayObject (object):
             ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
 
             ax.set_aspect('equal','box')
-            ax.set_xlabel("x (m)")
-            ax.set_ylabel("y (m)")
+            ax.set_xlabel("x [m]")
+            ax.set_ylabel("y [m]")
 
         plots = []
         for i in range(num_particles):
@@ -435,11 +439,12 @@ class DisplayObject (object):
                 
             plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
             plots.append(plot)
+        #plt.savefig("myImage.png", format="png", dpi=1200)
 
 
-        if(steps > 0):
-            ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
-
+        #if(steps > 0):
+        ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
+        
         plt.show()
 
 
@@ -482,8 +487,8 @@ class DisplayObject (object):
         zupper = 2e-6
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
         ax.set_aspect('equal','box')
-        ax.set_xlabel("x (m)")
-        ax.set_ylabel("y (m)")
+        ax.set_xlabel("x [m]")
+        ax.set_ylabel("y [m]")
 
         # Plot beam
         values = self.get_intensity_points(beam_collection, n=61)
@@ -524,6 +529,7 @@ class DisplayObject (object):
                 quiver_scale = 1e-7/(4*particle_radius**2)# /area as stress = Force/Area
                 ax.quiver(pos[0], pos[1], pos[2], shifted_forces[p_i,0]*quiver_scale, shifted_forces[p_i,1]*quiver_scale, shifted_forces[p_i,2]*quiver_scale)
 
+        #plt.savefig("myImage.png", format="png", dpi=1200)
         plt.show()
 
 
@@ -640,16 +646,16 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
         tangential_force_magnitudes.append(tangential_force_mag/number_of_particles)
         particle_numbers.append(number_of_particles)
     #Plot data
-    print("particle_numbers = ", particle_numbers)
-    print("force_magnitudes = ", total_force_magnitudes)
-    print("force_magnitudes = ", tangential_force_magnitudes)
+    # print("particle_numbers = ", particle_numbers)
+    # print("force_magnitudes = ", total_force_magnitudes)
+    # print("force_magnitudes = ", tangential_force_magnitudes)
 
     fig, ax = plt.subplots()
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    ax.plot(particle_numbers, total_force_magnitudes, label="total", color="red")
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="tangential", color="blue")
+    ax.plot(particle_numbers, total_force_magnitudes, label="Net Force", color="red")
+    ax.plot(particle_numbers, tangential_force_magnitudes, label="Angular Force", color="blue")
     ax.text(
         0.0, text_ypos,
         parameter_text,
@@ -658,9 +664,10 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     )
 
     plt.xlabel("Particle Number")
-    plt.ylabel("Averaged Force (N)")
-    plt.title("Tangential force (averaged) for varying particle numbers")
+    plt.ylabel("Averaged Force [N]")
+    #plt.title("Tangential force (averaged) for varying particle numbers")
     plt.legend()
+    plt.savefig("myImage.png", format="png", dpi=1200)
     plt.show()
 
 def plot_tangential_force_against_arbitrary(filename, particle_target, x_values, x_label, x_units, parameter_text="", parameters_per_particle=2):
