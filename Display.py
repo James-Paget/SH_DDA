@@ -176,7 +176,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 20
+        samples = 4 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -396,12 +396,14 @@ class DisplayObject (object):
             save_frames = []
             if len(save_frames)==0:
                 # Add frame counter
-                #textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-                #plots.append(textplot)
-                pass
+                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+                plots.append(textplot)
+                #pass
 
             if t in save_frames:
                 save_frames.remove(t)
+                #plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
+            if(t==38):
                 plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
 
         # Initialise
@@ -440,7 +442,6 @@ class DisplayObject (object):
             plot = ax.plot_surface(x, y, z, color=colour, alpha=1.0)
             plots.append(plot)
         #plt.savefig("myImage.png", format="png", dpi=1200)
-
 
         ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
 
