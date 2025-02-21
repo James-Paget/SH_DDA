@@ -5,6 +5,12 @@
 // General Instructions:
 // clang / g++-14 -std=c++14 -Wall -Wextra -pedantic -c -fPIC Dipoles.cpp -o Dipoles.o
 // clang / g++-14 -shared Dipoles.o Beams.o -o Dipoles.dylib
+// 
+// Mac g++-14 Instructions
+// g++-14 -O3 -fopenmp -std=c++14 -Wall -Wextra -pedantic -c -fPIC Dipoles.cpp -o Dipoles.o
+// g++-14 -O3 -fopenmp -std=c++14 -Wall -Wextra -pedantic -c -fPIC Beams.cpp -o Beams.o
+// g++-14 -O3 -fopenmp -shared Dipoles.o Beams.o -o Dipoles.dylib
+// g++-14 -O3 -shared -o libBeams.dylib -fPIC -fopenmp Beams.cpp
 //
 // Linux Instructions:
 // g++-14 -std=c++14 -O3 -fopenmp -Wall -Wextra -pedantic -c -fPIC Dipoles.cpp -o Dipoles.o

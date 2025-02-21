@@ -2266,7 +2266,7 @@ def main(YAML_name=None):
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
         fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_tracer=False, include_connections=False, beam_collection_list=beam_collection_list, time_step=timestep) 
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list, time_step=timestep) 
 
 
     if display.show_stress==True:

@@ -21,6 +21,7 @@ class DisplayObject (object):
                 "frame_min":0,
                 "frame_max":1000, # ignore and default to "frames"
                 "beam_planes": [["z", 0,0]], # list of pair of values giving the axis and value of the beam plane.
+                "beam_alpha": 0.6,
                 "quiver_setting": 1
                 }
 
@@ -35,6 +36,7 @@ class DisplayObject (object):
             self.frame_min = int(DisplayObject.defaults['frame_min']) # starting frame for animation
             self.frame_max = frames # will default to number of frames
             self.beam_planes = DisplayObject.defaults['beam_planes']
+            self.beam_alpha = DisplayObject.defaults['beam_alpha']
             self.quiver_setting = DisplayObject.defaults['quiver_setting']
         else:
             # Read from file
@@ -46,6 +48,7 @@ class DisplayObject (object):
             self.frame_min = abs(int(displayinfo.get('frame_min',DisplayObject.defaults['frame_min'])))
             self.frame_max = min(frames,int(displayinfo.get('frame_max',frames)))
             self.beam_planes = displayinfo.get('beam_planes',DisplayObject.defaults['beam_planes'])
+            self.beam_alpha = displayinfo.get('beam_alpha',DisplayObject.defaults['beam_alpha'])
             self.quiver_setting = displayinfo.get('quiver_setting',DisplayObject.defaults['quiver_setting'])
 
 
@@ -160,10 +163,7 @@ class DisplayObject (object):
         zupper = upper
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
         for X,Y,Z,I,I0 in values:
-            #
-            # Brighten beam visualisation
-            #
-            cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.8)
+            cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=self.beam_alpha)
 
         ax.set_aspect('equal','box')
         ax.set_xlabel("x [m]")
@@ -321,7 +321,7 @@ class DisplayObject (object):
                         x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
                     case "cube":
                         x, y, z = self.make_cube_surface(args[i], positions[t, i])
-                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=0.7)    #1.0
+                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
                 plots.append(plot)
 
             # print("positions[t]= ",positions[t])
@@ -390,7 +390,7 @@ class DisplayObject (object):
             if(beam_collection_list!=None):
                 values = self.get_intensity_points(beam_collection_list[t], n=61) # lowered resolution otherwise the animation slows down.
                 for X, Y, Z, I, I0 in values:
-                    beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=0.6)
+                    beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=self.beam_alpha)
                     plots.append(beam_plane)
 
             save_frames = []
@@ -439,14 +439,12 @@ class DisplayObject (object):
                 case "cube":
                     x, y, z = self.make_cube_surface(args[i], positions[0, i])
                 
-            plot = ax.plot_surface(x, y, z, color=colour, alpha=0.6)
+            plot = ax.plot_surface(x, y, z, color=colour, alpha=1.0)
             plots.append(plot)
         #plt.savefig("myImage.png", format="png", dpi=1200)
 
+        ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
 
-        #if(steps > 0):
-        ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 320 * time_step*1e4))    #120 * time_step*1e4
-        
         plt.show()
 
 
