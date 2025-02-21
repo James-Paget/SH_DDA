@@ -403,6 +403,8 @@ class DisplayObject (object):
             if t in save_frames:
                 save_frames.remove(t)
                 #plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
+            if(t==38):
+                plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
 
         # Initialise
         positions = np.array(positions)

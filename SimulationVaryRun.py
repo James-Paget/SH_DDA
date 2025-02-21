@@ -4231,8 +4231,8 @@ match(sys.argv[1]):
         dimension = 3.36e-6     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 10
-        particle_size = 200e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        num_factors_tested = 20
+        particle_size = 150e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
@@ -4243,20 +4243,21 @@ match(sys.argv[1]):
         # Beam variables
         E0 = 5.0e6 #4.75e6
         w0 = 1.0
-        translation = "0.0 0.0 10.0e-6"  # Offset applied to both beams
+        translation = "0.0 0.0 1.6e-6"  # Offset applied to both beams
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": True,
-            "show_stress": True,
+            "show_stress": False,
             "quiver_setting": 0,
+            "wavelength": 4.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
-            "dipole_radius": 200e-9,
-            "frames": 20,
+            "dipole_radius": 150e-9,
+            "frames": 10,
             "time_step": 0.5e-4, 
-            "beam_planes": [["z", 0], ["x", 0]],
+            "beam_planes": [["z", 0], ["x", 0]],  #
         })
 
 
