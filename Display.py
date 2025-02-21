@@ -402,7 +402,7 @@ class DisplayObject (object):
 
             if t in save_frames:
                 save_frames.remove(t)
-            plt.savefig("myImage.png", format="png", dpi=1200)
+                plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
 
         # Initialise
         positions = np.array(positions)
@@ -667,7 +667,7 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     plt.ylabel("Averaged Force [N]")
     #plt.title("Tangential force (averaged) for varying particle numbers")
     plt.legend()
-    plt.savefig("myImage.png", format="png", dpi=1200)
+    #plt.savefig("myImage.png", format="png", dpi=1200)
     plt.show()
 
 def plot_tangential_force_against_arbitrary(filename, particle_target, x_values, x_label, x_units, parameter_text="", parameters_per_particle=2):
