@@ -4190,8 +4190,8 @@ match(sys.argv[1]):
         dimension = 2.0e-6#2.4e-6      # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 3
-        particle_size = 50e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        num_factors_tested = 10
+        particle_size = 100e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         connection_mode = "manual"  #"dist", 0.0
@@ -4205,20 +4205,21 @@ match(sys.argv[1]):
         # Beam variables
         E0 = 8.0e6 #4.75e6
         w0 = 0.5
+        translation = "0.0 0.0 2.0e-6"  # Offset applied to both beams
 
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": False,
+            "show_output": True,
             "show_stress": True,
             "quiver_setting": 0,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
-            "dipole_radius": 50e-9,
+            "dipole_radius": 100e-9,
             "frames": 1,
             "time_step": 0.5e-4, 
-            "beam_planes": [], #["z", 0], ["x", 0]
+            "beam_planes": [["z", 0], ["x", 0]],
         })
 
         # Single run version
@@ -4256,7 +4257,7 @@ match(sys.argv[1]):
             print("\nProgress; "+str(i)+"/"+str(len(transform_factor_list)))
             
             transform_factor = transform_factor_list[i]
-            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform_partial, object_offset, connection_mode=connection_mode, connection_args=connection_args, material=material)
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
             DM.main(filename)
 
             ####
