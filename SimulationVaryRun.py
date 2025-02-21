@@ -4155,29 +4155,34 @@ match(sys.argv[1]):
         #
         filename = "Optical_stretcher"
 
-        num_particles = 40   # 40, 72, 160
+        num_particles = 120   # 40, 72, 160
         sphere_radius = 1.3e-6
         particle_radius = 0.1e-6
         connection_mode = "num"
         connection_args = "5"
-        E0 = 7e6 #1.5e7
-        w0 = 1.9
+        E0 =7e6 #1.5e7
+        w0 = 1.0
+        translation = "0.0 0.0 4.5e-6"
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": True,
             "show_stress": False,
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
-            "constants": {"bending": 1e-21}, # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value":1e-10}, #5e-8  # 5e-7
+            "constants": {"bending": 1e-19}, # 5e-20  # 0.5e-18 # 5e-19
+            "stiffness_spec": {"type":"", "default_value":5e-6}, #5e-8  # 5e-7
             "dipole_radius": 40e-9,
-            "frames": 30,
-            "time_step": 10e-5, 
+            "frames": 200,
+            "time_step": 5e-5, 
             "resolution": 401,
+            "quiver_setting": 0,
+            "wavelength": 1.0e-6,
+            "beam_planes": [["x", 0],["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+            "beam_alpha": 0.6,
         })
 
-        print(f"\ntime step = {option_parameters['time_step']}, stiffness = {option_parameters['stiffness_spec']['default_value']}, bending = {option_parameters['constants']['bending']}, particle number = {num_particles}, dipole size = {option_parameters['dipole_radius']}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0}, beam width = {w0}\n")
+        print(f"\ntime step = {option_parameters['time_step']}, stiffness = {option_parameters['stiffness_spec']['default_value']}, bending = {option_parameters['constants']['bending']}, particle number = {num_particles}, dipole size = {option_parameters['dipole_radius']}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0:.2e}, beam width = {w0}, wavelength = {option_parameters['wavelength']}, translation = {translation}\n")
         
-        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0)
+        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation)
         DM.main(filename)
 
         
@@ -4207,7 +4212,7 @@ match(sys.argv[1]):
         # Spring forces are also used to allow an equilibrium to be reached
         #
 
-        def func_transform(coordinates, transform_factor, transform_type="linear"):
+        def func_transform(coordinates, transform_factor, transform_type="linear", args={}):
             #
             # coordinates = [[x,y,z],...] positions of particles to be transformed
             # transform_factor=1.0 => no transform for linear map, >1.0 => stretching of Z axis, shrinking other XY, vice verse for <1.0
@@ -4217,10 +4222,12 @@ match(sys.argv[1]):
                     # Linear transform
                     transformed_coords_list = coordinates * [1/np.sqrt(transform_factor), 1/np.sqrt(transform_factor), transform_factor]
                     return transformed_coords_list
-                    # transformed_coords_list = []
-                    # for i in range(len(coordinates)):
-                    #     transformed_coords_list.append([coordinates[i][0]/np.sqrt(transform_factor), coordinates[i][1]/np.sqrt(transform_factor), coordinates[i][2]*transform_factor])
-                    # return transformed_coords_list
+
+                case "power":
+                    power = args["power"] # stretch in z is transform_factor^power
+                    transformed_coords_list = coordinates * [transform_factor**(-power/2), transform_factor**(-power/2), transform_factor**power]
+                    return transformed_coords_list
+                
                 case "singular":
                     # Transform just one axis
                     transformed_coords_list = coordinates * [transform_factor, 1.0, 1.0]
@@ -4312,39 +4319,40 @@ match(sys.argv[1]):
         # Particle variables
         dimension = 3.36e-6     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
+        critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
         num_factors_tested = 20
         particle_size = 150e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
-        force_reading = "XYZ_split"     # "Z_split", "XYZ_split", "RT_Z_split"
-        transform_type = "linear"       # "linear", "inverse_area"
         connection_mode = "manual"      # "dist", 0.0
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "RTZ_split"       #"Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "linear" # "linear", "inverse_area"
+        transform_type = "power" # "linear", "inverse_area"
         
         # Beam variables
-        E0 = 5.0e6 #4.75e6
+        E0 = 3.0e6 #4.75e6
         w0 = 1.0
-        translation = "0.0 0.0 1.6e-6"  # Offset applied to both beams
+        translation = "0.0 0.0 2e-6"  # Offset applied to both beams
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "quiver_setting": 0,
-            "wavelength": 4.0e-6,
+            "wavelength": 1.1e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
-            "dipole_radius": 150e-9,
+            "dipole_radius": particle_size, #150e-9,
             "frames": 10,
             "time_step": 0.5e-4, 
-            "beam_planes": [["x", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+            "beam_planes": [["x", 0],["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
             "beam_alpha": 0.6,
         })
+
+        if option_parameters["show_output"] == False: option_parameters["frames"] = 1
+        power_args = {"power": 1}
 
         # Run a varying simulation over transforms
         # Specify all parameters in the xlsx file so a subset can be pulled later based on read_parameters. Gives information about the structure of the data in the file.
@@ -4362,7 +4370,7 @@ match(sys.argv[1]):
         transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
         num_transforms = len(transform_factor_list)
         data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)
-        func_transform_partial = partial(func_transform, transform_type=transform_type)
+        func_transform_partial = partial(func_transform, transform_type=transform_type, args=power_args)
 
         params_i = 0
         expt_output = [force_reading] # NOTE listed as one expt, but cases designed so 3 (x,y,z) outputs are put into data set.

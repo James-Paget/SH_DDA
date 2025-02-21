@@ -257,11 +257,10 @@ def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, 
     num_particles = use_fill_spheredisc(filename, dimension, separations, particle_size, object_offset, particle_shape, mode=mode, material=material, fix_to_ring=fix_to_ring)
     return num_particles
 
-def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0):
+def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation):
     use_parameter_options(filename, option_parameters)
-    use_beam(filename, "STRETCHER", E0=E0, w0=w0)
+    use_beam(filename, "STRETCHER", E0=E0, w0=w0, translation=translation)
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
-
 
 def make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, translation=None, connection_mode="dist", connection_args=0.0, material="FusedSilica"):
     use_parameter_options(filename, option_parameters)
@@ -567,7 +566,7 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4, translation=None):
     """
     # NOTE; Same translation for both since translation applied after rotation, therefore will translate in the opposite direction
     beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":None}
-    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 0.0 0.0"}
+    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 90.0"}
     write_beams(filename, [beam1, beam2])
 
 
