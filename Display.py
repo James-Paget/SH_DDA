@@ -393,7 +393,7 @@ class DisplayObject (object):
                     beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=self.beam_alpha)
                     plots.append(beam_plane)
 
-            save_frames = [0]
+            save_frames = []
             if len(save_frames)==0:
                 # Add frame counter
                 textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
@@ -440,8 +440,8 @@ class DisplayObject (object):
             plots.append(plot)
 
 
-        if(steps > 0):
-            ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
+
+        ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
 
         plt.show()
 
