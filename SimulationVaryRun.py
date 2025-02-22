@@ -4220,7 +4220,7 @@ match(sys.argv[1]):
         #
         filename = "Optical_stretcher"
     
-        num_particles = 160   # 40, 72, 84, 120 160
+        num_particles = 40   # 40, 72, 84, 120 160
         sphere_radius = 3.36e-6
         particle_radius = 0.1e-6
         connection_mode = "num"
@@ -4237,7 +4237,7 @@ match(sys.argv[1]):
             "time_step": 10e-5, 
             "wavelength": 785e-9,
 
-            "show_output": False,
+            "show_output": True,
             "show_stress": False,
             "frames": 60,
             "max_size": 5e-6,
@@ -4248,30 +4248,30 @@ match(sys.argv[1]):
         })
 
         print(f"\ntime step = {option_parameters['time_step']}, stiffness = {option_parameters['stiffness_spec']['default_value']}, bending = {option_parameters['constants']['bending']}, particle number = {num_particles}, dipole size = {option_parameters['dipole_radius']}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0:.2e}, beam width = {w0}, wavelength = {option_parameters['wavelength']}, translation = {translation}\n")
+        nums_averaged = [5] # num min and max to average the positions of to get the eccentricity.
         
         Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation)
         DM.main(filename)
 
-        read_frames=[f for f in range(option_parameters["frames"])]
+        num_frames = option_parameters["frames"]
+        read_frames=[f for f in range(num_frames)]
         parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
         particles = select_particle_indices(filename, "all", parameters_stored, read_frames=read_frames)
         read_parameters = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(num_particles))]
-
         pulled_data = pull_file_data(filename, parameters_stored, read_frames, read_parameters)
-        
-        nums_averaged = [1,4,9,15,30] # num min and max to average the positions of to get the eccentricity.
-        data_set = np.array([[read_frames, np.zeros(len(read_frames))] for _ in range(len(nums_averaged))])
-        # nums_averaged = [5]
+        data_set = np.array([[read_frames, np.zeros(num_frames)] for _ in range(len(nums_averaged))])
+
         for n in range(len(nums_averaged)):
             num_averaged = nums_averaged[n]
             for f in read_frames:
                 data_of_frame = pulled_data[f]
-                positions = np.array([data_of_frame[0::3], data_of_frame[1::3], data_of_frame[2::3]])
+                positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
                 centre = np.average(positions, axis=1)
-                rs = np.linalg.norm((positions - centre[:,None]), axis=0)
+                rs = np.linalg.norm(positions - centre[:,None], axis=0)
                 smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  # sort for the num_averaged min values, then slice for them.
                 largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]] # sort for the num_averaged max values, then slice for them.
                 eccentricity = np.sqrt(1 - np.average(smallest_rs)**2/np.average(largest_rs)**2)
+                # eccentricity = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
                 data_set[n,1,f] = eccentricity
 
         graphlabel_set={"title":f"Eccentricity against frame number", "xAxis":"Frame", "yAxis":"Eccentricity"}
