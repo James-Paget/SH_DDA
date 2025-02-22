@@ -1434,15 +1434,15 @@ def simulations_fibre_1D_cylinder(filename, chain_length, particle_length, parti
     parameter_text = ""
     return parameter_text
 
-def simulations_fibre_2D_sphere_hollowShell(filename, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
-    particle_info = [];
+def simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
+    particle_info = []
     record_parameters = ["F"]
 
     # Generate YAML for set of particles and beams
     print(f"Performing calculation for {particle_number_radial*particle_number_angular} particles")
     with open(f"{filename}.yml", "w") as _:     # Used to reset file each time this is run
         pass                                    #
-    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
+    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
 
     # Run simulation
     DM.main(YAML_name=filename)
@@ -2920,13 +2920,13 @@ def display_var(variable_type, value=None):
         # Used to make the x-axis label
         match variable_type:
             # note, these strings should match the starts of the value!=None case, as used in get_colourline to match strings (force_output is an exception)
-            case "dipole_sizes": return "dipole size", "/m"
-            case "separations_list": return "separation", "/m"
-            case "particle_sizes": return "particle size", "/m"
+            case "dipole_sizes": return "dipole size", "[m]"
+            case "separations_list": return "separation", "[m]"
+            case "particle_sizes": return "particle size", "[m]"
             case "particle_shapes": return " particle shape", ""
-            case "object_offsets": return "offset", "/m"
-            case "deflections": return "deflection", "/m"
-            case "dimensions": return "dimension", "/m"
+            case "object_offsets": return "offset", "[m]"
+            case "deflections": return "deflection", "[m]"
+            case "dimensions": return "dimension", "[m]"
             case "materials": return "material", ""
             # the below cases are for matching linestyle_var_str in get_colourline, not for axis labels
             case "particle_selections": return "particle selection", ""
@@ -3081,7 +3081,7 @@ def get_title_label_line_colour(variables_list, data_set_params, forces_output, 
     linestyle_set, datacolor_set = get_colourline(datalabel_set, legend_params, variables_list, linestyle_var=linestyle_var, cgrad=cgrad)
 
     # 5) axis labels
-    y_axis = "Forces /N" if forces_output[0][0]=="F" else "Torques /Nm"
+    y_axis = "Forces [N]" if forces_output[0][0]=="F" else "Torques [Nm]"
     graphlabel_set = {"title":title_str, "xAxis":f"{display_var(indep_var)[0]} {display_var(indep_var)[1]}", "yAxis":y_axis} 
 
     return title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set
@@ -3415,10 +3415,11 @@ match(sys.argv[1]):
         chain_length    = 3e-6
         particle_radius = 100e-9
         shell_radius    = 300e-9
-        particle_number_radial  = 6
-        particle_number_angular = 6
+        particle_number_radial  = 8
+        particle_number_angular = 8
+        E0 = 4.6e7
 
-        stiffness = 1.0e-6
+        stiffness = 1.5e-6
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
         # Get connections
@@ -3439,16 +3440,18 @@ match(sys.argv[1]):
             bead_indices.append((particle_number_radial*particle_number_angular)-i)
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "time_step": 5e-5,
-            "frames": 60,
+            "time_step": 0.25e-4,
+            "frames": 90,
             "constants": {"bending": 0.1e-18},
-            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":3.0*stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
+            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":5.0*stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
             "force_terms": ["optical", "spring", "bending"],
             "show_output": True,
+            "beam_planes": [['z',0]],
+            "quiver_setting": 0
         })
 
         # Run
-        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
+        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
     case "fibre_2D_cylinder_hollowShell":
         # Save file
         filename = "SingleLaguerre"
@@ -3470,6 +3473,8 @@ match(sys.argv[1]):
             "stiffness_spec": {"type":"", "default_value":5e-7},
             "force_terms": ["optical", "spring", "bending"],
             "show_output": True,
+            "beam_planes": [],
+            "quiver_setting": 0
         })
 
         # Run
@@ -3478,20 +3483,23 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
         # Args
-        chain_length    = 3e-6
+        chain_length    = 0.5e-6
         particle_radius = 100e-9
-        shell_radius    = 400e-9
-        shell_number    = 1
-        particle_number_radial  = 10
-        particle_number_angular = 6
+        shell_radius    = 1600e-9
+        shell_number    = 2
+        particle_number_radial  = 4
+        particle_number_angular = 12
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "time_step": 1e-5,
-            "frames": 50,
+            "frames": 1,
+            "dipole_radius":particle_radius,
             "constants": {"bending": 0.1e-18},
             "stiffness_spec": {"type":"", "default_value":7.5e-6},
             "force_terms": ["optical", "spring", "bending"],
             "show_output": True,
+            "beam_planes": [],
+            "quiver_setting": 0
         })
 
         connection_mode = "dist"
@@ -3535,7 +3543,7 @@ match(sys.argv[1]):
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "time_step": 1e-5,
-            "frames": 10,
+            "frames": 1,
             "constants": {"bending": 0.1e-18},
             "stiffness_spec": {"type":"", "default_value":7.5e-6},
             "force_terms": ["optical"], #["optical", "spring", "bending"],
@@ -4092,12 +4100,36 @@ match(sys.argv[1]):
         # Save file
         filename = "SingleLaguerre"
 
-        dimensions       = [1600e-9]                     # Full width of sphere/cube
+        #
+        # Run cube generation out of sub-cubes / sub-spheres
+        # Showing that particle + dipole refinement results in accuracy results (to a numerically exact TRUE result, for cube when 2.0*particle_size=dimension)
+        #
+        # dimensions      = [400e-9]                       # Full width of sphere/cube
+        # separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
+        # particle_sizes  = [dimensions[0]/12, dimensions[0]/6, dimensions[0]/2]              # Single particle
+        # dipole_sizes    = np.linspace(15e-9, 200e-9, 100)  
+        # object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
+        # particle_shapes = ["cube", "sphere"]
+        # materials = ["FusedSilica"] # , "FusedSilica01"
+        # indep_var = "dipole_sizes"                       # Must be one of the keys in variables_list, excluding "indep_var".
+        # beam_type = "LAGUERRE"     
+        # object_shape = "cube"   
+        # torque_centre = [0,0,0]
+        # place_regime = "squish"                          # Format to place particles within the overall rod; "squish", "spaced", ...
+        # linestyle_var = None # (it will pick the best if None) strings: dipole_sizes, particle_sizes, particle_shapes, forces_output, particle_selections, deflections, separations_list
+        # # The following lists must be the same length.
+        # forces_output= ["Fmag"] #["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        # particle_selections = ["all"]   #["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...] - (get all particles, specific indices, or indices close to a position; then forces summed over all particles in the list)
+
+        #
+        # Refinement showcase plots, visualising the difference in refinements
+        #
+        dimensions      = [1600e-9]                       # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
-        particle_sizes  = [dimensions[0]/2]              # Single particle
-        dipole_sizes    = np.linspace(58e-9, 95e-9, 20)  
-        object_offsets  = [[0e-6, 0.0, 0.0e-6]]          # Offset the whole object
-        particle_shapes = ["sphere"]
+        particle_sizes  = np.linspace(200e-9, 800e-9, 3)
+        dipole_sizes    = np.linspace(200e-9, 800e-9, 3)
+        object_offsets  = [[0.0e-6, 0.0, 0.0e-6]]          # Offset the whole object
+        particle_shapes = ["cube", "sphere"]
         materials = ["FusedSilica"] # , "FusedSilica01"
         indep_var = "dipole_sizes"                       # Must be one of the keys in variables_list, excluding "indep_var".
         beam_type = "LAGUERRE"     
@@ -4105,10 +4137,9 @@ match(sys.argv[1]):
         torque_centre = [0,0,0]
         place_regime = "squish"                          # Format to place particles within the overall rod; "squish", "spaced", ...
         linestyle_var = None # (it will pick the best if None) strings: dipole_sizes, particle_sizes, particle_shapes, forces_output, particle_selections, deflections, separations_list
-        
         # The following lists must be the same length.
-        forces_output= ["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = ["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...] - (get all particles, specific indices, or indices close to a position; then forces summed over all particles in the list)
+        forces_output= ["Fmag"] #["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        particle_selections = ["all"]   #["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...] - (get all particles, specific indices, or indices close to a position; then forces summed over all particles in the list)
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
@@ -4377,6 +4408,19 @@ match(sys.argv[1]):
         # data_set.pop(0)
         # data_set.pop(2)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
+
+    case "showcase_refinement":
+        filename = "SingleLaguerre"
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": True,
+            "show_stress": False,
+            "dipole_radius": 300e-9,
+            "quiver_setting":0,
+            "force_terms": ["optical"],
+            "beam_planes": []
+        })
+        Generate_yaml.make_yaml_refine_cube_showcase(filename, 0.9e-6, [-4.0e-6, 0.0, 0.0], "sphere", option_parameters, beam="LAGUERRE", material="FusedSilica")
+        DM.main(YAML_name=filename)
 
 
 

@@ -176,7 +176,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 4 #20
+        samples = 20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -394,17 +394,18 @@ class DisplayObject (object):
                     plots.append(beam_plane)
 
             save_frames = []
-            if len(save_frames)==0:
+            #if len(save_frames)==0:
+            if(steps > 1):
                 # Add frame counter
-                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-                plots.append(textplot)
-                #pass
+                #textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+                #plots.append(textplot)
+                pass
 
             if t in save_frames:
                 save_frames.remove(t)
                 #plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
-            if(t==38):
-                plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
+            #if(t==42):
+            #    plt.savefig("myImage.png", format="png", dpi=1200)
 
         # Initialise
         positions = np.array(positions)
@@ -444,6 +445,7 @@ class DisplayObject (object):
         #plt.savefig("myImage.png", format="png", dpi=1200)
 
         ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
+        plt.savefig("myImage.png", format="png", dpi=1200)
 
         plt.show()
 
@@ -860,9 +862,10 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
             else:
                 ax.plot(data_set[i,0], data_set[i,1], label=label, color=datacolor_set[i])
 
-    plt.title(graphlabel_set["title"])
+    #plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
     plt.ylabel(graphlabel_set["yAxis"])
     if(show_legend and datalabel_set!=[""] and datalabel_set!=[]):
-        ax.legend()
+        ax.legend(fontsize='small') #'large'
+    plt.savefig("myImage.png", format="png", dpi=1200)
     plt.show()
