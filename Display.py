@@ -8,6 +8,7 @@ import matplotlib.animation as animation
 import pandas as pd
 import sys
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import itertools as it
 
 import Beams
 
@@ -397,15 +398,12 @@ class DisplayObject (object):
             #if len(save_frames)==0:
             if(steps > 1):
                 # Add frame counter
-                #textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-                #plots.append(textplot)
-                pass
+                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+                plots.append(textplot)
 
             if t in save_frames:
                 save_frames.remove(t)
-                #plt.savefig("myImage.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
-            #if(t==42):
-            #    plt.savefig("myImage.png", format="png", dpi=1200)
+                plt.savefig(f"myImage{t}.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
 
         # Initialise
         positions = np.array(positions)
@@ -417,13 +415,14 @@ class DisplayObject (object):
             fig = plt.figure()
             upper = self.max_size
             lower = -upper
-            zlower = -2e-6
-            zupper = 2e-6
+            zupper = upper #2e-6
+            zlower = -upper #-2e-6
             ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
 
             ax.set_aspect('equal','box')
             ax.set_xlabel("x [m]")
             ax.set_ylabel("y [m]")
+            ax.set_zlabel("z [m]")
 
         plots = []
         for i in range(num_particles):
@@ -491,6 +490,7 @@ class DisplayObject (object):
         ax.set_aspect('equal','box')
         ax.set_xlabel("x [m]")
         ax.set_ylabel("y [m]")
+        ax.set_zlabel("z [m]")
 
         # Plot beam
         values = self.get_intensity_points(beam_collection, n=61)
@@ -869,3 +869,47 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
         ax.legend(fontsize='small') #'large'
     plt.savefig("myImage.png", format="png", dpi=1200)
     plt.show()
+
+def plot_example_DDA_voxel(num=9, dipole_size=40e-9, plot_size=0.7e-6):
+    # function to plot a sphere of cubic dipoles, used to show what voxels look like in DDA.
+    # Run using the program: import Display; Display.plot_example_DDA_voxel(9, 40e-9)
+    X = np.arange(-(num-1)/2,(num+1)/2,1)
+    sphere_radius2 = ((num+1)/2)**2
+    positions = []
+    for x,y,z in it.product(X,X,X):
+        if x**2 + y**2 + z**2 <= sphere_radius2:
+            positions.append([x,y,z])
+
+    positions = np.array(positions) * dipole_size*2
+    num_particles = len(positions)
+    cube_corners = np.array([[-1,-1,-1],[-1,-1,1],[-1,1,-1],[-1,1,1],[1,-1,-1],[1,-1,1],[1,1,-1],[1,1,1]])*dipole_size
+    cube_faces = [
+        [cube_corners[i] for i in [0, 1, 3, 2]],  # Back
+        [cube_corners[i] for i in [4, 5, 7, 6]],  # Front
+        [cube_corners[i] for i in [0, 1, 5, 4]],  # Left
+        [cube_corners[i] for i in [2, 3, 7, 6]],  # Right
+        [cube_corners[i] for i in [0, 2, 6, 4]],  # Bottom 
+        [cube_corners[i] for i in [1, 3, 7, 5]],  # Top
+    ]
+
+    # Initialise figure
+    fig = plt.figure()
+    upper = plot_size
+    lower = -upper
+    zlower = -upper
+    zupper = upper
+    ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
+    ax.set_aspect('equal','box')
+    ax.set_xlabel("x [m]")
+    ax.set_ylabel("y [m]")
+    ax.set_zlabel("z [m]")
+    print(f"Plot has {num_particles} dipoles")
+    for p_i in range(num_particles): 
+        pos = positions[p_i]
+        faces = cube_faces + pos
+        r,g,b = 46, 139, 192
+        cols = [(r/256,g/256,b/256)]*6 # blue faces
+        grey = 0.3
+        ax.add_collection3d(Poly3DCollection(faces, facecolors=cols, linewidths=0.5, alpha=1.0, edgecolor=(grey, grey, grey))) # grey edges
+
+        

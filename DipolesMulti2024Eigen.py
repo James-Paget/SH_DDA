@@ -1232,7 +1232,7 @@ def sphere_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     sr2 = sphere_radius**2
     pts = np.zeros((number_of_dipoles_total, 3))
     number_of_dipoles = 0
-    num = int(2*sphere_radius/dipole_diameter)
+    num = int(2*sphere_radius/dipole_diameter) # num across the diameter so now num can be even too.
     nums = np.arange(-(num-1)/2,(num+1)/2,1)
     for i in nums:
         i2 = i*i
@@ -2046,8 +2046,10 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         for j in range(len(new_positions_list)):
             new_positions_array[j] = new_positions_list[j]
         position_vectors = new_positions_array
+
         # particles not experiencing mutual Buckingham force are moved apart if overlapping
         stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
+
         vectors_list.append(
             position_vectors
         )  # returns list of position vector arrays of all particles
@@ -2265,8 +2267,9 @@ def main(YAML_name=None):
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        #fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_tracer=False, include_connections=True, beam_collection_list=beam_collection_list, time_step=timestep) 
+        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
+        include_connections = True
+        display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_tracer=False, include_connections=include_connections, beam_collection_list=beam_collection_list, time_step=timestep) 
 
 
     if display.show_stress==True:
