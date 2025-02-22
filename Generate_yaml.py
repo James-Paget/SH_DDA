@@ -602,6 +602,13 @@ def use_parameter_options(filename, option_parameters):
     write_options(filename, option_parameters)
 
 def fill_yaml_options(non_default_params):
+    """
+    Keys are:
+
+    frames, wavelength, dipole_radius, time_step, polarisability_type, constants (bending), stiffness_spec (type, default_value),
+    equilibrium_shape, vmd_output, excel_output, include_force, include_couple, verbosity, include_dipole_forces, force_terms, show_output,
+    show_stress, frame_interval, max_size, resolution, frame_min, frame_max, z_offset, beam_planes, quiver_setting.
+    """
     # Fills in the non default YAML options.
     # Used to set the sets of options at the top of each YAML - so doesn't include beams or particles
     option_parameters = {

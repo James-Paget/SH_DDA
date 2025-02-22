@@ -1232,7 +1232,7 @@ def sphere_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     sr2 = sphere_radius**2
     pts = np.zeros((number_of_dipoles_total, 3))
     number_of_dipoles = 0
-    num = int(2*sphere_radius/dipole_diameter)
+    num = int(2*sphere_radius/dipole_diameter) # num across the diameter so now num can be even too.
     nums = np.arange(-(num-1)/2,(num+1)/2,1)
     for i in nums:
         i2 = i*i

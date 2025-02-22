@@ -416,8 +416,8 @@ class DisplayObject (object):
             fig = plt.figure()
             upper = self.max_size
             lower = -upper
-            zlower = -2e-6
-            zupper = 2e-6
+            zupper = upper #2e-6
+            zlower = -upper #-2e-6
             ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
 
             ax.set_aspect('equal','box')
