@@ -4160,7 +4160,7 @@ match(sys.argv[1]):
         particle_radius = 0.1e-6
         connection_mode = "num"
         connection_args = "5"
-        E0 =7e6 #1.5e7
+        E0 = 14e6 #1.5e7
         w0 = 1.0
         translation = "0.0 0.0 4.5e-6"
 
@@ -4176,8 +4176,8 @@ match(sys.argv[1]):
             "resolution": 401,
             "quiver_setting": 0,
             "wavelength": 1.0e-6,
-            "beam_planes": [["x", 0],["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
-            "beam_alpha": 0.6,
+            "beam_planes": [["y", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+            "beam_alpha": 0.4,
         })
 
         print(f"\ntime step = {option_parameters['time_step']}, stiffness = {option_parameters['stiffness_spec']['default_value']}, bending = {option_parameters['constants']['bending']}, particle number = {num_particles}, dipole size = {option_parameters['dipole_radius']}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0:.2e}, beam width = {w0}, wavelength = {option_parameters['wavelength']}, translation = {translation}\n")

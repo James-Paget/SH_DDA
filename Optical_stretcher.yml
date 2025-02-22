@@ -26,12 +26,12 @@ display:
   frame_min: 0
   frame_max: 1
   z_offset: 0.0
-  beam_planes: [['x', 0], ['z', 0]]
+  beam_planes: [['y', 0]]
   quiver_setting: 0
 beams:
   beam_0:
     beamtype: BEAMTYPE_GAUSS_CSP
-    E0: 7000000.0
+    E0: 14000000.0
     order: 3
     w0: 1.0
     jones: POLARISATION_LCP
@@ -41,7 +41,7 @@ beams:
     rotation: None
   beam_1:
     beamtype: BEAMTYPE_GAUSS_CSP
-    E0: 7000000.0
+    E0: 14000000.0
     order: 3
     w0: 1.0
     jones: POLARISATION_LCP
