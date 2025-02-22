@@ -187,14 +187,14 @@ def make_yaml_fibre_1d_cylinder(filename, option_parameters, length=3e-6, partic
     use_beam(filename, beam)
     use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_hollowshell(filename, option_parameters, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
+def make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
     use_parameter_options(filename, option_parameters)
     #use_beam(filename, beam, translation="2.5e-6 0.0 0.0", translationargs="1.0e-6 0.0 0.0")  ### DOES NOT ALLOW PARAMETER VARIATION EASILY ###
     # use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationargs="2.5e-6 1.5e-6 0.0")
 
     #2.5e-6 1.5e-6 0.0
-    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":3.1e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": "2.3e-6 0.0 0.0", "translationargs": "-0.5 0.0 0.0 1.0 -1.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
-    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":3.1e7, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation":"-2.3e-6 0.0 0.0", "translationargs":None, "translationtype":"linear", "rotation":None}
+    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": "2.6e-6 0.0 0.0", "translationargs": "-0.5 0.0 0.0 1.0 -2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation":"-2.6e-6 0.0 0.0", "translationargs": "0.5 0.0 0.0 1.0 2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
     write_beams(filename, [beam_1, beam_2])
 
     # Varies depending on if beads are included within this function
@@ -242,6 +242,16 @@ def make_yaml_refine_sphere(filename, dimension, separations, particle_size, obj
     use_parameter_options(filename, option_parameters)
     use_beam(filename, beam)
     num_particles = use_refine_sphere(filename, dimension, separations, object_offset, particle_size, particle_shape, place_regime, makeCube=makeCube, material=material)
+    return num_particles
+
+def make_yaml_refine_cube_showcase(filename, dimension, object_offset, particle_shape, option_parameters, dipole_size=None, beam="LAGUERRE", material="FusedSilica"):
+    #
+    # Generates multiple cubes, refined by base amounts, that demonstrates the refinement process
+    #
+    if dipole_size != None: option_parameters["dipole_radius"] = dipole_size # keep the passed in dipoles size so that it can be varied despite partial functions
+    use_parameter_options(filename, option_parameters)
+    use_beam(filename, beam)
+    num_particles = use_refine_cube_showcase(filename, dimension, object_offset, particle_shape, material=material)
     return num_particles
 
 def make_yaml_single_dipole_exp(filename, test_type, test_args, object_offset, option_parameters, rotation=None, beam="LAGUERRE", extra_args=[]):
@@ -469,6 +479,24 @@ def use_refine_sphere(filename, dimension, separations, object_offset, particle_
     args_list = [[particle_size]] * num_particles
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, material=material)
+    return num_particles
+
+def use_refine_cube_showcase(filename, dimension, object_offset, particle_shape="sphere", material="FusedSilica"):
+    #
+    # particle_size = radius of sphere OR half width of cube
+    #
+    coords_list, args_list = get_refine_cube_showcase(dimension)
+    num_particles = len(coords_list)
+    
+    sphere_coords_list = np.array(coords_list) + object_offset
+    cube_coords_list = np.array(coords_list) + object_offset +np.array([0.0, 0.0, -3.0*dimension])
+
+    particle_list = []
+    for i in range(len(sphere_coords_list)):
+        particle_list.append( {"material":material, "shape":"sphere", "args":args_list[i], "coords":sphere_coords_list[i], "altcolour":True} )
+        particle_list.append( {"material":material, "shape":"cube"  , "args":args_list[i], "coords":cube_coords_list[i]  , "altcolour":True} )
+    write_particles(filename, particle_list, 1e-07, material, "dist", 0.0 )
+   
     return num_particles
 
 def use_single_dipole_exp(filename, test_type, test_args, dipole_size, object_offset=[0.0, 0.0, 0.0], extra_args=[]):
@@ -1168,6 +1196,24 @@ def get_refine_sphere(dimension, separations, particle_size, place_regime="squis
     # print("particle_number = ", particle_number)
     # print("coords_list = ", coords_list)
     return coords_list
+
+def get_refine_cube_showcase(dimension):
+    #
+    # Shows side-by-side different refinements of a cube
+    #
+    coords_list = []
+    args_list = []
+    mesh_spacing = 3.0*dimension
+    particle_spacing = dimension*0.01
+    
+    for p in range(3):   # Number of meshes to generate side-by-side
+        particle_size = (dimension-p*particle_spacing)/(p+1)
+        for i in range(p+1):            # Generate cubes of particles to create each mesh
+            for j in range(p+1):        #
+                for k in range(p+1):    #
+                    coords_list.append( [p*mesh_spacing +(i)*particle_spacing +(2.0*i+1.0)*(particle_size), (j)*particle_spacing +(2.0*j+1.0)*(particle_size), (k)*particle_spacing +(2.0*k+1.0)*(particle_size)] )
+                    args_list.append([particle_size])
+    return coords_list, args_list
 
 def get_NsphereShell_points(radii, numbers_per_shell):
     coords_list = []
