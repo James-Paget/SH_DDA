@@ -862,7 +862,7 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
             else:
                 ax.plot(data_set[i,0], data_set[i,1], label=label, color=datacolor_set[i])
 
-    #plt.title(graphlabel_set["title"])
+    plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
     plt.ylabel(graphlabel_set["yAxis"])
     if(show_legend and datalabel_set!=[""] and datalabel_set!=[]):
