@@ -832,7 +832,7 @@ def get_torus_points_args(num_particles, separation, inner_radius, tube_radius):
 
     return coords_list, args_list
 
-def get_sheet_points(num_length, num_width, separation, mode="triangle", formation="square", bounds=[2e-6]):
+def get_sheet_points(num_length, num_width, separation, mode="triangle", formation="square", bounds=[10e-6]):
     # Makes a sheet in the z=0 plane. width in x-axis, length in y-axis.
     # modes are "triangle", "square", "hexagon"
 
@@ -850,7 +850,8 @@ def get_sheet_points(num_length, num_width, separation, mode="triangle", formati
         withinBounds=False
         match formation:
             case "square":
-                width, height = bounds
+                width = bounds[0]
+                height = bounds[0]
                 withinX = ( -width/2.0 <= point[0]) and (point[0] <= width/2.0)
                 withinY = (-height/2.0 <= point[1]) and (point[1] <= height/2.0)
                 withinBounds = withinX and withinY

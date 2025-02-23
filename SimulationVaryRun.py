@@ -3481,8 +3481,8 @@ match(sys.argv[1]):
         particle_number_angular = 12
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "time_step": 1e-5,
-            "frames": 1,
+            "time_step": 1e-7,
+            "frames": 10,
             "dipole_radius":particle_radius,
             "constants": {"bending": 0.1e-18},
             "stiffness_spec": {"type":"", "default_value":7.5e-6},
@@ -3532,8 +3532,10 @@ match(sys.argv[1]):
         particle_separation = (np.pi*2.0*shell_radius)/(15.0)
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "time_step": 1e-5,
-            "frames": 1,
+            "time_step": 1e-7,
+            "frames": 10,
+            "quiver_setting":0,
+            "dipole_radius": particle_radius,
             "constants": {"bending": 0.1e-18},
             "stiffness_spec": {"type":"", "default_value":7.5e-6},
             "force_terms": ["optical"], #["optical", "spring", "bending"],
@@ -3557,7 +3559,7 @@ match(sys.argv[1]):
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "time_step": 1e-4,
-            "frames": 10,
+            "frames": 1,
             "constants": {"bending": 0.1e-18},
             "stiffness_spec": {"type":"", "default_value":7.5e-6},
             "force_terms": ["optical"], #["optical", "spring", "bending"],
@@ -4420,7 +4422,7 @@ match(sys.argv[1]):
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
         transform_type = "linear"         # "linear", "inverse_area"
-        E0 = 4.5e6 # 4.75e6
+        E0 = 20.0e6 # 4.5e6
         w0 = 0.5
         translation = "0.0 0.0 5.0e-6"  # Offset applied to both beams
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
@@ -4429,9 +4431,9 @@ match(sys.argv[1]):
             "show_stress": False,
             "quiver_setting": 1,
             "wavelength": 1.0e-6,
-            "force_terms": ["spring"], #"optical", "spring", "bending"
+            "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-6 #5e-8  # 5e-7
+            "stiffness_spec": {"type":"", "default_value": 2.5e-6}, #5e-6 #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
             "dipole_radius": 100e-9,
             "frames": 1,
@@ -4511,6 +4513,7 @@ match(sys.argv[1]):
             "beam_planes": []
         })
         Generate_yaml.make_yaml_refine_cube_showcase(filename, 0.9e-6, [-4.0e-6, 0.0, 0.0], "sphere", option_parameters, beam="LAGUERRE", material="FusedSilica")
+        #Generate_yaml.generate_yaml("SHEET_TRIANGLE", filename=filename)
         DM.main(YAML_name=filename)
 
 
