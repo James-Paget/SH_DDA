@@ -4408,18 +4408,18 @@ match(sys.argv[1]):
         #
         # Fine translation+stretching tests
         #
-        dimension = 1800e-9#2000e-9     # Base diameter of the full untransformed sphere
+        dimension = 2000e-9     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
         num_factors_tested = 50
-        particle_size = 100e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
         connection_mode = "manual"          # "dist", 0.0
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "singular"         # "linear", "inverse_area"
+        transform_type = "linear"         # "linear", "inverse_area"
         E0 = 4.5e6 # 4.75e6
         w0 = 0.5
         translation = "0.0 0.0 5.0e-6"  # Offset applied to both beams
@@ -4462,7 +4462,7 @@ match(sys.argv[1]):
 
         transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
         num_transforms = len(transform_factor_list)
-        data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)
+        #data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)
         func_transform_partial = partial(func_transform, transform_type=transform_type, args=power_args)
 
         params_i = 0
@@ -4473,14 +4473,13 @@ match(sys.argv[1]):
         #
         transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
         num_transforms = len(transform_factor_list)
-        data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)
+        data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)        
         graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
         for i in range(len(transform_factor_list)):
             print("\nProgress; "+str(i)+"/"+str(num_transforms))
             particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor_list[i], critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
             DM.main(filename)
             data_set = get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_output, ["all"], read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None)
-
 
         #
         # Vary offset of object (wanted for a small scale test)

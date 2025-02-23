@@ -699,7 +699,7 @@ def write_options(filename, option_parameters):
                 file.write(f"    {key}: {val}\n")
         
         # Write spring natural length override (specify custom single float natural length for all springs to use, not auto-generated)
-        # file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
+        file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
 
         file.write(f"output:\n")
         for var in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
