@@ -177,7 +177,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 20
+        samples = 4 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -310,9 +310,9 @@ class DisplayObject (object):
             plots.clear()
 
             # Add new particle plot elements
-            #colours[62] = "#fc3232"
             for i in range(num_particles):
-                #colours[i] = "#fc3232"
+                # if( (positions[t,i,0] +sys.float_info.epsilon > 0.0) and (positions[t,i,1] +sys.float_info.epsilon > 0.0) and (positions[t,i,2] +sys.float_info.epsilon > 0.0) ):
+                #     colours[i] = "#fc3232"
                 match shapes[i]:
                     case "sphere":
                         x, y, z = self.make_sphere_surface(args[i], positions[t, i])

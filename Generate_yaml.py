@@ -593,8 +593,8 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4, translation=None):
     Makes two counter-propagating Gaussian beams.
     """
     # NOTE; Same translation for both since translation applied after rotation, therefore will translate in the opposite direction
-    beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":None}
-    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 90.0"}
+    beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_X", "translation":translation, "translationargs":None, "translationtype":None, "rotation":None}
+    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_X", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 90.0"}
     write_beams(filename, [beam1, beam2])   #POLARISATION_X
 
 
@@ -1352,13 +1352,13 @@ def get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_
     coords_list = []
     
     mesh_radius = dimension/2.0
-    base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)
+    base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)    ### Should rename this, not really base sep, more like a min sep ###
     #number_of_particles_side = int(np.floor( (mesh_radius-particle_size) / (2.0*particle_size) ))
     number_of_particles_side = int(np.floor( mesh_radius/base_separation ))
     number_of_particles = 2*number_of_particles_side +1
 
     # Generate some base sphere shape
-    base_separation = dimension/number_of_particles ################ WHY REDEFINED BASE_SEP ???? <---- REMOVE THIS BUT MAKE SURE WORKS <- inital base_sep was the minimum sep, then we found the number of particles, then refine base_sep so it is based on the actual number of particle used. might need -1 for fence post problem maybe?
+    base_separation = dimension/number_of_particles
     for i in range(-number_of_particles_side, number_of_particles_side+1):
         i_coord = i*base_separation
         for j in range(-number_of_particles_side, number_of_particles_side+1):
