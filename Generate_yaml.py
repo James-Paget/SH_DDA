@@ -595,7 +595,7 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4, translation=None):
     # NOTE; Same translation for both since translation applied after rotation, therefore will translate in the opposite direction
     beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":None}
     beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 90.0"}
-    write_beams(filename, [beam1, beam2])
+    write_beams(filename, [beam1, beam2])   #POLARISATION_X
 
 
 #=======================================================================

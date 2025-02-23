@@ -2073,9 +2073,6 @@ def main(YAML_name=None):
     # YAML_name = the name (excluding the '.yml') of the YAML file to specify this simulation.
     #             If 'None' is used, main() will read the first terminal arguement as the name instead, e.g. "python DipolesMulti2024Eigen.py <YAML_name>"
     #             If a name is parsed in, then this will be used as the YAML to read instead of sys.argv[1]
-    # constants = list of constants that tend to be varied in the simulatiom, which can simply be adjusted for different runs of the simulation
-    # force_terms = names of forces to be included in the simualtion, gathered here for convenience when running varying simulations
-    #               e.g. "optical", "spring", "bending", "buckingham", "driver", "gravity", ...
     # verbosity = Determines what information to print within the function, e.g. can be turned up or down when bug-fixing or running normally
     #       >= 0 implies; 
     #           Minimal prints (errors, etc)

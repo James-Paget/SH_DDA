@@ -2774,6 +2774,12 @@ def get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_ou
                     output += [value_list[3*p+0], value_list[3*p+1], value_list[3*p+2]] 
                 output = np.linalg.norm(output)
                 data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+            case "FZmag" | "CZmag":
+                output = np.zeros(3)
+                for p in range(int(len(value_list)/3)):
+                    output += [value_list[3*p+0], value_list[3*p+1], value_list[3*p+2]] 
+                output = output[2]
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
 
             case "Tx" | "Ty" | "Tz":
                 if expt_type == "Tx": centre = torque_centre[1], torque_centre[2]
@@ -4104,31 +4110,11 @@ match(sys.argv[1]):
         # Run cube generation out of sub-cubes / sub-spheres
         # Showing that particle + dipole refinement results in accuracy results (to a numerically exact TRUE result, for cube when 2.0*particle_size=dimension)
         #
-        # dimensions      = [400e-9]                       # Full width of sphere/cube
-        # separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
-        # particle_sizes  = [dimensions[0]/12, dimensions[0]/6, dimensions[0]/2]              # Single particle
-        # dipole_sizes    = np.linspace(15e-9, 200e-9, 100)  
-        # object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
-        # particle_shapes = ["cube", "sphere"]
-        # materials = ["FusedSilica"] # , "FusedSilica01"
-        # indep_var = "dipole_sizes"                       # Must be one of the keys in variables_list, excluding "indep_var".
-        # beam_type = "LAGUERRE"     
-        # object_shape = "cube"   
-        # torque_centre = [0,0,0]
-        # place_regime = "squish"                          # Format to place particles within the overall rod; "squish", "spaced", ...
-        # linestyle_var = None # (it will pick the best if None) strings: dipole_sizes, particle_sizes, particle_shapes, forces_output, particle_selections, deflections, separations_list
-        # # The following lists must be the same length.
-        # forces_output= ["Fmag"] #["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        # particle_selections = ["all"]   #["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...] - (get all particles, specific indices, or indices close to a position; then forces summed over all particles in the list)
-
-        #
-        # Refinement showcase plots, visualising the difference in refinements
-        #
-        dimensions      = [1600e-9]                       # Full width of sphere/cube
+        dimensions      = [400e-9]                       # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
-        particle_sizes  = np.linspace(200e-9, 800e-9, 3)
-        dipole_sizes    = np.linspace(200e-9, 800e-9, 3)
-        object_offsets  = [[0.0e-6, 0.0, 0.0e-6]]          # Offset the whole object
+        particle_sizes  = [dimensions[0]/12, dimensions[0]/6, dimensions[0]/2]              # Single particle
+        dipole_sizes    = np.linspace(15e-9, 200e-9, 100)  
+        object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
         particle_shapes = ["cube", "sphere"]
         materials = ["FusedSilica"] # , "FusedSilica01"
         indep_var = "dipole_sizes"                       # Must be one of the keys in variables_list, excluding "indep_var".
@@ -4441,24 +4427,59 @@ match(sys.argv[1]):
         #
         # Half-sized solid sphere experiment match
         #
-        # Particle variables
-        dimension = 3.36e-6     # Base diameter of the full untransformed sphere
+        # dimension = 3.36e-6     # Base diameter of the full untransformed sphere
+        # transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
+        # critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
+        # num_factors_tested = 20
+        # particle_size = 150e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        # object_offset = [0.0, 0.0, 0.0e-6]
+        # material = "FusedSilica"
+        # particle_shape = "sphere"
+        # connection_mode = "manual"      # "dist", 0.0
+        # connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
+        # force_reading = "FZmag"       #"Z_split", "XYZ_split", "RTZ_split"
+        # transform_type = "linear" # "linear", "inverse_area"
+        # E0 = 4.5e6 # 4.75e6
+        # w0 = 5.0
+        # translation = "0.0 0.0 200.0e-6"  # Offset applied to both beams
+        # coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
+        # option_parameters = Generate_yaml.fill_yaml_options({
+        #     "show_output": False,
+        #     "show_stress": False,
+        #     "quiver_setting": 0,
+        #     "wavelength": 1.0e-6,
+        #     "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
+        #     "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
+        #     "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-6 #5e-8  # 5e-7
+        #     "equilibrium_shape": coords_List,
+        #     "dipole_radius": 150e-9,
+        #     "frames": 1,
+        #     "time_step": 0.5e-4, 
+        #     "beam_planes": [["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+        #     "beam_alpha": 0.6,
+        # })
+
+        #
+        # Other
+        #
+        dimension = 400e-9     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 1.5 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 20
-        particle_size = 150e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
+        num_factors_tested = 100
+        particle_size = 50e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
         connection_mode = "manual"      # "dist", 0.0
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
-        force_reading = "RTZ_split"       #"Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "power" # "linear", "inverse_area"
-        
+        force_reading = "FZmag"     # "Z_split", "XYZ_split", "RTZ_split"
+        transform_type = "linear"       # "linear", "inverse_area"
+
         # Beam variables
         E0 = 4.5e6 # 4.75e6
-        w0 = 5.0
-        translation = "0.0 0.0 200.0e-6"  # Offset applied to both beams
+        w0 = 0.5
+        translation = "0.0 0.0 2.0e-6"  # Offset applied to both beams
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
@@ -4469,8 +4490,8 @@ match(sys.argv[1]):
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-6 #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
-            "dipole_radius": 150e-9,
-            "frames": 80,
+            "dipole_radius": 25e-9,
+            "frames": 1,
             "time_step": 0.5e-4, 
             "beam_planes": [["x", 0],["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
             "beam_alpha": 0.6,
@@ -4483,6 +4504,8 @@ match(sys.argv[1]):
         # Specify all parameters in the xlsx file so a subset can be pulled later based on read_parameters. Gives information about the structure of the data in the file.
         
         read_parameters_lookup = {
+            "Fmag":      [["FT",0], ["FT",1], ["FT",2]],
+            "FZmag":     [["FT",0], ["FT",1], ["FT",2]],
             "Z_split":   [["FT",0], ["FT",1], ["FT",2], ["X",0], ["X",1], ["X",2]],
             "XYZ_split": [["FT",0], ["FT",1], ["FT",2], ["X",0], ["X",1], ["X",2]],
             "RTZ_split": [["FT",0], ["FT",1], ["FT",2], ["X",0], ["X",1], ["X",2]], 
@@ -4490,7 +4513,6 @@ match(sys.argv[1]):
         parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
         read_frames = [0]
 
-        graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
         datalabel_set = ["FTx", "FTy", "FTz"] if force_reading != "RTZ_split" else ["FTr", "FTtheta", "FTz"]
         transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
         num_transforms = len(transform_factor_list)
@@ -4500,15 +4522,36 @@ match(sys.argv[1]):
         params_i = 0
         expt_output = [force_reading] # NOTE listed as one expt, but cases designed so 3 (x,y,z) outputs are put into data set.
 
-        for i in range(len(transform_factor_list)):
-            print("\nProgress; "+str(i)+"/"+str(num_transforms))
-            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor_list[i], critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
+        #
+        # Vary transform factor
+        #
+        # transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
+        # num_transforms = len(transform_factor_list)
+        # data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)
+        # graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
+        # for i in range(len(transform_factor_list)):
+        #     print("\nProgress; "+str(i)+"/"+str(num_transforms))
+        #     particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor_list[i], critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
+        #     DM.main(filename)
+        #     data_set = get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_output, ["all"], read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None)
+
+
+        #
+        # Vary offset of object (wanted for a small scale test)
+        #
+        graphlabel_set={"title":f"Translation, mode = {force_reading}", "xAxis":"translation[m]", "yAxis":"Forces[N]"}
+        min_offset = -10.0e-6
+        max_offset = 10.0e-6
+        offset_list = np.linspace(min_offset, max_offset, num_factors_tested)
+        data_set = np.array([[offset_list, np.zeros(num_factors_tested)] for _ in range(len(datalabel_set))], dtype=object)
+        for i in range(len(offset_list)):
+            print("\nProgress; "+str(i)+"/"+str(len(offset_list)))
+            object_offset = [0.0, 0.0, offset_list[i]]
+            particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
             DM.main(filename)
             data_set = get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_output, ["all"], read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None)
 
         # Plot forces for each step considered to see if equilibrium is being reached
-        # data_set.pop(0)
-        # data_set.pop(2)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
     case "showcase_refinement":

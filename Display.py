@@ -444,7 +444,7 @@ class DisplayObject (object):
         #plt.savefig("myImage.png", format="png", dpi=1200)
 
         ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
-        plt.savefig("myImage.png", format="png", dpi=1200)
+        #plt.savefig("myImage.png", format="png", dpi=1200)
 
         plt.show()
 
