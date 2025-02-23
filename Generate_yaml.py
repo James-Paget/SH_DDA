@@ -267,11 +267,10 @@ def make_yaml_spheredisc_model(filename, dimension, separations, particle_size, 
     num_particles = use_fill_spheredisc(filename, dimension, separations, particle_size, object_offset, particle_shape, mode=mode, material=material, fix_to_ring=fix_to_ring)
     return num_particles
 
-def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0):
+def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation):
     use_parameter_options(filename, option_parameters)
-    use_beam(filename, "STRETCHER", E0=E0, w0=w0)
+    use_beam(filename, "STRETCHER", E0=E0, w0=w0, translation=translation)
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args)
-
 
 def make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, translation=None, connection_mode="dist", connection_args=0.0, material="FusedSilica"):
     use_parameter_options(filename, option_parameters)
@@ -631,6 +630,13 @@ def use_parameter_options(filename, option_parameters):
     write_options(filename, option_parameters)
 
 def fill_yaml_options(non_default_params):
+    """
+    Keys are:
+
+    frames, wavelength, dipole_radius, time_step, polarisability_type, constants (bending), stiffness_spec (type, default_value),
+    equilibrium_shape, vmd_output, excel_output, include_force, include_couple, verbosity, include_dipole_forces, force_terms, show_output,
+    show_stress, frame_interval, max_size, resolution, frame_min, frame_max, z_offset, beam_planes, quiver_setting.
+    """
     # Fills in the non default YAML options.
     # Used to set the sets of options at the top of each YAML - so doesn't include beams or particles
     option_parameters = {
