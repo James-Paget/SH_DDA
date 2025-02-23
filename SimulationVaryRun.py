@@ -14,7 +14,8 @@ import math
 import pickle
 import itertools as it
 import os
-from functools import partial
+from functools import partial, reduce
+from operator import mul
 
 import Display
 import DipolesMulti2024Eigen as DM
@@ -3141,95 +3142,78 @@ def make_legend_labels(data_set_params, legend_params, indep_name, forces_output
 
 
 
+def dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccentricity, num_averaged):
+    # Makes a data set of either the eccentricity or the ratio of the longest and shortest radii against the frame number. is_eccentricity is used to swap between these modes
+    # num_averaged is how many positions the longest/shortest are averaged over.
+    # Different variables are used, depending on varaibles list.
+    # Other parameters are given in option_parameters.
+    # If the "try" fails, the values will be set to impossible ones - all zeros
 
 
+    # Initialise variables
+    yaxis_label = "Eccentricity" if is_eccentricity else "Height/width ratio"
+    num_frames = option_parameters["frames"]
+    read_frames=[f for f in range(num_frames)]
+    parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
+    data_set = np.array([[read_frames, np.zeros(num_frames)] for _ in range(reduce(mul, [ len(v) for v in variables_list.values() ]))])
+    datalabel_set = []
+    count = 0
+    making_title = True
+    title_str = yaxis_label + " against frame number"
 
+    for params in it.product(*variables_list.values()):
+        # print(params)
+        print(f"Progress; {count}/{len(data_set)}")
+        # extract params values. NOTE order of this is important
+        option_parameters["stiffness_spec"]["default_value"] = params[0]
+        option_parameters["constants"]["bending"] = params[1]
+        translation = params[2]
+        num_particles = params[3]
+        particle_radius = params[4]
+        option_parameters["dipole_radius"] = params[4]
+        E0 = params[5]
+        w0 = params[6]
 
-def simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output):
-    # Sphere of particles, each a single dipole so particle_size = dipole_size
+        # Make title/legend
+        line_label = ""
+        for i, key in enumerate(variables_list.keys()):
+            if len(variables_list[key])>1: 
+                if line_label!="": line_label += ", "
+                line_label += f"{key} = {params[i]}"
+            elif making_title: 
+                title_str += f", {key} = {params[i]}"
+        making_title = False # just add params ot the title for the first time
 
-    parameters_stored = [
-        {"type":"X", "args":["x", "y", "z"]},
-        {"type":"F", "args":["Fx", "Fy", "Fz"]},
-        {"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},
-        {"type":"C", "args":["Cx", "Cy", "Cz"]}
-    ]
+        # Run simulation for the current set of params.
+        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation)
+        particles = [p for p in range(num_particles)]
+        try: # Will default to all 0s if NaN errors
+            DM.main(filename)
+            read_parameters = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), particles)]
+            pulled_data = pull_file_data(filename, parameters_stored, read_frames, read_parameters)
 
-    # Initialise sphere of single dipole particles
-    dipole_diameter = 2*dipole_size
-    coords_list = []
-    number_of_dipoles = 0
-    num = int(2*sphere_radius/dipole_diameter)
-    nums = np.arange(-(num-1)/2,(num+1)/2,1)
-    z_count = 0
-    z_slices = [] # coords list, separated into z layers, <num> of them, bottom to top
-    slice_indices_list = [] # also, get the particle indices of each layer
-    for k in nums:
-        slice_indices = []
-        k2 = k*k
-        z = k*dipole_diameter
-        for i in nums:
-            i2 = i*i
-            x = i*dipole_diameter +1e-20
-            for j in nums:
-                j2 = j*j
-                y = j*dipole_diameter +1e-20
-                rad2 = (i2+j2+k2)*dipole_diameter**2
-                if rad2 < sphere_radius**2:
-                    coords_list.append([x, y, z])
-                    slice_indices.append(number_of_dipoles)
-                    number_of_dipoles += 1
-        slice_indices_list.append(slice_indices)
-        z_slices.append(coords_list[z_count:number_of_dipoles-1]) # slice by reference
-    coords_list = np.array(coords_list)
+            for f in read_frames:
+                data_of_frame = pulled_data[f]
+                positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
+                centre = np.average(positions, axis=1)
+                rs = np.linalg.norm(positions - centre[:,None], axis=0)
+                smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  # sort for the num_averaged min values, then slice for them.
+                largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]] # sort for the num_averaged max values, then slice for them.
 
-    num_particles = number_of_dipoles
-    read_parameters = [{"type":"F", "particle":p, "subtype":s} for p,s in it.product(range(num_particles), range(3))]
+                if is_eccentricity: eccentricity = np.sqrt(1 - np.average(smallest_rs)**2/np.average(largest_rs)**2)
+                else: eccentricity = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
 
-    for t in range(frames):
-        Generate_yaml.make_yaml_stretcher_dipole_shape(filename, coords_list, dipole_size, connection_mode, connection_args, E0, w0, show_output, time_step=time_step)
-        DM.main(filename, constants={"spring":stiffness, "bending":bending}, force_terms=force_terms)
-
-        # Iterate coords list to new coords
-        if t != frames-1:
-            output_data = pull_file_data(filename, parameters_stored, [0], read_parameters, invert_output=False)[0] # 0th frame
-            
-            forces = np.array([[output_data[3*p_i+0], output_data[3*p_i+1], output_data[3*p_i+2]] for p_i in range(num_particles)])
-            layer_z_stretch_factors = np.zeros(num)
-            for layer_i in range(num):
-                layer_indices = slice_indices_list[layer_i]
-                projected_coords = coords_list[layer_indices]
-                projected_coords[:,2] = 0.0 # project by setting z force to zero
-                # get the x-y radial 
-                factor = 1e0
-                sum_dot = 0
-                for p in layer_indices:
-                    sum_dot += forces[p,0]*coords_list[p,0] + forces[p,1]*coords_list[p,1]
-                sum_dot *= -factor
-                layer_z_stretch_factors[layer_i] = np.exp(sum_dot)
-                # sum_dot = -factor * np.sum( np.dot(forces[layer_indices], projected_coords) )
-            
-                # scale x,y here
-                for i in layer_indices:
-                    coords_list[i] *= (layer_z_stretch_factors[layer_i])**(-0.5) # 1/sqrt scale
-
-            # now, z needs scaling, and shift to account for others scaling
-            print("layer_z_stretch_factors",layer_z_stretch_factors)
-            cumulative_factors = np.cumsum(layer_z_stretch_factors)# - layer_z_stretch_factors/2
-            print("cumulative_factors",cumulative_factors)
-
-
-            if num %2==0: #even
-                centre_scale = cumulative_factors[int(num/2)]
-            else:
-                centre_scale = cumulative_factors[int(num/2)] + layer_z_stretch_factors[int((num+1)/2)]/2 - layer_z_stretch_factors[0]/2
-
-            print(centre_scale)
-            coords_list[:,2] += dipole_size * num
-            for iz in range(num):
-                for i in range(len(z_slices[iz])):
-                    z_slices[iz][i][2] *= cumulative_factors[iz]
-            coords_list[:,2] -= dipole_diameter * centre_scale
+                data_set[count,1,f] = eccentricity
+        except Exception as error: 
+            print(f"\nERROR, failed and continuing on params:")
+            for i, key in enumerate(variables_list.keys()):
+                print(f"{key} = {params[i]}")
+            print(error)
+        datalabel_set.append(line_label)
+        count +=1
+    
+    graphlabel_set={"title":title_str, "xAxis":"Frame", "yAxis":f"{yaxis_label}"}
+    return data_set, datalabel_set, graphlabel_set
 
 #=================#
 # Perform Program #
@@ -4251,26 +4235,21 @@ match(sys.argv[1]):
         #
         filename = "Optical_stretcher"
     
-        num_particles = 40   # 40, 72, 84, 120 160
-        sphere_radius = 3.36e-6
-        particle_radius = 0.1e-6
+        sphere_radius = 3.36e-6 # sphere radius from Guck's paper
         connection_mode = "num"
         connection_args = "5"
-        E0 = 14e6 #1.5e7
-        w0 = 5
-        translation = "0.0 0.0 30e-6"
+        num_averaged = 5 # num min and max to average the positions of to get the eccentricity.
+        is_eccentricity = False # Else does the ratio
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
-            "constants": {"bending": 1e-19}, # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value":5e-6}, #5e-8  # 5e-7
             "dipole_radius": 100e-9,
             "time_step": 10e-5, 
             "wavelength": 785e-9,
 
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
-            "frames": 60,
+            "frames": 200,
             "max_size": 5e-6,
             "quiver_setting": 0,
             "resolution": 401,
@@ -4278,56 +4257,18 @@ match(sys.argv[1]):
             "beam_alpha": 0.4,
         })
 
-        print(f"\ntime step = {option_parameters['time_step']}, stiffness = {option_parameters['stiffness_spec']['default_value']}, bending = {option_parameters['constants']['bending']}, particle number = {num_particles}, dipole size = {option_parameters['dipole_radius']}, particle size = {particle_radius}, sphere object radius = {sphere_radius}, beam E0 = {E0:.2e}, beam width = {w0}, wavelength = {option_parameters['wavelength']}, translation = {translation}\n")
-        nums_averaged = [5] # num min and max to average the positions of to get the eccentricity.
+        variables_list = { # NOTE order of this is important
+            "stiffness": [6.5e-6],
+            "bending": [7e-19],
+            "translation": ["0.0 0.0 30e-6"],
+            "num_particles": [40, 72, 84, 120, 160], # 40, 72, 84, 120, 160
+            "particle_radius": [0.1e-6], # adjust dipole size to match this.
+            "E0": [14e6],
+            "w0": [5],
+        }
         
-        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation)
-        DM.main(filename)
-
-        num_frames = option_parameters["frames"]
-        read_frames=[f for f in range(num_frames)]
-        parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
-        particles = select_particle_indices(filename, "all", parameters_stored, read_frames=read_frames)
-        read_parameters = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), range(num_particles))]
-        pulled_data = pull_file_data(filename, parameters_stored, read_frames, read_parameters)
-        data_set = np.array([[read_frames, np.zeros(num_frames)] for _ in range(len(nums_averaged))])
-
-        for n in range(len(nums_averaged)):
-            num_averaged = nums_averaged[n]
-            for f in read_frames:
-                data_of_frame = pulled_data[f]
-                positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
-                centre = np.average(positions, axis=1)
-                rs = np.linalg.norm(positions - centre[:,None], axis=0)
-                smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  # sort for the num_averaged min values, then slice for them.
-                largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]] # sort for the num_averaged max values, then slice for them.
-                eccentricity = np.sqrt(1 - np.average(smallest_rs)**2/np.average(largest_rs)**2)
-                # eccentricity = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
-                data_set[n,1,f] = eccentricity
-
-        graphlabel_set={"title":f"Eccentricity against frame number", "xAxis":"Frame", "yAxis":"Eccentricity"}
-        datalabel_set = [f"num averaged = {n}" for n in nums_averaged]
+        data_set, datalabel_set, graphlabel_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccentricity, num_averaged)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
-
-
-
-    # case "stretcher_dipole_shapes":
-    #     filename = "Optical_stretcher"
-    #     show_output = True
-    #     frames = 2
-    #     time_step = 1e-4
-
-    #     sphere_radius = 0.3e-6
-    #     dipole_size = 60e-9
-    #     connection_mode = "dist"
-    #     connection_args = "81e-9" # dipole diameter
-    #     E0 = 7e6 #1.5e7
-    #     w0 = 0.4
-    #     stiffness = 5e-8  # 5e-7
-    #     bending = 5e-20  # 0.5e-18 # 5e-19
-    #     force_terms = ["optical", "spring", "bending"] #, "buckingham"
-
-    #     simulation_stretcher_dipole_shapes(filename, sphere_radius, dipole_size, E0, w0, stiffness, bending, connection_mode, connection_args, force_terms, time_step, frames, show_output)
 
 
     case "stretcher_springs_cubic_sphere":
