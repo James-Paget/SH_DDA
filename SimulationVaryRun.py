@@ -4277,6 +4277,18 @@ match(sys.argv[1]):
                     transformed_coords_list = coordinates * [1/np.sqrt(transform_factor), 1/np.sqrt(transform_factor), transform_factor]
                     return transformed_coords_list
 
+                case "adjusted_linear":
+                    # Linear transform with some alteration
+                    # NOTE; This does NOT preserve volume, you could add this though by scaling the Z down by rad_factor^2, but this would likely cause more problems
+                    #   --> Need a function with positive and negative integral contribution => Takes away and awards volume in XY plane without influencing Z plane
+                    mesh_unstretched_radius = 1000e-9   ##### HARD CODED FOR NOW -> Fits current test, see if works then implement fully ######
+                    influence = 0.6     # Acts to inflate the transformation in the XY plane
+                    transformed_coords_list = []
+                    for coord in coordinates:
+                        rad_factor = 1.0 +influence*(transform_factor-1.0)*(np.sqrt( pow(coord[0],2) + pow(coord[1],2) ) / (mesh_unstretched_radius))
+                        transformed_coords_list.append( [rad_factor*coord[0]/np.sqrt(transform_factor), rad_factor*coord[1]/np.sqrt(transform_factor), coord[2]*transform_factor] )
+                    return np.array(transformed_coords_list)
+
                 case "power":
                     power = args["power"] # stretch in z is transform_factor^power
                     transformed_coords_list = coordinates * [transform_factor**(-power/2), transform_factor**(-power/2), transform_factor**power]
@@ -4413,7 +4425,7 @@ match(sys.argv[1]):
         dimension = 2000e-9     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 50
+        num_factors_tested = 5
         particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
@@ -4421,7 +4433,7 @@ match(sys.argv[1]):
         connection_mode = "manual"          # "dist", 0.0
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "linear"         # "linear", "inverse_area"
+        transform_type = "adjusted_linear"         # "linear", "inverse_area"
         E0 = 20.0e6 # 4.5e6
         w0 = 0.5
         translation = "0.0 0.0 5.0e-6"  # Offset applied to both beams
@@ -4429,11 +4441,11 @@ match(sys.argv[1]):
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
             "show_stress": False,
-            "quiver_setting": 1,
+            "quiver_setting": 0,
             "wavelength": 1.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 2.5e-6}, #5e-6 #5e-8  # 5e-7
+            "stiffness_spec": {"type":"", "default_value": 3.5e-6}, #5e-6 #5e-8  # 5e-7
             "equilibrium_shape": coords_List,
             "dipole_radius": 100e-9,
             "frames": 1,
@@ -4462,8 +4474,8 @@ match(sys.argv[1]):
         if(force_reading=="FZmag"):
             datalabel_set = ["FTz"]
 
-        transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
-        num_transforms = len(transform_factor_list)
+        #transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
+        #num_transforms = len(transform_factor_list)
         #data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)
         func_transform_partial = partial(func_transform, transform_type=transform_type, args=power_args)
 
@@ -4473,7 +4485,7 @@ match(sys.argv[1]):
         #
         # Vary transform factor
         #
-        transform_factor_list = np.linspace(1.0, critical_transform_factor, num_factors_tested)
+        transform_factor_list = np.linspace(1.5, critical_transform_factor, num_factors_tested)
         num_transforms = len(transform_factor_list)
         data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)        
         graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
