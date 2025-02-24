@@ -1435,7 +1435,7 @@ def simulations_fibre_1D_cylinder(filename, chain_length, particle_length, parti
     parameter_text = ""
     return parameter_text
 
-def simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
+def simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
     particle_info = []
     record_parameters = ["F"]
 
@@ -1443,7 +1443,7 @@ def simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, cha
     print(f"Performing calculation for {particle_number_radial*particle_number_angular} particles")
     with open(f"{filename}.yml", "w") as _:     # Used to reset file each time this is run
         pass                                    #
-    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
+    Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
 
     # Run simulation
     DM.main(YAML_name=filename)
@@ -3408,6 +3408,7 @@ match(sys.argv[1]):
         particle_number_radial  = 8
         particle_number_angular = 8
         E0 = 4.6e7
+        object_offset=np.array([0.0, -1.0e-6, 0.0])
 
         stiffness = 1.5e-6
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
@@ -3441,7 +3442,7 @@ match(sys.argv[1]):
         })
 
         # Run
-        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
+        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
     case "fibre_2D_cylinder_hollowShell":
         # Save file
         filename = "SingleLaguerre"
@@ -4096,10 +4097,30 @@ match(sys.argv[1]):
         # Run cube generation out of sub-cubes / sub-spheres
         # Showing that particle + dipole refinement results in accuracy results (to a numerically exact TRUE result, for cube when 2.0*particle_size=dimension)
         #
+        # dimensions      = [400e-9]                       # Full width of sphere/cube
+        # separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
+        # particle_sizes  = [dimensions[0]/12, dimensions[0]/6, dimensions[0]/2]              # Single particle
+        # dipole_sizes    = np.linspace(15e-9, 200e-9, 100)  
+        # object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
+        # particle_shapes = ["cube", "sphere"]
+        # materials = ["FusedSilica"] # , "FusedSilica01"
+        # indep_var = "dipole_sizes"                       # Must be one of the keys in variables_list, excluding "indep_var".
+        # beam_type = "LAGUERRE"     
+        # object_shape = "cube"   
+        # torque_centre = [0,0,0]
+        # place_regime = "squish"                          # Format to place particles within the overall rod; "squish", "spaced", ...
+        # linestyle_var = None # (it will pick the best if None) strings: dipole_sizes, particle_sizes, particle_shapes, forces_output, particle_selections, deflections, separations_list
+        # # The following lists must be the same length.
+        # forces_output= ["Fmag"] #["Tz", "Cz"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        # particle_selections = ["all"]   #["all", "all"] # list of "all", [i,j,k...], [[rx,ry,rz]...] - (get all particles, specific indices, or indices close to a position; then forces summed over all particles in the list)
+
+        #
+        # 2nd data set for sub-cube, sub-sphere test
+        #
         dimensions      = [400e-9]                       # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
-        particle_sizes  = [dimensions[0]/12, dimensions[0]/6, dimensions[0]/2]              # Single particle
-        dipole_sizes    = np.linspace(15e-9, 200e-9, 100)  
+        particle_sizes  = [40e-9, 80e-9, 100e-9, 200e-9]              # Single particle
+        dipole_sizes    = np.linspace(20e-9, 40e-9, 100)  
         object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
         particle_shapes = ["cube", "sphere"]
         materials = ["FusedSilica"] # , "FusedSilica01"

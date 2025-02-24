@@ -187,18 +187,18 @@ def make_yaml_fibre_1d_cylinder(filename, option_parameters, length=3e-6, partic
     use_beam(filename, beam)
     use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
+def make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, object_offset, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
     use_parameter_options(filename, option_parameters)
-    #use_beam(filename, beam, translation="2.5e-6 0.0 0.0", translationargs="1.0e-6 0.0 0.0")  ### DOES NOT ALLOW PARAMETER VARIATION EASILY ###
-    # use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationargs="2.5e-6 1.5e-6 0.0")
+
+    beam_offset = np.array([2.6e-6, 0.0, 0.0]) +object_offset
 
     #2.5e-6 1.5e-6 0.0
-    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": "2.6e-6 0.0 0.0", "translationargs": "-0.5 0.0 0.0 1.0 -2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
-    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation":"-2.6e-6 0.0 0.0", "translationargs": "0.5 0.0 0.0 1.0 2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "-0.5 0.0 0.0 1.0 -2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"-{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "0.5 0.0 0.0 1.0 2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
     write_beams(filename, [beam_1, beam_2])
 
     # Varies depending on if beads are included within this function
-    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
+    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, object_offset, connection_mode, connection_args, include_beads=include_beads)
 
 def make_yaml_fibre_2d_cylinder_hollowshell(filename, option_parameters, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
     use_parameter_options(filename, option_parameters)
@@ -375,11 +375,12 @@ def use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, pa
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * particle_number
     use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
+def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, object_offset, connection_mode, connection_args, include_beads=False):
     args_list = [[particle_radius]] * (particle_number_radial*particle_number_angular)
-    coords_list = coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
+    coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
+    coords_list = np.array(coords_list) + object_offset
     
-    bead_positions = [ [-1.5*length/2.0, 0.0, 0.0], [1.5*length/2.0, 0.0, 0.0] ]
+    bead_positions = np.array([ [-1.5*length/2.0, 0.0, 0.0], [1.5*length/2.0, 0.0, 0.0] ]) +object_offset
 
     connection_args[0] = 1.01*max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
     if(include_beads):
@@ -399,7 +400,7 @@ def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_rad
 
     # Manually converting connection args back to nicer readable state
     ####
-    ## THIS SHOULD BE CHECK FOR BEFORE WRITING INSIDE write_particles()
+    ## THIS SHOULD BE CHECKED FOR BEFORE WRITING INSIDE write_particles()
     ####
     connection_args_str = str(connection_args[0])
     if(include_beads):

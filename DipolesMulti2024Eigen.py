@@ -2048,7 +2048,10 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         position_vectors = new_positions_array
 
         # particles not experiencing mutual Buckingham force are moved apart if overlapping
-        stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
+        #
+        # TEMPORARILY DISABLED
+        #
+        #stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
 
         vectors_list.append(
             position_vectors
@@ -2264,7 +2267,7 @@ def main(YAML_name=None):
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
+        #fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
         include_connections = True
         display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_tracer=False, include_connections=include_connections, beam_collection_list=beam_collection_list, time_step=timestep) 
 

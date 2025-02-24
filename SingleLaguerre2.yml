@@ -43,11 +43,11 @@ display:
 #============================================================================================
 beams:
   beam_1:
-    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN # parameter
-    E0: 300
+    beamtype: BEAMTYPE_GAUSS_CSP # parameter
+    E0: 2
     order: 3
-    w0: 0.6 # fraction of wavelength
-    jones: POLARISATION_LCP # parameter
+    w0: 0.5 # fraction of wavelength
+    jones: POLARISATION_X # parameter
     translation: None # translation in meters or None
     rotation: None # x rotation followed by z rotation in degrees or None
 #============================================================================================
@@ -57,11 +57,11 @@ particles:
   default_radius: 200e-9
   default_material: FusedSilica
   particle_list:
-    # part_1:
-    #   material: FusedSilica
-    #   #radius: 500e-9
-    #   coords: 1e-6 0.0 0.0
-    #   altcolour: True
+    part_1:
+      material: FusedSilica
+      #radius: 500e-9
+      coords: 1e-6 0.0 0.0
+      altcolour: True
     # part_2:
     #   material: FusedSilica
     #   radius: 200e-9
