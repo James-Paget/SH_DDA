@@ -51,13 +51,13 @@ def generate_yaml(preset, filename="Preset"):
             make_yaml_unconnected_ring(filename)
             
         case "7" | "SHEET_TRIANGLE":
-            make_yaml_sheet_triangle(filename)
+            make_yaml_sheet_triangle(filename, formation=None)
         
         case "8" | "SHEET_SQUARE":
-            make_yaml_sheet_square(filename)
+            make_yaml_sheet_square(filename, formation=None)
 
         case "9" | "SHEET_HEXAGON":
-            make_yaml_sheet_hexagon(filename)
+            make_yaml_sheet_hexagon(filename, formation=None)
 
         case "10" | "FILAMENT":
             make_yaml_filament(filename)
@@ -157,20 +157,20 @@ def make_yaml_unconnected_ring(filename, frames=50, show_output=True, num_partic
     use_beam(filename, beam)
     use_unconnected_ring(filename, num_particles, ring_radius, particle_radius, rotation_axis, rotation_theta)
 
-def make_yaml_sheet_triangle(filename, frames=25, show_output=True, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
-    use_default_options(filename, frames, show_output)
+def make_yaml_sheet_triangle(filename, frames=25, show_output=True, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0, formation="square"):
+    use_parameter_options(filename, fill_yaml_options({"frames": frames, "show_output":show_output, "quiver_setting":0}))
     use_beam(filename, beam)
-    use_sheet_triangle(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta)
+    use_sheet_triangle(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta, formation=formation)
 
-def make_yaml_sheet_square(filename, frames=25, show_output=True, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+def make_yaml_sheet_square(filename, frames=25, show_output=True, num_length=4, num_width=4, separation=0.9e-6, particle_radius=0.15e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0, formation="square"):
     use_default_options(filename, frames, show_output)
     use_beam(filename, beam)
-    use_sheet_square(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta)
+    use_sheet_square(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta, formation=formation)
 
-def make_yaml_sheet_hexagon(filename, frames=25, show_output=True, num_length=3, num_width=3, separation=0.7e-6, particle_radius=0.12e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
+def make_yaml_sheet_hexagon(filename, frames=25, show_output=True, num_length=3, num_width=3, separation=0.7e-6, particle_radius=0.12e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0, formation="square"):
     use_default_options(filename, frames, show_output)
     use_beam(filename, beam)
-    use_sheet_hexagon(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta)
+    use_sheet_hexagon(filename, num_length, num_width, separation, particle_radius, rotation_axis, rotation_theta, formation=formation)
 
 def make_yaml_filament(filename, frames=50, show_output=True, length=4e-6, radius=0.8e-6, separation=0.7e-6, particle_radius=0.1e-6, beam="LAGUERRE", rotation_axis=[0,0,1], rotation_theta=0):
     use_default_options(filename, frames, show_output)
@@ -342,15 +342,15 @@ def use_sheet_triangle(filename, num_length, num_width, separation, particle_rad
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
     use_default_particles(filename, "sphere", args_list, coords_list, "dist", connection_factor*separation)
 
-def use_sheet_square(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
+def use_sheet_square(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0, formation=None):
     args_list = [[particle_radius]] * num_length * num_width
-    coords_list = get_sheet_points(num_length, num_width, separation, mode="square")
+    coords_list = get_sheet_points(num_length, num_width, separation, mode="square", formation=formation)
     if rotation_theta != 0:
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
     use_default_particles(filename, "sphere", args_list, coords_list, "dist", 1.001*separation)
 
-def use_sheet_hexagon(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0):
-    coords_list = get_sheet_points(num_length, num_width, separation, mode="hexagon")
+def use_sheet_hexagon(filename, num_length, num_width, separation, particle_radius, rotation_axis=[0,0,1], rotation_theta=0, formation=None):
+    coords_list = get_sheet_points(num_length, num_width, separation, mode="hexagon", formation=formation)
     args_list = [[particle_radius]] * len(coords_list)
     if rotation_theta != 0:
         coords_list = rotate_coords_list(coords_list, rotation_axis, rotation_theta)
@@ -699,14 +699,14 @@ def write_options(filename, option_parameters):
                 file.write(f"    {key}: {val}\n")
         
         # Write spring natural length override (specify custom single float natural length for all springs to use, not auto-generated)
-        # file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
+        file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
 
         file.write(f"output:\n")
         for var in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
             file.write(f"  {var}: {option_parameters[var]}\n")
 
         file.write(f"display:\n")
-        for var in ["show_output", "show_stress", "frame_interval", "resolution", "frame_min", "frame_max", "z_offset", "beam_planes", "quiver_setting"]:
+        for var in ["show_output", "show_stress", "frame_interval", "max_size", "resolution", "frame_min", "frame_max", "z_offset", "beam_planes", "quiver_setting"]:
             file.write(f"  {var}: {option_parameters[var]}\n")
 
 
@@ -850,7 +850,7 @@ def get_sheet_points(num_length, num_width, separation, mode="triangle", formati
         withinBounds=False
         match formation:
             case "square":
-                width, height = bounds
+                width, height = bounds[0], bounds[0]
                 withinX = ( -width/2.0 <= point[0]) and (point[0] <= width/2.0)
                 withinY = (-height/2.0 <= point[1]) and (point[1] <= height/2.0)
                 withinBounds = withinX and withinY
