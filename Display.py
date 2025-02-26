@@ -225,7 +225,7 @@ class DisplayObject (object):
         # z = np.outer(radius*np.sin(v), np.ones(samples)) +centre[2]
         # return x, y, z
         radius, width, theta_Z, theta_pitch = args
-        samples = 10 #20
+        samples = 20
         u = np.linspace(0, 2.0*np.pi, samples)              # Parameterised values
         v = np.linspace(-width/2.0, width/2.0, samples)     #
         u, v = np.meshgrid(u, v)
@@ -401,13 +401,14 @@ class DisplayObject (object):
                 textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
                 plots.append(textplot)
             
-            # Remove Z axis for cleaner plots sometimes
+            # NOTE; ** Remove Z axis for cleaner plots sometimes **
             #ax.set_zticks([])
             #ax.set_zlabel("")
 
+            #plt.savefig("myImage.png", format="png", dpi=1200)
             if t in save_frames:
                 save_frames.remove(t)
-                plt.savefig(f"myImage{t}.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
+                #plt.savefig(f"myImage{t}.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
 
         # Initialise
         positions = np.array(positions)
@@ -913,6 +914,8 @@ def plot_example_DDA_voxel(num=9, dipole_size=40e-9, plot_size=0.7e-6):
         r,g,b = 46, 139, 192
         cols = [(r/256,g/256,b/256)]*6 # blue faces
         grey = 0.3
-        ax.add_collection3d(Poly3DCollection(faces, facecolors=cols, linewidths=0.5, alpha=1.0, edgecolor=(grey, grey, grey))) # grey edges
+        ax.add_collection3d(Poly3DCollection(faces, facecolors=cols, linewidths=1.2, alpha=1.0, edgecolor=(grey, grey, grey))) # grey edges
+    plt.savefig("myImage.png", format="png", dpi=1200)
+    plt.show()
 
         

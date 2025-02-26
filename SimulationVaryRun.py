@@ -642,6 +642,22 @@ def pull_file_data(filename, parameters_stored, read_frames, read_parameters, in
     # Output data
     return output
 
+def rotate_arbitrary(theta, v, n):
+        #
+        # theta = angle to rotate by (ccw)
+        # v = vector to rotate
+        # n = axis to rotate about
+        #
+        arb_rotation_matrix = np.array(
+            [
+                [( (n[0]*n[0])*(1.0-np.cos(-theta)) +(np.cos(-theta))              ), ( (n[1]*n[0])*(1.0-np.cos(-theta)) -(np.sin(-theta)*n[2]) ), ( (n[2]*n[0])*(1.0-np.cos(-theta)) +(np.sin(-theta)*n[1]) )],
+                [( (n[0]*n[1])*(1.0-np.cos(-theta)) +(np.sin(-theta)*n[2]) ), ( (n[1]*n[1])*(1.0-np.cos(-theta)) +(np.cos(-theta)             ) ), ( (n[2]*n[1])*(1.0-np.cos(-theta)) -(np.sin(-theta)*n[0]) )],
+                [( (n[0]*n[2])*(1.0-np.cos(-theta)) -(np.sin(-theta)*n[1]) ), ( (n[1]*n[2])*(1.0-np.cos(-theta)) +(np.sin(-theta)*n[0]) ), ( (n[2]*n[2])*(1.0-np.cos(-theta)) +(np.cos(-theta)             ) )]
+            ]
+        )
+        v_rotated = np.dot( arb_rotation_matrix, v )    # Apply rotation
+        return v_rotated
+
 def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False):
     #
     # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
@@ -652,7 +668,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     particle_info = []
     place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
-    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
+    parameters = {"frames": 1, "frame_max": 1, "show_output": True}
 
     record_parameters = ["F"]
     if(include_additionalForces):   # Record total forces instead of just optical forces
@@ -3231,7 +3247,7 @@ match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre"
         #1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
-        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+        particle_numbers = [6,7,8,9,10,11,12,13,14,15,16]
         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
         #Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
@@ -3433,6 +3449,7 @@ match(sys.argv[1]):
         option_parameters = Generate_yaml.fill_yaml_options({
             "time_step": 0.25e-4,
             "frames": 90,
+            "max_size":3e-6,    #2e-6
             "constants": {"bending": 0.1e-18},
             "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":5.0*stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
             "force_terms": ["optical", "spring", "bending"],
@@ -3459,7 +3476,7 @@ match(sys.argv[1]):
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "time_step": 5e-5,
-            "frames": 10,
+            "frames": 90,
             "constants": {"bending": 0.65e-18},
             "stiffness_spec": {"type":"", "default_value":5e-7},
             "force_terms": ["optical", "spring", "bending"],
@@ -4119,10 +4136,10 @@ match(sys.argv[1]):
         #
         dimensions      = [400e-9]                       # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
-        particle_sizes  = [40e-9, 80e-9, 100e-9, 200e-9]              # Single particle
-        dipole_sizes    = np.linspace(20e-9, 40e-9, 100)  
+        particle_sizes  = [40e-9, 100e-9, 200e-9]              # Single particle
+        dipole_sizes    = np.linspace(20e-9, 200e-9, 200)  
         object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
-        particle_shapes = ["cube", "sphere"]
+        particle_shapes = ["sphere", "cube"]
         materials = ["FusedSilica"] # , "FusedSilica01"
         indep_var = "dipole_sizes"                       # Must be one of the keys in variables_list, excluding "indep_var".
         beam_type = "LAGUERRE"     
@@ -4298,16 +4315,48 @@ match(sys.argv[1]):
                     transformed_coords_list = coordinates * [1/np.sqrt(transform_factor), 1/np.sqrt(transform_factor), transform_factor]
                     return transformed_coords_list
 
+                case "radial_meridional":
+                    # Radial and meridional transform given in "Guck, Jochen, et al. "The optical stretcher: a novel laser tool to micromanipulate cells." Biophysical journal 81.2 (2001): 767-784"
+                    nu = 0.5    # Poisson ratio
+                    Eh = 3.9e-5 # Young's Modulus*shell thickness -> experimental average used
+                    stress0 = pow(transform_factor,3)*3.0   # Scales with transform factor; starts at 0 -> required deformation
+                    transformed_coords_list = []
+                    for coord in coordinates:
+                        rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2))
+                        rho2 = rho*rho
+                        theta = np.arctan2(coord[1], coord[0])
+                        radial_comp = ( (rho2*stress0)/(4.0*Eh) )*( (5.0+nu)*pow(np.cos(theta),2) - (1.0+nu) )  
+                        meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )
+                        transformed_coord_unrot = [(rho+radial_comp)*np.cos(theta), (rho+radial_comp)*np.sin(theta), coord[2]+meridional_comp]
+                        transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
+
+                    return np.array(transformed_coords_list)
+
                 case "adjusted_linear":
                     # Linear transform with some alteration
                     # NOTE; This does NOT preserve volume, you could add this though by scaling the Z down by rad_factor^2, but this would likely cause more problems
                     #   --> Need a function with positive and negative integral contribution => Takes away and awards volume in XY plane without influencing Z plane
+                    
+                    #
+                    # Original adjustment -> zero seen
+                    #
+                    # mesh_unstretched_radius = 1000e-9   ##### Hard coded to test if shape profile works -> Fits current test, see if works then implement fully ######
+                    # influence = 0.6     # Acts to inflate the transformation in the XY plane
+                    # transformed_coords_list = []
+                    # for coord in coordinates:
+                    #     rad_factor = 1.0 +influence*(transform_factor-1.0)*(np.sqrt( pow(coord[0],2) + pow(coord[1],2) ) / (mesh_unstretched_radius))
+                    #     transformed_coords_list.append( [rad_factor*coord[0]/np.sqrt(transform_factor), rad_factor*coord[1]/np.sqrt(transform_factor), coord[2]*transform_factor] )
+
+                    #
+                    # Compressive adjustment
+                    #
                     mesh_unstretched_radius = 1000e-9   ##### HARD CODED FOR NOW -> Fits current test, see if works then implement fully ######
-                    influence = 0.6     # Acts to inflate the transformation in the XY plane
+                    influence = 0.25     # Acts to inflate the transformation in the XY plane
                     transformed_coords_list = []
                     for coord in coordinates:
-                        rad_factor = 1.0 +influence*(transform_factor-1.0)*(np.sqrt( pow(coord[0],2) + pow(coord[1],2) ) / (mesh_unstretched_radius))
+                        rad_factor = 1.0 -influence*(transform_factor-1.0)*(np.sqrt( pow(coord[0],2) + pow(coord[1],2) ) / (mesh_unstretched_radius))
                         transformed_coords_list.append( [rad_factor*coord[0]/np.sqrt(transform_factor), rad_factor*coord[1]/np.sqrt(transform_factor), coord[2]*transform_factor] )
+
                     return np.array(transformed_coords_list)
 
                 case "power":
@@ -4441,12 +4490,12 @@ match(sys.argv[1]):
         # })
 
         #
-        # Fine translation+stretching tests
+        # Stretching for experimentally accurate BUT scaled shape (1/3 scale)
         #
         dimension = 2000e-9     # Base diameter of the full untransformed sphere
-        transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
+        transform_factor = 1.6  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 5
+        num_factors_tested = 25
         particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
@@ -4454,25 +4503,25 @@ match(sys.argv[1]):
         connection_mode = "manual"          # "dist", 0.0
         connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "adjusted_linear"         # "linear", "inverse_area"
-        E0 = 20.0e6 # 4.5e6
-        w0 = 0.5
-        translation = "0.0 0.0 5.0e-6"  # Offset applied to both beams
+        transform_type = "radial_meridional"         # "linear", "inverse_area"
+        E0 = 14.0e6 # 20e6 4.5e6
+        w0 = 5.4   #5.4
+        translation = "0.0 0.0 135.0e-6"  # Offset applied to both beams
         coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": False,
+            "show_output": True,
             "show_stress": False,
             "quiver_setting": 0,
             "wavelength": 1.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 3.5e-6}, #5e-6 #5e-8  # 5e-7
+            "stiffness_spec": {"type":"", "default_value": 3.35e-5}, #3.5e-5
             "equilibrium_shape": coords_List,
             "dipole_radius": 100e-9,
-            "frames": 1,
-            "time_step": 0.5e-4, 
-            "beam_planes": [], #  [["z", 0], ["x", 0]]  [["z", 0]]      ["x", 0],["z", 0]
-            "beam_alpha": 0.6,
+            "frames": 50,
+            "time_step": 0.125e-4, 
+            "beam_planes": [["x", 0],["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+            "beam_alpha": 0.4,
         })
 
         if option_parameters["show_output"] == False: option_parameters["frames"] = 1
@@ -4506,7 +4555,7 @@ match(sys.argv[1]):
         #
         # Vary transform factor
         #
-        transform_factor_list = np.linspace(1.5, critical_transform_factor, num_factors_tested)
+        transform_factor_list = np.linspace(transform_factor, critical_transform_factor, num_factors_tested)
         num_transforms = len(transform_factor_list)
         data_set = np.array([[transform_factor_list, np.zeros(num_transforms)] for _ in range(len(datalabel_set))], dtype=object)        
         graphlabel_set={"title":f"Stretched sphere model, mode = {force_reading}", "xAxis":"Transform_Factor", "yAxis":"Forces(N)"}
@@ -4545,8 +4594,7 @@ match(sys.argv[1]):
             "force_terms": ["optical"],
             "beam_planes": []
         })
-        Generate_yaml.make_yaml_refine_cube_showcase(filename, 0.9e-6, [-4.0e-6, 0.0, 0.0], "sphere", option_parameters, beam="LAGUERRE", material="FusedSilica")
-        #Generate_yaml.generate_yaml("SHEET_TRIANGLE", filename=filename)
+        Generate_yaml.make_yaml_refine_cube_showcase(filename, 0.8e-6, [-2.8e-6, 0.0, 0.0], "sphere", option_parameters, beam="LAGUERRE", material="FusedSilica")
         DM.main(YAML_name=filename)
 
 

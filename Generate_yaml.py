@@ -707,7 +707,7 @@ def write_options(filename, option_parameters):
             file.write(f"  {var}: {option_parameters[var]}\n")
 
         file.write(f"display:\n")
-        for var in ["show_output", "show_stress", "frame_interval", "resolution", "frame_min", "frame_max", "z_offset", "beam_planes", "quiver_setting"]:
+        for var in ["show_output", "show_stress", "frame_interval", "resolution", "max_size", "frame_min", "frame_max", "z_offset", "beam_planes", "quiver_setting"]:
             file.write(f"  {var}: {option_parameters[var]}\n")
 
 
@@ -1205,14 +1205,16 @@ def get_refine_cube_showcase(dimension):
     #
     coords_list = []
     args_list = []
-    mesh_spacing = 3.0*dimension
+    mesh_spacing = 2.0*dimension
     particle_spacing = dimension*0.01
+
+    particle_numbers = [1,2,5]
     
-    for p in range(3):   # Number of meshes to generate side-by-side
-        particle_size = (dimension-p*particle_spacing)/(p+1)
-        for i in range(p+1):            # Generate cubes of particles to create each mesh
-            for j in range(p+1):        #
-                for k in range(p+1):    #
+    for p in range(len(particle_numbers)):   # Number of meshes to generate side-by-side
+        particle_size = (dimension-particle_numbers[p]*particle_spacing)/(particle_numbers[p]+1)
+        for i in range(particle_numbers[p]):            # Generate cubes of particles to create each mesh
+            for j in range(particle_numbers[p]):        #
+                for k in range(particle_numbers[p]):    #
                     coords_list.append( [p*mesh_spacing +(i)*particle_spacing +(2.0*i+1.0)*(particle_size), (j)*particle_spacing +(2.0*j+1.0)*(particle_size), (k)*particle_spacing +(2.0*k+1.0)*(particle_size)] )
                     args_list.append([particle_size])
     return coords_list, args_list

@@ -2267,7 +2267,7 @@ def main(YAML_name=None):
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        #fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
+        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
         include_connections = True
         display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=optforces, include_tracer=False, include_connections=include_connections, beam_collection_list=beam_collection_list, time_step=timestep) 
 
@@ -2308,4 +2308,4 @@ def main(YAML_name=None):
             Output.make_excel_file_dipoles(filename_dipoles_xl,number_of_dipoles,frames,timestep,dipoptpos,dipoptforces)   # Output for just dipole data
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main()
+   main()
