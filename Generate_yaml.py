@@ -187,18 +187,18 @@ def make_yaml_fibre_1d_cylinder(filename, option_parameters, length=3e-6, partic
     use_beam(filename, beam)
     use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, particle_number, connection_mode, connection_args)
 
-def make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
+def make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, object_offset, length=3e-6, shell_radius=0.3e-6, particle_radius=0.1e-6, particle_number_radial=6, particle_number_angular=4, connection_mode="dist", connection_args=0.0, beam="LAGUERRE", include_beads=False):
     use_parameter_options(filename, option_parameters)
-    #use_beam(filename, beam, translation="2.5e-6 0.0 0.0", translationargs="1.0e-6 0.0 0.0")  ### DOES NOT ALLOW PARAMETER VARIATION EASILY ###
-    # use_gaussCSP_beam(filename, E0=2.5e7, w0=0.4, translation="2.5e-6 0.0 0.0", translationargs="2.5e-6 1.5e-6 0.0")
+
+    beam_offset = np.array([2.6e-6, 0.0, 0.0]) +object_offset
 
     #2.5e-6 1.5e-6 0.0
-    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": "2.6e-6 0.0 0.0", "translationargs": "-0.5 0.0 0.0 1.0 -2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
-    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation":"-2.6e-6 0.0 0.0", "translationargs": "0.5 0.0 0.0 1.0 2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "-0.5 0.0 0.0 1.0 -2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"-{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "0.5 0.0 0.0 1.0 2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
     write_beams(filename, [beam_1, beam_2])
 
     # Varies depending on if beads are included within this function
-    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
+    use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, object_offset, connection_mode, connection_args, include_beads=include_beads)
 
 def make_yaml_fibre_2d_cylinder_hollowshell(filename, option_parameters, length=2e-6, shell_radius=1e-6, particle_length=0.5e-6, particle_radius=0.2e-6, particle_number_radial=3, particle_number_angular=8, connection_mode="dist", connection_args=0.0, beam="LAGUERRE"):
     use_parameter_options(filename, option_parameters)
@@ -375,11 +375,12 @@ def use_fibre_1d_cylinder(filename, length, particle_length, particle_radius, pa
     args_list = [[particle_radius, particle_length, 0.0, 0.0]] * particle_number
     use_default_particles(filename, "cylinder", args_list, coords_list, connection_mode, connection_args)
 
-def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
+def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, object_offset, connection_mode, connection_args, include_beads=False):
     args_list = [[particle_radius]] * (particle_number_radial*particle_number_angular)
-    coords_list = coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
+    coords_list = get_fibre_2d_hollowshell_points(length, shell_radius, particle_number_radial, particle_number_angular)
+    coords_list = np.array(coords_list) + object_offset
     
-    bead_positions = [ [-1.5*length/2.0, 0.0, 0.0], [1.5*length/2.0, 0.0, 0.0] ]
+    bead_positions = np.array([ [-1.5*length/2.0, 0.0, 0.0], [1.5*length/2.0, 0.0, 0.0] ]) +object_offset
 
     connection_args[0] = 1.01*max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
     if(include_beads):
@@ -399,7 +400,7 @@ def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_rad
 
     # Manually converting connection args back to nicer readable state
     ####
-    ## THIS SHOULD BE CHECK FOR BEFORE WRITING INSIDE write_particles()
+    ## THIS SHOULD BE CHECKED FOR BEFORE WRITING INSIDE write_particles()
     ####
     connection_args_str = str(connection_args[0])
     if(include_beads):
@@ -593,8 +594,8 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4, translation=None):
     Makes two counter-propagating Gaussian beams.
     """
     # NOTE; Same translation for both since translation applied after rotation, therefore will translate in the opposite direction
-    beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":None}
-    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 90.0"}
+    beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_X", "translation":translation, "translationargs":None, "translationtype":None, "rotation":None}
+    beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_X", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 90.0"}
     write_beams(filename, [beam1, beam2])   #POLARISATION_X
 
 
@@ -699,14 +700,14 @@ def write_options(filename, option_parameters):
                 file.write(f"    {key}: {val}\n")
         
         # Write spring natural length override (specify custom single float natural length for all springs to use, not auto-generated)
-        # file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
+        file.write(f"  equilibrium_shape: {option_parameters['equilibrium_shape']}\n")
 
         file.write(f"output:\n")
         for var in ["vmd_output", "excel_output", "include_force", "include_couple", "verbosity", "include_dipole_forces", "force_terms"]:
             file.write(f"  {var}: {option_parameters[var]}\n")
 
         file.write(f"display:\n")
-        for var in ["show_output", "show_stress", "frame_interval", "resolution", "frame_min", "frame_max", "z_offset", "beam_planes", "quiver_setting"]:
+        for var in ["show_output", "show_stress", "frame_interval", "resolution", "max_size", "frame_min", "frame_max", "z_offset", "beam_planes", "quiver_setting"]:
             file.write(f"  {var}: {option_parameters[var]}\n")
 
 
@@ -832,7 +833,7 @@ def get_torus_points_args(num_particles, separation, inner_radius, tube_radius):
 
     return coords_list, args_list
 
-def get_sheet_points(num_length, num_width, separation, mode="triangle", formation="square", bounds=[2e-6]):
+def get_sheet_points(num_length, num_width, separation, mode="triangle", formation="square", bounds=[10e-6]):
     # Makes a sheet in the z=0 plane. width in x-axis, length in y-axis.
     # modes are "triangle", "square", "hexagon"
 
@@ -850,7 +851,8 @@ def get_sheet_points(num_length, num_width, separation, mode="triangle", formati
         withinBounds=False
         match formation:
             case "square":
-                width, height = bounds
+                width = bounds[0]
+                height = bounds[0]
                 withinX = ( -width/2.0 <= point[0]) and (point[0] <= width/2.0)
                 withinY = (-height/2.0 <= point[1]) and (point[1] <= height/2.0)
                 withinBounds = withinX and withinY
@@ -1203,14 +1205,16 @@ def get_refine_cube_showcase(dimension):
     #
     coords_list = []
     args_list = []
-    mesh_spacing = 3.0*dimension
+    mesh_spacing = 2.0*dimension
     particle_spacing = dimension*0.01
+
+    particle_numbers = [1,2,5]
     
-    for p in range(3):   # Number of meshes to generate side-by-side
-        particle_size = (dimension-p*particle_spacing)/(p+1)
-        for i in range(p+1):            # Generate cubes of particles to create each mesh
-            for j in range(p+1):        #
-                for k in range(p+1):    #
+    for p in range(len(particle_numbers)):   # Number of meshes to generate side-by-side
+        particle_size = (dimension-particle_numbers[p]*particle_spacing)/(particle_numbers[p]+1)
+        for i in range(particle_numbers[p]):            # Generate cubes of particles to create each mesh
+            for j in range(particle_numbers[p]):        #
+                for k in range(particle_numbers[p]):    #
                     coords_list.append( [p*mesh_spacing +(i)*particle_spacing +(2.0*i+1.0)*(particle_size), (j)*particle_spacing +(2.0*j+1.0)*(particle_size), (k)*particle_spacing +(2.0*k+1.0)*(particle_size)] )
                     args_list.append([particle_size])
     return coords_list, args_list
@@ -1352,13 +1356,13 @@ def get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_
     coords_list = []
     
     mesh_radius = dimension/2.0
-    base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)
+    base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)    ### Should rename this, not really base sep, more like a min sep ###
     #number_of_particles_side = int(np.floor( (mesh_radius-particle_size) / (2.0*particle_size) ))
     number_of_particles_side = int(np.floor( mesh_radius/base_separation ))
     number_of_particles = 2*number_of_particles_side +1
 
     # Generate some base sphere shape
-    base_separation = dimension/number_of_particles ################ WHY REDEFINED BASE_SEP ???? <---- REMOVE THIS BUT MAKE SURE WORKS <- inital base_sep was the minimum sep, then we found the number of particles, then refine base_sep so it is based on the actual number of particle used. might need -1 for fence post problem maybe?
+    base_separation = dimension/number_of_particles
     for i in range(-number_of_particles_side, number_of_particles_side+1):
         i_coord = i*base_separation
         for j in range(-number_of_particles_side, number_of_particles_side+1):

@@ -2048,7 +2048,10 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
         position_vectors = new_positions_array
 
         # particles not experiencing mutual Buckingham force are moved apart if overlapping
-        stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
+        #
+        # TEMPORARILY DISABLED
+        #
+        #stop_particles_overlapping(position_vectors, effective_radii, particle_neighbours)
 
         vectors_list.append(
             position_vectors
@@ -2305,4 +2308,4 @@ def main(YAML_name=None):
             Output.make_excel_file_dipoles(filename_dipoles_xl,number_of_dipoles,frames,timestep,dipoptpos,dipoptforces)   # Output for just dipole data
 
 if __name__ == "__main__":  # To prevent running when imported in other files
-    main()
+   main()
