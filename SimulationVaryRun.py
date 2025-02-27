@@ -3148,15 +3148,15 @@ def make_legend_labels(data_set_params, legend_params, indep_name, forces_output
 
 
 
-def dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccentricity):
-    # Makes a data set of either the eccentricity or the ratio of the longest and shortest radii against the frame number. is_eccentricity is used to swap between these modes
-    # num_averaged is how many positions the longest/shortest are averaged over.
+def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label):
+    # Makes a data set of either the eccentricity, the ratio of the longest and shortest radii against the frame number, or the bounding box ratio of the z height/ sqrt(x width * y width)
+    # yaxis_label switches between the modes listed about, values should be "Eccentricity", "Height/width ratio", or "Bounding box ratio".
+    # num_averaged is how many positions the longest/shortest are averaged over - reduces anomalous effects but dilutes differences.
     # Different variables are used, depending on varaibles list.
     # Other parameters are given in option_parameters.
     # If the "try" fails, the values will be set to impossible ones - all zeros
 
     # Initialise variables
-    yaxis_label = "Eccentricity" if is_eccentricity else "Height/width ratio"
     max_time = option_parameters["frames"] * max(variables_list["time_step"])
     parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
     data_set = [] # it will be inhomogeneous
@@ -3164,11 +3164,14 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccen
     count = 0
     making_title = True
     title_str = yaxis_label + " against frame number"
+    len_title = len(title_str)
+    max_title_len = 100 # roughly
     num_expts = reduce(mul, [len(v) for v in variables_list.values()])
+    material = "RBC" # Red blood cell
 
     for params in it.product(*variables_list.values()):
-        # print(params)
         print(f"Progress; {count}/{num_expts}")
+
         # extract params values. NOTE order of this is important
         option_parameters["stiffness_spec"]["default_value"] = params[0]
         option_parameters["constants"]["bending"] = params[1]
@@ -3180,7 +3183,8 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccen
         w0 = params[6]
         time_step = params[7]
         num_averaged = params[8]
-        # repeat = params[9] # does nothing, just used to see the effect of randomness.
+        sphere_radius = params[9]
+        # repeat = params[10] # does nothing, just used to see the effect of randomness.
 
         option_parameters["time_step"] = time_step
         times = np.arange(0, max_time+time_step, time_step)
@@ -3194,16 +3198,21 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccen
             if len(variables_list[key])>1: 
                 if line_label!="": line_label += ", "
                 line_label += f"{key} = {params[i]}"
-            elif making_title: 
-                title_str += f", {key} = {params[i]}"
+            elif making_title:
+                if len_title > max_title_len: len_title=0; title_str += "\n"
+                string = f", {key} = {params[i]}"
+                title_str += string
+                len_title += len(string)
+        
+        if title_str[-1] == "\n": title_str = title_str[:-1] # pop trailing \n
         making_title = False # just add params to the title for the first time
 
         # Run simulation for the current set of params.
-        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation)
+        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation, material=material)
         particles = np.arange(0, num_particles, 1)
         data_set_values = np.zeros(num_frames) # default to zeros in case the "try" fails
 
-        try: # Will default to all 0s if NaN errors
+        try:
             DM.main(filename)
             read_parameters = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), particles)]
             pulled_data = pull_file_data(filename, parameters_stored, read_frames, read_parameters)
@@ -3212,15 +3221,36 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccen
             for f in read_frames:
                 data_of_frame = pulled_data[f]
                 positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
-                centre = np.average(positions, axis=1)
-                rs = np.linalg.norm(positions - centre[:,None], axis=0)
-                smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  # sort for the num_averaged min values, then slice for them.
-                largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]] # sort for the num_averaged max values, then slice for them.
 
-                if is_eccentricity: eccentricity = np.sqrt(1 - np.average(smallest_rs)**2/np.average(largest_rs)**2)
-                else: eccentricity = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
+                match yaxis_label:
+                    case "Eccentricity":
+                        centre = np.average(positions, axis=1)
+                        rs = np.linalg.norm(positions - centre[:,None], axis=0)
+                        smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  # sort for the num_averaged min values, then slice for them.
+                        largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]] # sort for the num_averaged max values, then slice for them.
+                        output = np.sqrt(1 - np.average(smallest_rs)**2/np.average(largest_rs)**2)
+                    
+                    case "Height/width ratio":
+                        centre = np.average(positions, axis=1)
+                        rs = np.linalg.norm(positions - centre[:,None], axis=0)
+                        smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  
+                        largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]]
+                        output = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
+                    
+                    case "Bounding box ratio":
+                        smallest_xs = positions[0, np.argpartition(positions[0], num_averaged)[:num_averaged]]
+                        largest_xs = positions[0, np.argpartition(positions[0], -num_averaged)[-num_averaged:]]
+                        smallest_ys = positions[1, np.argpartition(positions[1], num_averaged)[:num_averaged]]
+                        largest_ys = positions[1, np.argpartition(positions[1], -num_averaged)[-num_averaged:]]
+                        smallest_zs = positions[2, np.argpartition(positions[2], num_averaged)[:num_averaged]]
+                        largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]
 
-                data_set_values[f] = eccentricity
+                        # print("\nx", smallest_xs, largest_xs)
+                        # print("y", smallest_ys, largest_ys) 
+                        # print("z", smallest_zs, largest_zs)                       
+                        output = (np.average(largest_zs)-np.average(smallest_zs))/( np.sqrt( (np.average(largest_xs)-np.average(smallest_xs)) * (np.average(largest_ys)-np.average(smallest_ys))))
+
+                data_set_values[f] = output
 
         except Exception as error: 
             print(f"\nERROR, failed and continuing on params:")
@@ -3234,6 +3264,7 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccen
     
     data_set = np.array(data_set, dtype=object) # object as inhomogeneous
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
+    graphlabel_set["yAxis"] = "Ratio of major to minor axis length"
     return data_set, datalabel_set, graphlabel_set
 
 #=================#
@@ -3419,8 +3450,8 @@ match(sys.argv[1]):
         # Args
         chain_length    = 3e-6
         particle_radius = 100e-9
-        shell_radius    = 300e-9
-        particle_number_radial  = 8
+        shell_radius    = 500e-9
+        particle_number_radial  = 6
         particle_number_angular = 8
         E0 = 4.6e7
 
@@ -3452,7 +3483,8 @@ match(sys.argv[1]):
             "force_terms": ["optical", "spring", "bending"],
             "show_output": True,
             "beam_planes": [['z',0]],
-            "quiver_setting": 0
+            "quiver_setting": 0,
+            "frames": 1,
         })
 
         # Run
@@ -4240,20 +4272,21 @@ match(sys.argv[1]):
         #
         filename = "Optical_stretcher"
     
-        sphere_radius = 3.36e-6 # sphere radius from Guck's paper
+        
         connection_mode = "num"
         connection_args = "5"
-        is_eccentricity = False # Else does the ratio
+        yaxis_label = "Bounding box ratio" # "Eccentricity", "Height/width ratio", "Bounding box ratio"
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
+            "force_terms": ["optical", "spring", "bending", "buckingham"], #, "buckingham"
             "dipole_radius": 100e-9,
             "time_step": 10e-5, 
             "wavelength": 785e-9,
 
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
-            "frames": 550,
+            "frames": 900,
+            "frame_min": 1,
             "max_size": 5e-6,
             "quiver_setting": 0,
             "resolution": 401,
@@ -4262,19 +4295,20 @@ match(sys.argv[1]):
         })
         # MAIN
         variables_list = { # NOTE order of this is important
-            "stiffness": [6.5e-6],  #6.5e-6
-            "bending": [7e-19],
-            "translation": ["0.0 0.0 30e-6"],
-            "num_particles": [120], # 40, 72, 84, 120, 160
+            "stiffness": [2.6e-6],  #6.5e-6
+            "bending": [0.75e-19],
+            "translation": ["0.0 0.0 130e-6"],
+            "num_particles": [100], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
             "E0": [14e6],
             "w0": [5],
-            "time_step": [8e-5], # largest one used to calc actual frames, shorter ones only have more frames.
-            "num_averaged": [5, 10, 20], # num min and max to average the positions of to get the eccentricity / ratio.
+            "time_step": [10e-5], # largest one used to calc actual frames, shorter ones only have more frames.
+            "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
+            "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
             "repeat": [i+1 for i in range(1)],
         }
 
-        data_set, datalabel_set, graphlabel_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, is_eccentricity)
+        data_set, datalabel_set, graphlabel_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label)
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
 
