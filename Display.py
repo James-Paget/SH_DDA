@@ -364,7 +364,7 @@ class DisplayObject (object):
                             case "Z":
                                 force_z = np.zeros(force_z.shape)
                     
-                    if self.quiver_setting == 1: # As normal: forces on each particle
+                    if self.quiver_setting == 1: # As normal: forces on each particle                  
                         quiver = ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
                         plots.append(quiver)
 
