@@ -531,7 +531,7 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
     return num_particles
 
 def use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape="sphere", connection_mode="dist", connection_args=0.0, material="FusedSilica"):
-    coords_list, connection_args = get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args)
+    coords_list, connection_mode, connection_args = get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args)
     num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * num_particles
@@ -1344,13 +1344,16 @@ def get_stretch_sphere(dimension, particle_size, transform_factor, critical_tran
     #             if(withinBounds):   # Check will fit within a base sphere shape
     #                 coords_list.append([i_coord, j_coord, k_coord])
 
-    coords_list, connection_mode, connection_args = get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=connection_mode, connection_args=connection_args)
+    #coords_list, connection_mode, connection_args = get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=connection_mode, connection_args=connection_args)
+    coords_list = get_sunflower_points(120, dimension/2.0)
+    connection_mode="num"
+    connection_args=5
 
     # Modify this base sphere to get the ellipsoid / other shape to be generated
     coords_list = np.array(coords_list)
     transformed_coords_list = func_transform(coords_list, transform_factor)
 
-    return transformed_coords_list, connection_args
+    return transformed_coords_list, connection_mode, connection_args
 
 def get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=None, connection_args=None):
     coords_list = []

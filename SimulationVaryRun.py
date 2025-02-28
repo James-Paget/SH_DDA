@@ -4322,12 +4322,26 @@ match(sys.argv[1]):
                     stress0 = pow(transform_factor,3)*3.0   # Scales with transform factor; starts at 0 -> required deformation
                     transformed_coords_list = []
                     for coord in coordinates:
-                        rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2))
+                        # rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2))
+                        # rho2 = rho*rho
+                        # theta = np.arctan2(coord[1], coord[0])
+                        # radial_comp = ( (rho2*stress0)/(4.0*Eh) )*( (5.0+nu)*pow(np.cos(theta),2) - (1.0+nu) )  
+                        # meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )
+                        # transformed_coord_unrot = [(rho+radial_comp)*np.cos(theta), (rho+radial_comp)*np.sin(theta), coord[2]+meridional_comp]
+                        # transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
+
+                        rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2) + pow(coord[2],2))
                         rho2 = rho*rho
-                        theta = np.arctan2(coord[1], coord[0])
+                        phi = np.arctan2(coord[1], coord[0])
+                        theta = np.arctan2(coord[2], rho)
                         radial_comp = ( (rho2*stress0)/(4.0*Eh) )*( (5.0+nu)*pow(np.cos(theta),2) - (1.0+nu) )  
                         meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )
-                        transformed_coord_unrot = [(rho+radial_comp)*np.cos(theta), (rho+radial_comp)*np.sin(theta), coord[2]+meridional_comp]
+
+                        coord_base   = np.array([coord[0], coord[1], coord[2]])
+                        coord_radial = np.array([coord[0], coord[1], coord[2]])*radial_comp/rho
+                        coord_theta  = np.array([np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -np.sin(theta)])*meridional_comp
+
+                        transformed_coord_unrot = coord_base+coord_radial+coord_theta
                         transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
 
                     return np.array(transformed_coords_list)
@@ -4493,21 +4507,28 @@ match(sys.argv[1]):
         # Stretching for experimentally accurate BUT scaled shape (1/3 scale)
         #
         dimension = 2000e-9     # Base diameter of the full untransformed sphere
-        transform_factor = 1.6  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
+        transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 25
-        particle_size = 100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        num_factors_tested = 5
+        particle_size = 100e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
-        connection_mode = "manual"          # "dist", 0.0
-        connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
+        connection_mode = "num"#"manual"          # "dist", 0.0
+        connection_args = 5#[]    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
         transform_type = "radial_meridional"         # "linear", "inverse_area"
-        E0 = 14.0e6 # 20e6 4.5e6
-        w0 = 5.4   #5.4
+        E0 = 14.0e6 #14e6
+        w0 = 5.4    #4.4   #5.4
         translation = "0.0 0.0 135.0e-6"  # Offset applied to both beams
-        coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
+        #coords_list, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
+        
+        coords_list_python = []
+        coords_list = Generate_yaml.get_sunflower_points(120, dimension/2.0)
+        for i in range(len(coords_list)):
+            coords_list_python.append(list(coords_list[i]))
+
+
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": True,
             "show_stress": False,
@@ -4515,12 +4536,12 @@ match(sys.argv[1]):
             "wavelength": 1.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 3.35e-5}, #3.5e-5
-            "equilibrium_shape": coords_List,
+            "stiffness_spec": {"type":"", "default_value": 2.5e-6}, #3.35e-5 #3.5e-5
+            "equilibrium_shape": coords_list_python,
             "dipole_radius": 100e-9,
-            "frames": 50,
-            "time_step": 0.125e-4, 
-            "beam_planes": [["x", 0],["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
+            "frames": 1,
+            "time_step": 0.0625e-4,  #0.125e-4 
+            "beam_planes": [], #  [["x", 0],["z", 0]]
             "beam_alpha": 0.4,
         })
 
@@ -4564,6 +4585,34 @@ match(sys.argv[1]):
             particle_num = Generate_yaml.make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor_list[i], critical_transform_factor, func_transform_partial, object_offset, translation, connection_mode=connection_mode, connection_args=connection_args, material=material)
             DM.main(filename)
             data_set = get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_output, ["all"], read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None)
+
+            # Get positions of particles out
+            read_parameters_pos = []
+            for p in range(particle_num):
+                read_parameters_pos.append({"type":"X", "particle":p, "subtype":0})
+                read_parameters_pos.append({"type":"X", "particle":p, "subtype":1})
+                read_parameters_pos.append({"type":"X", "particle":p, "subtype":2})
+            output_data = pull_file_data(
+                filename, 
+                parameters_stored, 
+                [0], 
+                read_parameters_pos, 
+                invert_output=False
+            )[0]
+            # Get bounding box
+            ##
+            ## Could extend to find average instead for each bound
+            ##
+            bounding_box = [ [0.0, 0.0], [0.0, 0.0], [0.0, 0.0] ]   # [ [xl, xu], [yl, yu], [zl, zu] ]
+            for j in range(particle_num):
+                for k in range(3):
+                    if(output_data[3*j+k] < bounding_box[k][0]):
+                        bounding_box[k][0] = output_data[3*j+k]
+                    if(output_data[3*j+k] > bounding_box[k][1]):
+                        bounding_box[k][1] = output_data[3*j+k]
+            # Get Height/Width ratio
+            hw_ratio = (bounding_box[2][1] - bounding_box[2][0]) / ( ((bounding_box[0][1] - bounding_box[0][0])+(bounding_box[1][1] - bounding_box[1][0]))/2.0 )
+            print(f"T={transform_factor_list[i]},  Height/Width ratio={hw_ratio}")
 
         #
         # Vary offset of object (wanted for a small scale test)
