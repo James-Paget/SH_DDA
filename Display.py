@@ -302,9 +302,11 @@ class DisplayObject (object):
         
         # Animation function
         def update(t):
-            
+            # Quick fix for frame_min, takes a while for it to repeat but generally not an issue.
+            t += self.frame_min
+            if t >= self.frame_max: return None
+
             # Clear old plot elements (particles, quivers, etc)
-            
             for plot in plots:
                 plot.remove()
             plots.clear()
@@ -362,7 +364,7 @@ class DisplayObject (object):
                                 force_y = np.zeros(force_y.shape)
                             case "Z":
                                 force_z = np.zeros(force_z.shape)
-                        
+
                     if self.quiver_setting == 1: # As normal: forces on each particle
                         filter = []
                         for i in range(len(pos_x)):
@@ -377,7 +379,8 @@ class DisplayObject (object):
                         force_x = force_x[filter]
                         force_y = force_y[filter]
                         force_z = force_z[filter]
-
+                    
+                   # if self.quiver_setting == 1: # As normal: forces on each particle                  
                         quiver = ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
                         plots.append(quiver)
 
@@ -409,7 +412,7 @@ class DisplayObject (object):
                     beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=self.beam_alpha)
                     plots.append(beam_plane)
 
-            save_frames = []
+            save_frames = [0]
             #if len(save_frames)==0:
             if(steps > 1):
                 # Add frame counter
@@ -463,7 +466,6 @@ class DisplayObject (object):
             plots.append(plot)
 
         ani = animation.FuncAnimation(fig, update, frames=steps, interval=int( 120 * time_step*1e4)) 
-        #plt.savefig("myImage.png", format="png", dpi=1200)
 
         plt.show()
 
@@ -550,7 +552,7 @@ class DisplayObject (object):
                 quiver_scale = 1e-7/(4*particle_radius**2)# /area as stress = Force/Area
                 ax.quiver(pos[0], pos[1], pos[2], shifted_forces[p_i,0]*quiver_scale, shifted_forces[p_i,1]*quiver_scale, shifted_forces[p_i,2]*quiver_scale)
 
-        #plt.savefig("myImage.png", format="png", dpi=1200)
+        plt.savefig("myImage.png", format="png", dpi=1200)
         plt.show()
 
 
