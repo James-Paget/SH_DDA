@@ -252,14 +252,16 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
 
-    is_plane_defined = ( np.linalg.norm( np.cross(rij, rik) ) != 0 )
+    is_plane_defined = ( np.linalg.norm( np.cross(rij, rik) ) != 0)
 
     if is_plane_defined:
         # Normal to plane of rotation.
         r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
         theta = np.pi - eqm_angle
         # Rotate rij.
-        rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
+        if not (np.isnan(r_plane[0]) or np.isnan(r_plane[1]) or np.isnan(r_plane[2])):
+            # print("rplane is ", r_plane)
+            rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
 
     force = np.zeros([3, 3])
 
@@ -2026,6 +2028,8 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             for j in range(number_of_particles):
                 for k in range(3):
                     totforces[i,j,k] = total_force_array[j][k]
+
+        # print("\n\n\n\npositions are ", position_vectors)
         
         F = np.hstack(total_force_array)
         cov = 2 * timestep * D
