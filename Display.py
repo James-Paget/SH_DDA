@@ -177,7 +177,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 10 #20
+        samples = 4 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -315,17 +315,18 @@ class DisplayObject (object):
             for i in range(num_particles):
                 # if( (positions[t,i,0] +sys.float_info.epsilon > 0.0) and (positions[t,i,1] +sys.float_info.epsilon > 0.0) and (positions[t,i,2] +sys.float_info.epsilon > 0.0) ):
                 #     colours[i] = "#fc3232"
-                match shapes[i]:
-                    case "sphere":
-                        x, y, z = self.make_sphere_surface(args[i], positions[t, i])
-                    case "torus":
-                        x, y, z = self.make_torus_sector_surface(args[i], positions[t, i])
-                    case "cylinder":
-                        x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
-                    case "cube":
-                        x, y, z = self.make_cube_surface(args[i], positions[t, i])
-                plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
-                plots.append(plot)
+                if(True):#if( (positions[t, i, 0]+100*sys.float_info.epsilon > 0.0) and (positions[t, i, 1]+100*sys.float_info.epsilon > 0.0) and (positions[t, i, 2]+100*sys.float_info.epsilon > 0.0) ):
+                    match shapes[i]:
+                        case "sphere":
+                            x, y, z = self.make_sphere_surface(args[i], positions[t, i])
+                        case "torus":
+                            x, y, z = self.make_torus_sector_surface(args[i], positions[t, i])
+                        case "cylinder":
+                            x, y, z = self.make_cylinder_surface(args[i], positions[t, i])
+                        case "cube":
+                            x, y, z = self.make_cube_surface(args[i], positions[t, i])
+                    plot = ax.plot_surface(x, y, z, color=colours[i], alpha=1.0)
+                    plots.append(plot)
 
             # print("positions[t]= ",positions[t])
             # Add new spring connections to the plot
@@ -363,8 +364,23 @@ class DisplayObject (object):
                                 force_y = np.zeros(force_y.shape)
                             case "Z":
                                 force_z = np.zeros(force_z.shape)
+
+                    if self.quiver_setting == 1: # As normal: forces on each particle
+                        filter = []
+                        for i in range(len(pos_x)):
+                            if(True):#if( (pos_x[i]+100*sys.float_info.epsilon > 0.0) and (pos_y[i]+100*sys.float_info.epsilon > 0.0) and (pos_z[i]+100*sys.float_info.epsilon > 0.0) ):
+                                filter.append(True)
+                            else:
+                                filter.append(False)
+                        filter = np.array(filter)
+                        pos_x = pos_x[filter]
+                        pos_y = pos_y[filter]
+                        pos_z = pos_z[filter]
+                        force_x = force_x[filter]
+                        force_y = force_y[filter]
+                        force_z = force_z[filter]
                     
-                    if self.quiver_setting == 1: # As normal: forces on each particle                  
+                   # if self.quiver_setting == 1: # As normal: forces on each particle                  
                         quiver = ax.quiver(pos_x, pos_y, pos_z, force_x, force_y, force_z)
                         plots.append(quiver)
 
