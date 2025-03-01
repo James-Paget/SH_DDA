@@ -16,6 +16,7 @@ import itertools as it
 import os
 from functools import partial, reduce
 from operator import mul
+from scipy.spatial import ConvexHull
 
 import Display
 import DipolesMulti2024Eigen as DM
@@ -3265,6 +3266,8 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
                         # print("y", smallest_ys, largest_ys) 
                         # print("z", smallest_zs, largest_zs)                       
                         output = (np.average(largest_zs)-np.average(smallest_zs))/( np.sqrt( (np.average(largest_xs)-np.average(smallest_xs)) * (np.average(largest_ys)-np.average(smallest_ys))))
+                    case "Volume":
+                        output = get_cloud_volume("convex_hull", positions.T)   # Transpose to get into [[X,Y,Z], ...] format
 
                 data_set_values[f] = output
 
@@ -3280,8 +3283,52 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
     
     data_set = np.array(data_set, dtype=object) # object as inhomogeneous
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
-    graphlabel_set["yAxis"] = "Ratio of major to minor axis length"
+    graphlabel_set["yAxis"] = "Shape Volume [m^3]"    #Ratio of major to minor axis length
     return data_set, datalabel_set, graphlabel_set
+
+def get_cloud_volume(method_type, raw_points):
+    #
+    # Gets the volume of the point cloud of a shape (does not have to be just surface points, can have points within the volume too) using a chosen method
+    #
+    # method_type = Which algorithm to use e.g. "convex_hull", "marching_cubes"
+    # raw_points = numpy XYZ position of all data points
+    #
+    # NOTE; Could also implement a 3D shoelace theorem (sum of triangles) with convex assumption
+    #
+    volume = 0.0
+    match method_type:
+        case "convex_hull":
+            # Fast
+            # Assumes convex
+            hull = ConvexHull(raw_points)
+            volume = hull.volume
+        case "marching_cubes":
+            # Slow
+            # Need tighter pacing of particles
+            # No shape assumptions
+            pass
+    return volume
+
+def test_volume_cloud(test_type="volume_sphere", method_type="convex_hull", N=10000, radius=1.0):
+    #
+    # Simple test to ensure the polygon volume calculation is accurate
+    #
+    points = []
+    match test_type:
+        case "volume_sphere":
+            for i in range(N):
+                coord = radius*2.0*(np.random.rand(3) -0.5)     # Random point in bounding cube
+                if(np.sum(pow(coord,2)) < pow(radius,2)):       # Sphere check
+                    points.append(coord)
+        case "surface_sphere":
+            for i in range(N):
+                phi = 2.0*np.pi*np.random.rand()
+                theta = np.pi*np.random.rand()
+                coord = radius*np.array([ np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta) ])     # Random point on sphere surface
+                points.append(coord)
+    volume = get_cloud_volume(method_type, points)
+    print("points = ", len(points))
+    print("volume = ",volume)
 
 #=================#
 # Perform Program #
@@ -4315,7 +4362,7 @@ match(sys.argv[1]):
         
         connection_mode = "num"
         connection_args = "5"
-        yaxis_label = "Bounding box ratio" # "Eccentricity", "Height/width ratio", "Bounding box ratio"
+        yaxis_label = "Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio", "Bounding box ratio"
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "force_terms": ["optical", "spring", "bending", "buckingham"], #, "buckingham"
@@ -4323,9 +4370,9 @@ match(sys.argv[1]):
             "time_step": 10e-5, 
             "wavelength": 785e-9,
 
-            "show_output": False,
+            "show_output": True,
             "show_stress": False,
-            "frames": 900,
+            "frames": 100,
             "frame_min": 1,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4652,10 +4699,9 @@ match(sys.argv[1]):
                     coords_list.append(list(coords_list_raw[i]))
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "quiver_setting": 0,
-
             "wavelength": 1.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-20}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
