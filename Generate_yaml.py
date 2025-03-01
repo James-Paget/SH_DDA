@@ -1,5 +1,6 @@
 import sys
 import numpy as np
+import DipolesMulti2024Eigen as DM
 
 """
 write_* functions have no parameters set.
@@ -272,10 +273,11 @@ def make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphe
     use_beam(filename, "STRETCHER", E0=E0, w0=w0, translation=translation)
     use_NSphere(filename, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, material=material)
 
-def make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, translation=None, connection_mode="dist", connection_args=0.0, material="FusedSilica"):
+def make_yaml_stretch_sphere(filename, option_parameters, particle_shape, E0, w0, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, translation=None, connection_mode="dist", connection_args=0.0, material="FusedSilica", num_particles=None):
     use_parameter_options(filename, option_parameters)
     use_beam(filename, "STRETCHER", E0=E0, w0=w0, translation=translation)
-    num_particles = use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape=particle_shape, connection_mode=connection_mode, connection_args=connection_args, material=material)
+    # pass in num_particles, if None, it will make a solid sphere, else it will be used in an Nsphere shell
+    num_particles = use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape=particle_shape, connection_mode=connection_mode, connection_args=connection_args, material=material, num_particles=num_particles)
     return num_particles
 
 def make_yaml_stretcher_dipole_shape(filename, coords_list, dipole_size, connection_mode, connection_args, E0, w0, show_output, time_step=1e-4):
@@ -530,8 +532,8 @@ def use_fill_spheredisc(filename, disc_radius, separation, particle_size, object
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, material=material)
     return num_particles
 
-def use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape="sphere", connection_mode="dist", connection_args=0.0, material="FusedSilica"):
-    coords_list, connection_mode, connection_args = get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args)
+def use_stretch_sphere(filename, dimension, particle_size, transform_factor, critical_transform_factor, func_transform, object_offset, particle_shape="sphere", connection_mode="dist", connection_args=0.0, material="FusedSilica", num_particles=None):
+    coords_list, connection_mode, connection_args = get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args, num_particles=num_particles)
     num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
     args_list = [[particle_size]] * num_particles
@@ -645,21 +647,21 @@ def fill_yaml_options(non_default_params):
         "wavelength": 1.0e-6,
         "dipole_radius": 40e-9,
         "time_step": 1e-4,
-        "polarisability_type": "RR",
+        "polarisability_type": "RR", # options: "CM", "RR", "LDR"
         "constants": {"bending":0.1e-18},
         "stiffness_spec": {"type":"", "default_value":5e-6},
-        "equilibrium_shape": None,
+        "equilibrium_shape": None, # used to set the positions of the particles where spring/bending force is zero. The natural lengths and equilibrium angles are calculated off this. If None, is is assumed the object is initially unstretched.
 
         "vmd_output": True,
         "excel_output": True,
         "include_force": True,
         "include_couple": True,
         "verbosity": 0,
-        "include_dipole_forces": False,
-        "force_terms": ["optical", "spring", "bending", "buckingham"],
+        "include_dipole_forces": False, # write to a separate xlsx file all the dipole positions and forces.
+        "force_terms": ["optical", "spring", "bending", "buckingham"], # the forces DM.main will output
 
         "show_output": True,
-        "show_stress": False,
+        "show_stress": False, # plot the stress on each particle.
         "frame_interval": 2,
         "max_size": 2e-6,
         "resolution": 201,
@@ -667,7 +669,7 @@ def fill_yaml_options(non_default_params):
         "frame_max": 1,
         "z_offset": 0.0e-6,
         "beam_planes": [["z", 0.0]],
-        "quiver_setting": 1,
+        "quiver_setting": 1, # 0: off, 1: force on each particle, 2: net force on centre of mass, and force relative to COM on particles
     }
     option_parameters.update(non_default_params)
     if option_parameters["frame_max"] < option_parameters["frames"]: option_parameters["frame_max"] = option_parameters["frames"]
@@ -1319,38 +1321,47 @@ def get_fill_sphere(sphere_radius, separation, particle_size, fix_to_ring=False)
     
     return coord_list
 
-def get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args):
+def get_stretch_sphere(dimension, particle_size, transform_factor, critical_transform_factor, func_transform, connection_mode, connection_args, num_particles=None):
     #
     # dimension = full diameter of sphere
     # particle_size = radius of particle
     #
     coords_list = []
 
-    # mesh_radius = dimension/2.0
-    # base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)
-    # #number_of_particles_side = int(np.floor( (mesh_radius-particle_size) / (2.0*particle_size) ))
-    # number_of_particles_side = int(np.floor( mesh_radius/base_separation ))
-    # number_of_particles = 2*number_of_particles_side +1
+    # default to making a solid
+    if num_particles == None:
+        mesh_radius = dimension/2.0
+        base_separation = (2.0*particle_size)*np.sqrt(critical_transform_factor)
+        #number_of_particles_side = int(np.floor( (mesh_radius-particle_size) / (2.0*particle_size) ))
+        number_of_particles_side = int(np.floor( mesh_radius/base_separation ))
+        number_of_particles = 2*number_of_particles_side +1
 
-    # # Generate some base sphere shape
-    # base_separation = dimension/number_of_particles
-    # for i in range(-number_of_particles_side, number_of_particles_side+1):
-    #     i_coord = i*base_separation
-    #     for j in range(-number_of_particles_side, number_of_particles_side+1):
-    #         j_coord = j*base_separation
-    #         for k in range(-number_of_particles_side, number_of_particles_side+1):
-    #             k_coord = k*base_separation
-    #             withinBounds = (i_coord**2 +j_coord**2 +k_coord**2) < mesh_radius**2
-    #             if(withinBounds):   # Check will fit within a base sphere shape
-    #                 coords_list.append([i_coord, j_coord, k_coord])
+        # Generate some base sphere shape
+        base_separation = dimension/number_of_particles
+        for i in range(-number_of_particles_side, number_of_particles_side+1):
+            i_coord = i*base_separation
+            for j in range(-number_of_particles_side, number_of_particles_side+1):
+                j_coord = j*base_separation
+                for k in range(-number_of_particles_side, number_of_particles_side+1):
+                    k_coord = k*base_separation
+                    withinBounds = (i_coord**2 +j_coord**2 +k_coord**2) < mesh_radius**2
+                    if(withinBounds):   # Check will fit within a base sphere shape
+                        coords_list.append([i_coord, j_coord, k_coord])
 
-    coords_list, connection_mode, connection_args = get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=connection_mode, connection_args=connection_args)
-    # coords_list = get_sunflower_points(120, dimension/2.0)
-    # connection_mode="num"
-    # connection_args=5
+        coords_list, connection_mode, connection_args = get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor, connection_mode=connection_mode, connection_args=connection_args)
+        coords_list = np.array(coords_list)
 
-    # Modify this base sphere to get the ellipsoid / other shape to be generated
-    coords_list = np.array(coords_list)
+    # else, make an Nsphere
+    else:
+        coords_list = np.array(get_sunflower_points(num_particles, dimension/2.0))
+        # don't worry about critical transform factor for this method.
+        connection_indices = DM.generate_connection_indices(coords_list, connection_mode, [connection_args])
+        connection_mode = "manual"
+        connection_args = ""
+        for (i, j) in connection_indices:
+            connection_args += f"{i} {j} "
+
+    # Transform the sphere coords to some elliptical shape:
     transformed_coords_list = func_transform(coords_list, transform_factor)
 
     return transformed_coords_list, connection_mode, connection_args

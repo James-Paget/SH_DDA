@@ -252,14 +252,16 @@ def bending_force(bond_stiffness, ri, rj, rk, eqm_angle):
     rij2 = rij_abs * rij_abs
     rik2 = rik_abs * rik_abs
 
-    is_plane_defined = ( np.linalg.norm( np.cross(rij, rik) ) != 0 )
+    is_plane_defined = ( np.linalg.norm( np.cross(rij, rik) ) != 0)
 
     if is_plane_defined:
         # Normal to plane of rotation.
         r_plane = -np.cross(rij, rik) / np.linalg.norm( np.cross(rij, rik) ) 
         theta = np.pi - eqm_angle
         # Rotate rij.
-        rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
+        if not (np.isnan(r_plane[0]) or np.isnan(r_plane[1]) or np.isnan(r_plane[2])):
+            # print("rplane is ", r_plane)
+            rij = rot_vector_in_plane(rij, r_plane, theta)    # Rotate by equilibrium angle in the plane of the points
 
     force = np.zeros([3, 3])
 
@@ -845,6 +847,7 @@ def get_nearest_neighbours(number_of_particles, connection_indices, max_connecti
     """
     Particles that are within "max_connections_dist" connections of each other are considered nearby.
     Returns [ [particles nearby to 0th particle], [particles nearby to 1st particle], ... ]
+    Used to turn off Buckingham force between neighbours.
     """
     if len(connection_indices) == 0: # test trivial unconnected case
         return [ [i] for i in range(number_of_particles)]
@@ -1225,6 +1228,7 @@ def sphere_size(args, dipole_radius):
 def sphere_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     #
     # With pts size known now, particles are added to this array
+    # Now makes odd AND even number across the diameter depending on size, but num dipoles can only be 1, 8, 19; skipping 7.
     #
     dipole_diameter = 2*dipole_radius
     sphere_radius = args[0]
@@ -2026,6 +2030,8 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
             for j in range(number_of_particles):
                 for k in range(3):
                     totforces[i,j,k] = total_force_array[j][k]
+
+        # print("\n\n\n\npositions are ", position_vectors)
         
         F = np.hstack(total_force_array)
         cov = 2 * timestep * D
