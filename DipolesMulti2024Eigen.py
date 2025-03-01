@@ -589,7 +589,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[], verb
                         current_connections[i] += 1
                         current_connections[j] += 1
 
-            print(f"Num connections are {current_connections}")
+            #print(f"Num connections are {current_connections}")
             for i in range(num_particles):
                 if current_connections[i] != num_connections:
                     print(f"Warning, particle {i} not properly connected, connections={current_connections[i]}")
@@ -2273,8 +2273,8 @@ def main(YAML_name=None):
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
         fig, ax = None, None                                   #
-        # fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
-        include_connections = True
+        fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)
+        include_connections = False
         display.animate_system3d(optpos, shapes, args, colors, fig=fig, ax=ax, connection_indices=connection_indices, ignore_coords=[], forces=totforces, include_tracer=False, include_connections=include_connections, beam_collection_list=beam_collection_list, time_step=timestep) 
 
 
