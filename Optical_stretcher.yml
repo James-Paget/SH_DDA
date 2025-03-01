@@ -9,7 +9,7 @@ parameters:
     bending: 7.5e-20
   stiffness_spec:
     type: 
-    default_value: 2.6e-06
+    default_value: 2.7e-06
   equilibrium_shape: None
 output:
   vmd_output: True
@@ -20,7 +20,7 @@ output:
   include_dipole_forces: False
   force_terms: optical spring bending
 display:
-  show_output: True
+  show_output: False
   show_stress: False
   frame_interval: 2
   resolution: 401

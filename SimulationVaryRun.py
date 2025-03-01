@@ -3177,6 +3177,7 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
     parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
     data_set = [] # it will be inhomogeneous
     datalabel_set = []
+    pulled_data_set = []
     count = 0
     making_title = True
     title_str = yaxis_label + " against frame number"
@@ -3269,6 +3270,7 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
                 data_set_values[f] = output
 
         except Exception as error: 
+            pulled_data = None
             print(f"\nERROR, failed and continuing on params:")
             for i, key in enumerate(variables_list.keys()):
                 print(f"{key} = {params[i]}")
@@ -3276,12 +3278,69 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
 
         data_set.append( [times, data_set_values] )
         datalabel_set.append(line_label)
+        pulled_data_set.append(pulled_data)
         count +=1
     
     data_set = np.array(data_set, dtype=object) # object as inhomogeneous
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
     graphlabel_set["yAxis"] = "Ratio of major to minor axis length"
-    return data_set, datalabel_set, graphlabel_set
+    return data_set, datalabel_set, graphlabel_set, pulled_data_set
+
+def calculate_MoI(pulled_data_set, data_set, axes=["z"]):
+    """
+    Finds the moment of inertia for each set of particles in pulled_data_set
+    * Normal: sum over all particles of mr^2 (r relative to centre of mass)
+    * Assuming spheroid: finds object height/width to get the MoI
+
+    pulled_data_set contains the particle positions with indices [experiment][frame][flatted positions: all x's, then all y's, then all z's]
+
+    Returns data_set_moi, data_set_ideal: 
+        moi of particle positions, moi of spheroid with dimensions from the data respectively
+    Indices of returned lists are for [select from "axes"][experiment][0: time vals, 1: mois][specific time val/moi]
+    """
+
+    pulled_data_set = np.array(pulled_data_set)
+    data_set = np.array(data_set)
+    times = data_set[0,0,:]
+    num_axes = len(axes)
+    num_expts = len(data_set)
+    num_frames = len(times)
+    num_particles = int(len(pulled_data_set[0,0])/3)
+    particle_mass = 1/num_particles # XXX
+
+    data_set_moi = np.array([ [[times, np.zeros(times.shape)] for _ in range(num_expts)]  for _ in range(num_axes)])
+    data_set_ideal = np.array([ [[times, np.zeros(times.shape)] for _ in range(num_expts)]  for _ in range(num_axes)])
+    axis_lookup = {"x":[False, True, True], "y":[True, False, True], "z":[True, True, False]} # make np filters
+
+    for expt_i in range(num_expts):
+        for f in range(num_frames):
+            data_of_frame = pulled_data_set[expt_i, f]
+            positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
+            centre = np.average(positions, axis=1)
+            shifted_positions = positions - centre[:,None]
+            
+
+            for axi in range(num_axes):
+                ax_filter = axis_lookup[axes[axi]]
+
+                # actual moi
+                rs = np.linalg.norm(shifted_positions[ax_filter], axis=0)
+                moi = particle_mass * np.sum(rs**2)
+                data_set_moi[axi, expt_i, 1, f] = moi
+
+                # ideal spheroid moi
+                # TODO using:
+                # smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  
+                # largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]]
+                # output = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
+                # smallest_xs = positions[0, np.argpartition(positions[0], num_averaged)[:num_averaged]]
+                # largest_xs = positions[0, np.argpartition(positions[0], -num_averaged)[-num_averaged:]]
+                # smallest_ys = positions[1, np.argpartition(positions[1], num_averaged)[:num_averaged]]
+                # largest_ys = positions[1, np.argpartition(positions[1], -num_averaged)[-num_averaged:]]
+                # smallest_zs = positions[2, np.argpartition(positions[2], num_averaged)[:num_averaged]]
+                # largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]
+
+    return data_set_moi, data_set_ideal
 
 #=================#
 # Perform Program #
@@ -4320,7 +4379,7 @@ match(sys.argv[1]):
             "dipole_radius": 100e-9,
             "wavelength": 785e-9,
 
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "frames": 1800,
             "frame_min": 1,
@@ -4332,7 +4391,7 @@ match(sys.argv[1]):
         })
         # MAIN
         variables_list = { # NOTE order of this is important
-            "stiffness": [2.6e-6],  #6.5e-6
+            "stiffness": [2.7e-6],  #6.5e-6
             "bending": [0.75e-19],
             "translation": ["0.0 0.0 130e-6"],
             "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
@@ -4353,33 +4412,43 @@ match(sys.argv[1]):
             dict_a = pickle_read(file_a)
             dict_b = pickle_read(file_b)
             for key, value in dict_b.items(): # assuming they have the same keys, and that they contain arrays that can be extended.
-                dict_a[key].extend(value)
+                np.append(dict_a[key], value)
             pickle_write(dict_a, file_a)
             
 
         should_recalculate = True # if data should be calculated, not read from a file.
-        should_merge = False
+        should_merge = False # if recalculating, option to extend existing data.
 
         store_name = "dynamic_stretcher_store"
         if should_recalculate:
-            data_set, datalabel_set, graphlabel_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label)
+            data_set, datalabel_set, graphlabel_set, pulled_data_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label)
             
             # Store data
-            data_dict = {"data_set":data_set, "datalabel_set":datalabel_set, "graphlabel_set":graphlabel_set}
+            data_dict = {"data_set":data_set, "datalabel_set":datalabel_set, "graphlabel_set":graphlabel_set, "pulled_data_set":pulled_data_set}
             unique_filename = f"{store_name}{np.random.randint(0, 10000000)}.p"
             # store in unique file so data not overwritten later. Comment this for fewer *.p files.
             pickle_write(data_dict, unique_filename)
+
             if should_merge:
-                pickle_merge(f"{store_name}.p", unique_filename)
+                pickle_merge(f"{store_name}.p", unique_filename) # 
             else:
                 pickle_write(data_dict, f"{store_name}.p")
         
         # else, don't calculate just read from file.
         else:
             data_dict = pickle_read(f"{store_name}.p")
-            data_set, datalabel_set, graphlabel_set = data_dict["data_set"], data_dict["datalabel_set"], data_dict["graphlabel_set"]
+            data_set, datalabel_set, graphlabel_set, pulled_data_set = data_dict["data_set"], data_dict["datalabel_set"], data_dict["graphlabel_set"], data_dict["pulled_data_set"]
 
-        Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
+        Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set)
+
+        axes = ["z", "x"]
+        data_set_moi, data_set_ideal = calculate_MoI(pulled_data_set, data_set, axes=axes)
+        for axi in range(len(axes)):
+            graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
+            Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
+
+        
+
 
 
     case "stretcher_springs_cubic_sphere":
