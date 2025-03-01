@@ -4308,24 +4308,21 @@ match(sys.argv[1]):
 
     case "dynamic_stretcher_eccentricity":
         #
-        # Simulation of a sphere stretched between two oppsing Gaussian beams
+        # Dynamics simulation of a sphere stretched between two opposing Gaussian beams
         #
         filename = "Optical_stretcher"
-    
-        
         connection_mode = "num"
         connection_args = "5"
         yaxis_label = "Bounding box ratio" # "Eccentricity", "Height/width ratio", "Bounding box ratio"
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "force_terms": ["optical", "spring", "bending", "buckingham"], #, "buckingham"
+            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
             "dipole_radius": 100e-9,
-            "time_step": 10e-5, 
             "wavelength": 785e-9,
 
-            "show_output": False,
+            "show_output": True,
             "show_stress": False,
-            "frames": 900,
+            "frames": 1800,
             "frame_min": 1,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4338,17 +4335,50 @@ match(sys.argv[1]):
             "stiffness": [2.6e-6],  #6.5e-6
             "bending": [0.75e-19],
             "translation": ["0.0 0.0 130e-6"],
-            "num_particles": [100], # 40, 72, 84, 100, 120, 160, 200
+            "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
             "E0": [14e6],
             "w0": [5],
-            "time_step": [10e-5], # largest one used to calc actual frames, shorter ones only have more frames.
+            "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
             "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
             "repeat": [i+1 for i in range(1)],
         }
 
-        data_set, datalabel_set, graphlabel_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label)
+        def pickle_write(dict, filename): 
+            with open(filename, "wb") as f: pickle.dump(dict, f)
+        def pickle_read(filename): 
+            with open(filename, "rb") as f: return pickle.load(f)
+        def pickle_merge(file_a, file_b): # append b into a
+            dict_a = pickle_read(file_a)
+            dict_b = pickle_read(file_b)
+            for key, value in dict_b.items(): # assuming they have the same keys, and that they contain arrays that can be extended.
+                dict_a[key].extend(value)
+            pickle_write(dict_a, file_a)
+            
+
+        should_recalculate = True # if data should be calculated, not read from a file.
+        should_merge = False
+
+        store_name = "dynamic_stretcher_store"
+        if should_recalculate:
+            data_set, datalabel_set, graphlabel_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label)
+            
+            # Store data
+            data_dict = {"data_set":data_set, "datalabel_set":datalabel_set, "graphlabel_set":graphlabel_set}
+            unique_filename = f"{store_name}{np.random.randint(0, 10000000)}.p"
+            # store in unique file so data not overwritten later. Comment this for fewer *.p files.
+            pickle_write(data_dict, unique_filename)
+            if should_merge:
+                pickle_merge(f"{store_name}.p", unique_filename)
+            else:
+                pickle_write(data_dict, f"{store_name}.p")
+        
+        # else, don't calculate just read from file.
+        else:
+            data_dict = pickle_read(f"{store_name}.p")
+            data_set, datalabel_set, graphlabel_set = data_dict["data_set"], data_dict["datalabel_set"], data_dict["graphlabel_set"]
+
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
 
