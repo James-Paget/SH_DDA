@@ -847,6 +847,7 @@ def get_nearest_neighbours(number_of_particles, connection_indices, max_connecti
     """
     Particles that are within "max_connections_dist" connections of each other are considered nearby.
     Returns [ [particles nearby to 0th particle], [particles nearby to 1st particle], ... ]
+    Used to turn off Buckingham force between neighbours.
     """
     if len(connection_indices) == 0: # test trivial unconnected case
         return [ [i] for i in range(number_of_particles)]
@@ -1227,6 +1228,7 @@ def sphere_size(args, dipole_radius):
 def sphere_positions(args, dipole_radius, number_of_dipoles_total, verbosity=2):
     #
     # With pts size known now, particles are added to this array
+    # Now makes odd AND even number across the diameter depending on size, but num dipoles can only be 1, 8, 19; skipping 7.
     #
     dipole_diameter = 2*dipole_radius
     sphere_radius = args[0]
