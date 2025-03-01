@@ -16,6 +16,7 @@ import itertools as it
 import os
 from functools import partial, reduce
 from operator import mul
+from scipy.spatial import ConvexHull
 
 import Display
 import DipolesMulti2024Eigen as DM
@@ -3283,6 +3284,40 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
     graphlabel_set["yAxis"] = "Ratio of major to minor axis length"
     return data_set, datalabel_set, graphlabel_set
 
+def get_cloud_volume(method_type, raw_points):
+    #
+    # Gets the volume of the point cloud of a shape (does not have to be just surface points, can have points within the volume too) using a chosen method
+    #
+    # method_type = Which algorithm to use e.g. "convex_hull", "marching_cubes"
+    # raw_points = numpy XYZ position of all data points
+    #
+    volume = 0.0
+    match method_type:
+        case "convex_hull":
+            # Fast
+            # Assumes convex
+            hull = ConvexHull(raw_points)
+            volume = hull.volume
+        case "marching_cubes":
+            # Slow
+            # Need tighter pacing of particles
+            # No shape assumptions
+            pass
+    return volume
+
+def test_volume_cloud(method_type="convex_hull", N=10000, radius=1.0):
+    #
+    # Simple test to ensure the polygon volume calculation is accurate
+    #
+    points = []
+    for i in range(N):
+        coord = radius*2.0*(np.random.rand(3) -0.5)     # Random point in bounding cube
+        if(np.sum(pow(coord,2)) < pow(radius,2)):       # Sphere check
+            points.append(coord)
+    volume = get_cloud_volume(method_type, points)
+    print("points = ", len(points))
+    print("volume = ",volume)
+
 #=================#
 # Perform Program #
 #=================#
@@ -4652,10 +4687,9 @@ match(sys.argv[1]):
                     coords_list.append(list(coords_list_raw[i]))
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "quiver_setting": 0,
-
             "wavelength": 1.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-20}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
