@@ -4375,8 +4375,12 @@ match(sys.argv[1]):
                     nu = 0.5    # Poisson ratio
                     Eh = 3.9e-5 # Young's Modulus*shell thickness -> experimental average used
                     stress0 = pow(transform_factor,3)*3.0   # Scales with transform factor; starts at 0 -> required deformation
+                    #stress0 = 1.0 + (transform_factor-1.0)*10.0
                     transformed_coords_list = []
                     for coord in coordinates:
+                        #
+                        # NOT the version given in paper, incorrectly added, but did give stable points
+                        #
                         # rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2))
                         # rho2 = rho*rho
                         # theta = np.arctan2(coord[1], coord[0])
@@ -4385,19 +4389,22 @@ match(sys.argv[1]):
                         # transformed_coord_unrot = [(rho+radial_comp)*np.cos(theta), (rho+radial_comp)*np.sin(theta), coord[2]+meridional_comp]
                         # transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
 
-                        rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2) + pow(coord[2],2))
-                        rho2 = rho*rho
-                        phi = np.arctan2(coord[1], coord[0])
-                        theta = np.arctan2(coord[2], rho)
+                        #
+                        # Version given in paper
+                        #
+                        rho   = np.sqrt(pow(coord[0],2) + pow(coord[1],2) + pow(coord[2],2))
+                        rho2  = rho*rho
+                        phi   = np.arctan2(coord[1], coord[0])
+                        theta = np.pi/2.0 -np.arctan2(coord[2], rho)
                         radial_comp = ( (rho2*stress0)/(4.0*Eh) )*( (5.0+nu)*pow(np.cos(theta),2) - (1.0+nu) )  
-                        meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )
+                        meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )/15.0
 
                         coord_base   = np.array([coord[0], coord[1], coord[2]])
-                        coord_radial = np.array([coord[0], coord[1], coord[2]])*radial_comp/rho
+                        coord_radial = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi),  np.cos(theta)])*radial_comp
                         coord_theta  = np.array([np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -np.sin(theta)])*meridional_comp
 
                         transformed_coord_unrot = coord_base+coord_radial+coord_theta
-                        transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
+                        transformed_coords_list.append( transformed_coord_unrot )#rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
 
                     return np.array(transformed_coords_list)
 
@@ -4601,25 +4608,26 @@ match(sys.argv[1]):
         #
         dimension = 2000e-9     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 5
+        critical_transform_factor = 4.0 # The max transform you want to apply, which sets the default separation of particles in the system
+        num_factors_tested = 10
         particle_size = 100e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
-        connection_mode = "num"#"manual"          # "dist", 0.0
-        connection_args = 5#[]    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
+        connection_mode = "manual"  #"num"          # "dist", 0.0
+        connection_args = []    #5    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
         transform_type = "radial_meridional"         # "linear", "inverse_area"
         E0 = 14.0e6 #14e6
-        w0 = 5.4    #4.4   #5.4
+        w0 = 4.0    #4.4   #5.4
         translation = "0.0 0.0 135.0e-6"  # Offset applied to both beams
-        #coords_list, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         
-        coords_list_python = []
-        coords_list = Generate_yaml.get_sunflower_points(120, dimension/2.0)
-        for i in range(len(coords_list)):
-            coords_list_python.append(list(coords_list[i]))
+        coords_list, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
+        
+        # coords_list_python = []
+        # coords_list = Generate_yaml.get_sunflower_points(120, dimension/2.0)
+        # for i in range(len(coords_list)):
+        #     coords_list_python.append(list(coords_list[i]))
 
 
         option_parameters = Generate_yaml.fill_yaml_options({
@@ -4627,10 +4635,10 @@ match(sys.argv[1]):
             "show_stress": False,
             "quiver_setting": 0,
             "wavelength": 1.0e-6,
-            "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
-            "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 2.5e-6}, #3.35e-5 #3.5e-5
-            "equilibrium_shape": coords_list_python,
+            "force_terms": ["optical"], #"optical", "spring", "bending"
+            "constants": {"bending": 1.75e-20}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
+            "stiffness_spec": {"type":"", "default_value": 2.0e-3}, #3.35e-5 #3.5e-5
+            "equilibrium_shape": coords_list,
             "dipole_radius": 100e-9,
             "frames": 1,
             "time_step": 0.0625e-4,  #0.125e-4 
