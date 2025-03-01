@@ -647,21 +647,21 @@ def fill_yaml_options(non_default_params):
         "wavelength": 1.0e-6,
         "dipole_radius": 40e-9,
         "time_step": 1e-4,
-        "polarisability_type": "RR",
+        "polarisability_type": "RR", # options: "CM", "RR", "LDR"
         "constants": {"bending":0.1e-18},
         "stiffness_spec": {"type":"", "default_value":5e-6},
-        "equilibrium_shape": None,
+        "equilibrium_shape": None, # used to set the positions of the particles where spring/bending force is zero. The natural lengths and equilibrium angles are calculated off this. If None, is is assumed the object is initially unstretched.
 
         "vmd_output": True,
         "excel_output": True,
         "include_force": True,
         "include_couple": True,
         "verbosity": 0,
-        "include_dipole_forces": False,
-        "force_terms": ["optical", "spring", "bending", "buckingham"],
+        "include_dipole_forces": False, # write to a separate xlsx file all the dipole positions and forces.
+        "force_terms": ["optical", "spring", "bending", "buckingham"], # the forces DM.main will output
 
         "show_output": True,
-        "show_stress": False,
+        "show_stress": False, # plot the stress on each particle.
         "frame_interval": 2,
         "max_size": 2e-6,
         "resolution": 201,
@@ -669,7 +669,7 @@ def fill_yaml_options(non_default_params):
         "frame_max": 1,
         "z_offset": 0.0e-6,
         "beam_planes": [["z", 0.0]],
-        "quiver_setting": 1,
+        "quiver_setting": 1, # 0: off, 1: force on each particle, 2: net force on centre of mass, and force relative to COM on particles
     }
     option_parameters.update(non_default_params)
     if option_parameters["frame_max"] < option_parameters["frames"]: option_parameters["frame_max"] = option_parameters["frames"]

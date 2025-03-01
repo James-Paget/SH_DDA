@@ -4377,14 +4377,6 @@ match(sys.argv[1]):
                     stress0 = pow(transform_factor,3)*3.0   # Scales with transform factor; starts at 0 -> required deformation
                     transformed_coords_list = []
                     for coord in coordinates:
-                        # rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2))
-                        # rho2 = rho*rho
-                        # theta = np.arctan2(coord[1], coord[0])
-                        # radial_comp = ( (rho2*stress0)/(4.0*Eh) )*( (5.0+nu)*pow(np.cos(theta),2) - (1.0+nu) )  
-                        # meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )
-                        # transformed_coord_unrot = [(rho+radial_comp)*np.cos(theta), (rho+radial_comp)*np.sin(theta), coord[2]+meridional_comp]
-                        # transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
-
                         rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2) + pow(coord[2],2))
                         rho2 = rho*rho
                         phi = np.arctan2(coord[1], coord[0])
@@ -4397,7 +4389,6 @@ match(sys.argv[1]):
                         coord_theta  = np.array([np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -np.sin(theta)])*meridional_comp
 
                         transformed_coord_unrot = coord_base+coord_radial+coord_theta
-                        # transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
                         transformed_coords_list.append(transformed_coord_unrot)
 
                     return np.array(transformed_coords_list)
@@ -4527,32 +4518,32 @@ match(sys.argv[1]):
         #
         # Half-sized solid sphere experiment match
         
-        # dimension = 3.36e-6     # Base diameter of the full untransformed sphere
+        # dimension = 2.50e-6     # Base diameter of the full untransformed sphere
         # transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        # critical_transform_factor = 2.75 # The max transform you want to apply, which sets the default separation of particles in the system
-        # num_factors_tested = 4
-        # particle_size = 150e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        # critical_transform_factor = 6.75 # The max transform you want to apply, which sets the default separation of particles in the system
+        # num_factors_tested = 6
+        # particle_size = 100e-9 #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         # object_offset = [0.0, 0.0, 0.0e-6]
         # material = "FusedSilica"
         # particle_shape = "sphere"
         # connection_mode = "manual"      # "dist", 0.0
         # connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         # force_reading = "RTZ_split"       #"Z_split", "XYZ_split", "RTZ_split"
-        # transform_type = "linear" # "linear", "inverse_area"
-        # E0 = 4.5e6 # 4.75e6
+        # transform_type = "inverse_area" # "linear", "inverse_area"
+        # E0 = 14e6 # 4.75e6
         # w0 = 5.0
-        # translation = "0.0 0.0 200.0e-6"  # Offset applied to both beams
+        # translation = "0.0 0.0 130.0e-6"  # Offset applied to both beams
         # coords_List, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         # option_parameters = Generate_yaml.fill_yaml_options({
-        #     "show_output": False,
+        #     "show_output": True,
         #     "show_stress": False,
         #     "quiver_setting": 0,
         #     "wavelength": 1.0e-6,
-        #     "force_terms": ["spring"], #"optical", "spring", "bending"
+        #     "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
         #     "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-        #     "stiffness_spec": {"type":"", "default_value": 5.0e-6}, #5e-6 #5e-8  # 5e-7
+        #     "stiffness_spec": {"type":"", "default_value": 1.0e-7}, #5e-6 #5e-8  # 5e-7
         #     "equilibrium_shape": coords_List,
-        #     "dipole_radius": 150e-9,
+        #     "dipole_radius": particle_size,
         #     "frames": 1,
         #     "time_step": 0.5e-4, 
         #     "beam_planes": [["z", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
@@ -4600,23 +4591,25 @@ match(sys.argv[1]):
         #
         # Stretching for experimentally accurate BUT scaled shape (1/3 scale)
         #
-        dimension = 2000e-9     # Base diameter of the full untransformed sphere
+        dimension = 6720e-9     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
         num_factors_tested = 5
-        particle_size = 150e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
+        particle_size = 100e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "radial_meridional"         # "linear", "inverse_area"
+        transform_type = "radial_meridional"         # "linear", "inverse_area", "radial_meridional"
         E0 = 14.0e6 #14e6
-        w0 = 4    #4.4   #5.4
+        w0 = 4.4   #5.4
         translation = "0.0 0.0 135.0e-6"  # Offset applied to both beams
+
         sphere_type = "shell" # options are "solid" or "shell"
         
         match sphere_type:
             case "solid":
+                # currently not working
                 num_particles = None
                 connection_mode = "manual"  
                 connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
@@ -4634,14 +4627,16 @@ match(sys.argv[1]):
             "show_output": True,
             "show_stress": False,
             "quiver_setting": 0,
-            "wavelength": 1.0e-6,
+            "wavelength": 0.785e-6,
+            "frames": 1,
+            "max_size": 5e-6,
+
+            "time_step": 0.0625e-4,  #0.125e-4 
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
             "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
             "stiffness_spec": {"type":"", "default_value": 2.5e-6}, #3.35e-5 #3.5e-5
             "equilibrium_shape": coords_list,
             "dipole_radius": 100e-9,
-            "frames": 1,
-            "time_step": 0.0625e-4,  #0.125e-4 
             "beam_planes": [], #  [["x", 0],["z", 0]]
             "beam_alpha": 0.4,
         })
