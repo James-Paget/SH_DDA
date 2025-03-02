@@ -16,7 +16,11 @@ import itertools as it
 import os
 from functools import partial, reduce
 from operator import mul
+
 from scipy.spatial import ConvexHull
+from skimage import measure
+import trimesh
+import matplotlib.pyplot as plt
 
 import Display
 import DipolesMulti2024Eigen as DM
@@ -3363,10 +3367,42 @@ def get_cloud_volume(method_type, raw_points):
             # Slow
             # Need tighter pacing of particles
             # No shape assumptions
-            pass
+
+            ##
+            ## NOT CURRENTLY WORKING; Requires heavy tunning to get a correct bounding surface and even then
+            ##      consistently gives negative volumes of different magnitude. Will be worth fixing if we 
+            ##      want to find volumes of concave shapes, however for simple elliptical shapes the ConvexHull 
+            ##      should be accurate enough.
+            ##
+            
+            # (1) Convert point cloud to set of points on lattice (bin them)
+            # Number of points to divide the space into in each axis
+            lattice_num  = 2*15   # NOTE; Must be an even number
+            # Finds the furthest point in any axis for the whol system, creates a cubic box centered at the origin based on this to divide the system; NOTE; This is not a very efficient method for this and will leave lots of empty space
+            lattice_size = (1.1*np.max(raw_points))/(lattice_num/2.0)     # Width of each voxel/lattice element
+            lattice = np.zeros( (lattice_num, lattice_num, lattice_num), dtype=int )
+            for i in range(len(raw_points)):
+                binned_pos = np.floor(raw_points[i] /(lattice_size)) +int(lattice_num/2.0)
+                if( 
+                    (0 <= binned_pos[0]) and (binned_pos[0] < lattice_num) and
+                    (0 <= binned_pos[1]) and (binned_pos[1] < lattice_num) and
+                    (0 <= binned_pos[2]) and (binned_pos[2] < lattice_num)
+                 ):
+                    lattice[int(binned_pos[0]), int(binned_pos[1]), int(binned_pos[2])] += 1
+            # (2) Apply marching cubes to the binned set, convert to mesh and pull volume
+            # https://scikit-image.org/docs/stable/auto_examples/edges/plot_marching_cubes.html
+            verts, faces, normals, values = measure.marching_cubes(lattice, np.mean(lattice))
+            triangle_mesh = trimesh.Trimesh(vertices=verts, faces=faces)
+            volume = triangle_mesh.volume
+            ## Check a plot of surface found for bug fixing
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot_trisurf(verts[:, 0], verts[:,1], triangles=faces, Z=verts[:,2]) 
+            plt.show()
+            ## Check a plot of surface found for bug fixing
     return volume
 
-def test_volume_cloud(test_type="volume_sphere", method_type="convex_hull", N=10000, radius=1.0):
+def test_volume_cloud(test_type="volume_sphere", method_type="convex_hull", N=1000, radius=1.0):
     #
     # Simple test to ensure the polygon volume calculation is accurate
     #
@@ -3384,8 +3420,6 @@ def test_volume_cloud(test_type="volume_sphere", method_type="convex_hull", N=10
                 coord = radius*np.array([ np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta) ])     # Random point on sphere surface
                 points.append(coord)
     volume = get_cloud_volume(method_type, points)
-    print("points = ", len(points))
-    print("volume = ",volume)
     
 def pickle_write(dict, filename): 
     with open(filename, "wb") as f: pickle.dump(dict, f)
@@ -3432,6 +3466,7 @@ def get_dynamic_stretcher_data(should_recalculate, should_merge, filename, varia
 #=================#
 # Perform Program #
 #=================#
+
 if int(len(sys.argv)) != 2:
     sys.exit("Usage: python <RUN_TYPE>")
 
@@ -4459,6 +4494,7 @@ match(sys.argv[1]):
         filename = "Optical_stretcher"
         connection_mode = "num"
         connection_args = "5"
+        #yaxis_label = "Bounding box ratio"#"Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio", "Bounding box ratio"
         expt_type = "Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio" (this is ignored if should_recalculate=False)
         should_recalculate = False # if data should be calculated, not read from a file.
         should_merge = False # if recalculating, option to extend existing data.
@@ -4468,9 +4504,9 @@ match(sys.argv[1]):
             "dipole_radius": 100e-9,
             "wavelength": 785e-9,
 
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
-            "frames": 2000,
+            "frames": 900,
             "frame_min": 1,
             "max_size": 5e-6,
             "quiver_setting": 0,
