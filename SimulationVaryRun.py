@@ -4381,7 +4381,7 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 1800,
+            "frames": 2000,
             "frame_min": 1,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4392,7 +4392,7 @@ match(sys.argv[1]):
         # MAIN
         variables_list = { # NOTE order of this is important
             "stiffness": [2.7e-6],  #6.5e-6
-            "bending": [0.75e-19],
+            "bending": [0.75e-19, 1e-19],
             "translation": ["0.0 0.0 130e-6"],
             "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
@@ -4401,7 +4401,7 @@ match(sys.argv[1]):
             "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
             "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
-            "repeat": [i+1 for i in range(1)],
+            "repeat": [i+1 for i in range(2)],
         }
 
         def pickle_write(dict, filename): 

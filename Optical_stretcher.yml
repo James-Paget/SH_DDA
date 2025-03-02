@@ -1,12 +1,12 @@
 options:
-  frames: 1801
+  frames: 2001
 parameters:
   wavelength: 7.85e-07
   dipole_radius: 1e-07
   time_step: 5e-05
   polarisability_type: RR
   constants:
-    bending: 7.5e-20
+    bending: 1e-19
   stiffness_spec:
     type: 
     default_value: 2.7e-06
@@ -26,7 +26,7 @@ display:
   resolution: 401
   max_size: 5e-06
   frame_min: 1
-  frame_max: 1800
+  frame_max: 2000
   z_offset: 0.0
   beam_planes: [['y', 0]]
   quiver_setting: 0
