@@ -3286,7 +3286,7 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
     
     data_set = np.array(data_set, dtype=object) # object as inhomogeneous
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
-    if yaxis_label == "Volume": "graphlabel_set["yAxis"] = "Shape Volume [m^3]" 
+    if yaxis_label == "Volume": graphlabel_set["yAxis"] = "Shape Volume [m^3]" 
     # graphlabel_set["yAxis"] = "Ratio of major to minor axis length"
     return data_set, datalabel_set, graphlabel_set, pulled_data_set
 
