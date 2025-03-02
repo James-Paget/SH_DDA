@@ -589,7 +589,7 @@ def generate_connection_indices(array_of_positions, mode="manual", args=[], verb
                         current_connections[i] += 1
                         current_connections[j] += 1
 
-            print(f"Num connections are {current_connections}")
+            #print(f"Num connections are {current_connections}")
             for i in range(num_particles):
                 if current_connections[i] != num_connections:
                     print(f"Warning, particle {i} not properly connected, connections={current_connections[i]}")

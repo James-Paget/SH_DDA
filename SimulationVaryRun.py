@@ -16,6 +16,7 @@ import itertools as it
 import os
 from functools import partial, reduce
 from operator import mul
+from scipy.spatial import ConvexHull
 
 import Display
 import DipolesMulti2024Eigen as DM
@@ -3266,6 +3267,8 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
                         # print("y", smallest_ys, largest_ys) 
                         # print("z", smallest_zs, largest_zs)                       
                         output = (np.average(largest_zs)-np.average(smallest_zs))/( np.sqrt( (np.average(largest_xs)-np.average(smallest_xs)) * (np.average(largest_ys)-np.average(smallest_ys))))
+                    case "Volume":
+                        output = get_cloud_volume("convex_hull", positions.T)   # Transpose to get into [[X,Y,Z], ...] format
 
                 data_set_values[f] = output
 
@@ -3283,8 +3286,11 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
     
     data_set = np.array(data_set, dtype=object) # object as inhomogeneous
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
-    graphlabel_set["yAxis"] = "Ratio of major to minor axis length"
+    if yaxis_label == "Volume": "graphlabel_set["yAxis"] = "Shape Volume [m^3]" 
+    # graphlabel_set["yAxis"] = "Ratio of major to minor axis length"
     return data_set, datalabel_set, graphlabel_set, pulled_data_set
+
+  
 
 def calculate_MoI(pulled_data_set, data_set, axes=["z"]):
     """
@@ -3341,6 +3347,63 @@ def calculate_MoI(pulled_data_set, data_set, axes=["z"]):
                 # largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]
 
     return data_set_moi, data_set_ideal
+
+def get_cloud_volume(method_type, raw_points):
+    #
+    # Gets the volume of the point cloud of a shape (does not have to be just surface points, can have points within the volume too) using a chosen method
+    #
+    # method_type = Which algorithm to use e.g. "convex_hull", "marching_cubes"
+    # raw_points = numpy XYZ position of all data points
+    #
+    # NOTE; Could also implement a 3D shoelace theorem (sum of triangles) with convex assumption
+    #
+    volume = 0.0
+    match method_type:
+        case "convex_hull":
+            # Fast
+            # Assumes convex
+            hull = ConvexHull(raw_points)
+            volume = hull.volume
+        case "marching_cubes":
+            # Slow
+            # Need tighter pacing of particles
+            # No shape assumptions
+            pass
+    return volume
+
+def test_volume_cloud(test_type="volume_sphere", method_type="convex_hull", N=10000, radius=1.0):
+    #
+    # Simple test to ensure the polygon volume calculation is accurate
+    #
+    points = []
+    match test_type:
+        case "volume_sphere":
+            for i in range(N):
+                coord = radius*2.0*(np.random.rand(3) -0.5)     # Random point in bounding cube
+                if(np.sum(pow(coord,2)) < pow(radius,2)):       # Sphere check
+                    points.append(coord)
+        case "surface_sphere":
+            for i in range(N):
+                phi = 2.0*np.pi*np.random.rand()
+                theta = np.pi*np.random.rand()
+                coord = radius*np.array([ np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta) ])     # Random point on sphere surface
+                points.append(coord)
+    volume = get_cloud_volume(method_type, points)
+    print("points = ", len(points))
+    print("volume = ",volume)
+    
+def pickle_write(dict, filename): 
+    with open(filename, "wb") as f: pickle.dump(dict, f)
+      
+def pickle_read(filename): 
+    with open(filename, "rb") as f: return pickle.load(f)
+    
+def pickle_merge(file_a, file_b): # append b into a
+    dict_a = pickle_read(file_a)
+    dict_b = pickle_read(file_b)
+    for key, value in dict_b.items(): # assuming they have the same keys, and that they contain arrays that can be extended.
+        np.append(dict_a[key], value)
+    pickle_write(dict_a, file_a)
 
 #=================#
 # Perform Program #
@@ -4372,14 +4435,14 @@ match(sys.argv[1]):
         filename = "Optical_stretcher"
         connection_mode = "num"
         connection_args = "5"
-        yaxis_label = "Bounding box ratio" # "Eccentricity", "Height/width ratio", "Bounding box ratio"
+        yaxis_label = "Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio", "Bounding box ratio"
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
             "dipole_radius": 100e-9,
             "wavelength": 785e-9,
 
-            "show_output": False,
+            "show_output": True,
             "show_stress": False,
             "frames": 2000,
             "frame_min": 1,
@@ -4403,18 +4466,7 @@ match(sys.argv[1]):
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
             "repeat": [i+1 for i in range(2)],
         }
-
-        def pickle_write(dict, filename): 
-            with open(filename, "wb") as f: pickle.dump(dict, f)
-        def pickle_read(filename): 
-            with open(filename, "rb") as f: return pickle.load(f)
-        def pickle_merge(file_a, file_b): # append b into a
-            dict_a = pickle_read(file_a)
-            dict_b = pickle_read(file_b)
-            for key, value in dict_b.items(): # assuming they have the same keys, and that they contain arrays that can be extended.
-                np.append(dict_a[key], value)
-            pickle_write(dict_a, file_a)
-            
+          
 
         should_recalculate = True # if data should be calculated, not read from a file.
         should_merge = False # if recalculating, option to extend existing data.
@@ -4474,17 +4526,36 @@ match(sys.argv[1]):
                     nu = 0.5    # Poisson ratio
                     Eh = 3.9e-5 # Young's Modulus*shell thickness -> experimental average used
                     stress0 = pow(transform_factor,3)*3.0   # Scales with transform factor; starts at 0 -> required deformation
+                    #stress0 = 1.0 + (transform_factor-1.0)*10.0
                     transformed_coords_list = []
                     for coord in coordinates:
-                        rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2) + pow(coord[2],2))
-                        rho2 = rho*rho
-                        phi = np.arctan2(coord[1], coord[0])
-                        theta = np.pi/2 - np.arctan2(coord[2], rho)
+                        #
+                        # NOT the version given in paper, incorrectly added, but did give stable points
+                        #
+                        # rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2))
+                        # rho2 = rho*rho
+                        # theta = np.arctan2(coord[1], coord[0])
+                        # radial_comp = ( (rho2*stress0)/(4.0*Eh) )*( (5.0+nu)*pow(np.cos(theta),2) - (1.0+nu) )  
+                        # meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )
+                        # transformed_coord_unrot = [(rho+radial_comp)*np.cos(theta), (rho+radial_comp)*np.sin(theta), coord[2]+meridional_comp]
+                        # transformed_coords_list.append( rotate_arbitrary(np.pi/2.0, transformed_coord_unrot, [0,1,0]) )
+
+                        #
+                        # Version given in paper
+                        #
+                        rho   = np.sqrt(pow(coord[0],2) + pow(coord[1],2) + pow(coord[2],2))
+                        rho2  = rho*rho
+                        phi   = np.arctan2(coord[1], coord[0])
+                        theta = np.pi/2.0 -np.arctan2(coord[2], rho)
+#                         rho  = np.sqrt(pow(coord[0],2) + pow(coord[1],2) + pow(coord[2],2))
+#                         rho2 = rho*rho
+#                         phi = np.arctan2(coord[1], coord[0])
+#                         theta = np.pi/2 - np.arctan2(coord[2], rho)
                         radial_comp = ( (rho2*stress0)/(4.0*Eh) )*( (5.0+nu)*pow(np.cos(theta),2) - (1.0+nu) )  
-                        meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )
+                        meridional_comp = ( (rho2*stress0*(1.0+nu))/(2.0*Eh) )*( np.sin(theta)*np.cos(theta) )/15.0
 
                         coord_base   = np.array([coord[0], coord[1], coord[2]])
-                        coord_radial = np.array([coord[0], coord[1], coord[2]])*radial_comp/rho
+                        coord_radial = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi),  np.cos(theta)])*radial_comp
                         coord_theta  = np.array([np.cos(theta)*np.cos(phi), np.cos(theta)*np.sin(phi), -np.sin(theta)])*meridional_comp
 
                         transformed_coord_unrot = coord_base+coord_radial+coord_theta
@@ -4692,17 +4763,26 @@ match(sys.argv[1]):
         #
         dimension = 6720e-9     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 1.75 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 5
+        critical_transform_factor = 4.0 # The max transform you want to apply, which sets the default separation of particles in the system
+        num_factors_tested = 10
         particle_size = 100e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
         particle_shape = "sphere"
+        connection_mode = "manual"  #"num"          # "dist", 0.0
+        connection_args = []    #5    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
         transform_type = "radial_meridional"         # "linear", "inverse_area", "radial_meridional"
         E0 = 14.0e6 #14e6
-        w0 = 4.4   #5.4
+        w0 = 4.0    #4.4   #5.4
         translation = "0.0 0.0 135.0e-6"  # Offset applied to both beams
+        
+        coords_list, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
+        
+        # coords_list_python = []
+        # coords_list = Generate_yaml.get_sunflower_points(120, dimension/2.0)
+        # for i in range(len(coords_list)):
+        #     coords_list_python.append(list(coords_list[i]))
 
         sphere_type = "shell" # options are "solid" or "shell"
         
@@ -4723,17 +4803,16 @@ match(sys.argv[1]):
                     coords_list.append(list(coords_list_raw[i]))
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "quiver_setting": 0,
-            "wavelength": 0.785e-6,
+            "wavelength": 1.0e-6,
+            "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
+            "constants": {"bending": 0.75e-20}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
+            "stiffness_spec": {"type":"", "default_value": 2.0e-3}, #3.35e-5 #3.5e-5
             "frames": 1,
             "max_size": 5e-6,
-
             "time_step": 0.0625e-4,  #0.125e-4 
-            "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
-            "constants": {"bending": 0.75e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 2.5e-6}, #3.35e-5 #3.5e-5
             "equilibrium_shape": coords_list,
             "dipole_radius": 100e-9,
             "beam_planes": [], #  [["x", 0],["z", 0]]
