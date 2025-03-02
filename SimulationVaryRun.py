@@ -3169,7 +3169,7 @@ def make_legend_labels(data_set_params, legend_params, indep_name, forces_output
 
 
 
-def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label):
+def dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_type, yaxis_label):
     # Makes a data set of either the eccentricity, the ratio of the longest and shortest radii against the frame number, or the bounding box ratio of the z height/ sqrt(x width * y width)
     # yaxis_label switches between the modes listed about, values should be "Eccentricity", "Height/width ratio", or "Bounding box ratio".
     # num_averaged is how many positions the longest/shortest are averaged over - reduces anomalous effects but dilutes differences.
@@ -3182,6 +3182,7 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
     parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
     data_set = [] # it will be inhomogeneous
     datalabel_set = []
+    pulled_data_set = []
     count = 0
     making_title = True
     title_str = yaxis_label + " against frame number"
@@ -3243,7 +3244,7 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
                 data_of_frame = pulled_data[f]
                 positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
 
-                match yaxis_label:
+                match expt_type:
                     case "Eccentricity":
                         centre = np.average(positions, axis=1)
                         rs = np.linalg.norm(positions - centre[:,None], axis=0)
@@ -3264,18 +3265,16 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
                         smallest_ys = positions[1, np.argpartition(positions[1], num_averaged)[:num_averaged]]
                         largest_ys = positions[1, np.argpartition(positions[1], -num_averaged)[-num_averaged:]]
                         smallest_zs = positions[2, np.argpartition(positions[2], num_averaged)[:num_averaged]]
-                        largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]
-
-                        # print("\nx", smallest_xs, largest_xs)
-                        # print("y", smallest_ys, largest_ys) 
-                        # print("z", smallest_zs, largest_zs)                       
+                        largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]                   
                         output = (np.average(largest_zs)-np.average(smallest_zs))/( np.sqrt( (np.average(largest_xs)-np.average(smallest_xs)) * (np.average(largest_ys)-np.average(smallest_ys))))
+                    
                     case "Volume":
                         output = get_cloud_volume("convex_hull", positions.T)   # Transpose to get into [[X,Y,Z], ...] format
 
                 data_set_values[f] = output
 
         except Exception as error: 
+            pulled_data = None
             print(f"\nERROR, failed and continuing on params:")
             for i, key in enumerate(variables_list.keys()):
                 print(f"{key} = {params[i]}")
@@ -3283,12 +3282,70 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_la
 
         data_set.append( [times, data_set_values] )
         datalabel_set.append(line_label)
+        pulled_data_set.append(pulled_data)
         count +=1
     
     data_set = np.array(data_set, dtype=object) # object as inhomogeneous
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
-    graphlabel_set["yAxis"] = "Shape Volume [m^3]"    #Ratio of major to minor axis length
-    return data_set, datalabel_set, graphlabel_set
+    return data_set, datalabel_set, graphlabel_set, pulled_data_set
+
+  
+
+def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes=["z"]):
+    """
+    Finds the moment of inertia for each set of particles in pulled_data_set
+    * Normal: sum over all particles of mr^2 (r relative to centre of mass)
+    * Assuming spheroid: finds object height/width to get the MoI
+
+    pulled_data_set contains the particle positions with indices [experiment][frame][flatted positions: all x's, then all y's, then all z's]
+
+    Returns data_set_moi, datalabel_set, graphlabel_set: 
+    data_set_moi and datalabel_set contain twice the experiments as data_set: first half is true MoIs, second half are the MoIs assuming spheroidal
+    graphlabel_set is slightly modified to display "MoI"
+    Indices of returned lists are for [select from "axes"][experiment][0: time vals, 1: mois][specific time val/moi]
+    """
+
+    pulled_data_set = np.array(pulled_data_set)
+    data_set = np.array(data_set)
+    times = data_set[0,0,:]
+    num_axes = len(axes)
+    num_expts = len(data_set)
+    num_frames = len(times)
+    num_particles = int(len(pulled_data_set[0,0])/3)
+    particle_mass = 1/num_particles # XXX
+
+    data_set_moi = np.array([ [[times, np.zeros(times.shape)] for _ in range(num_expts*2)]  for _ in range(num_axes)])
+    axis_lookup = {"x":[False, True, True], "y":[True, False, True], "z":[True, True, False]} # make np filters
+
+    for expt_i in range(num_expts):
+        for f in range(num_frames):
+            data_of_frame = pulled_data_set[expt_i, f]
+            positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
+            centre = np.average(positions, axis=1)
+            shifted_positions = positions - centre[:,None]
+            
+            for axi in range(num_axes):
+                ax_filter = axis_lookup[axes[axi]]
+
+                # actual moi
+                rs = np.linalg.norm(shifted_positions[ax_filter], axis=0) # norm of just the ax_filter components gives distance from the axis
+                moi = particle_mass * np.sum(rs**2)
+
+                # ideal spheroid moi
+                # using moi = 1/5 M (r1^2 + r2^2)
+                mins = np.min(shifted_positions[ax_filter], axis=1) # find diameters in the 2 relevant axes
+                maxs = np.max(shifted_positions[ax_filter], axis=1)
+                moi_ideal = particle_mass * num_particles * np.sum( (maxs-mins)**2)/4
+
+                data_set_moi[axi, expt_i, 1, f] = moi
+                data_set_moi[axi, expt_i+num_expts, 1, f] = moi_ideal
+
+    # Make MoI labels
+    graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
+    ideal_labels = ["ideal; "+s for s in datalabel_set]
+    datalabel_set.extend(ideal_labels)
+
+    return data_set_moi, datalabel_set, graphlabel_set
 
 def get_cloud_volume(method_type, raw_points):
     #
@@ -3363,6 +3420,48 @@ def test_volume_cloud(test_type="volume_sphere", method_type="convex_hull", N=10
                 coord = radius*np.array([ np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta) ])     # Random point on sphere surface
                 points.append(coord)
     volume = get_cloud_volume(method_type, points)
+    
+def pickle_write(dict, filename): 
+    with open(filename, "wb") as f: pickle.dump(dict, f)
+      
+def pickle_read(filename): 
+    with open(filename, "rb") as f: return pickle.load(f)
+    
+def pickle_merge(file_a, file_b): # append b into a
+    dict_a = pickle_read(file_a)
+    dict_b = pickle_read(file_b)
+    for key, value in dict_b.items(): # assuming they have the same keys, and that they contain arrays that can be extended.
+        np.append(dict_a[key], value)
+    pickle_write(dict_a, file_a)
+
+def get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_type, yaxis_label, store_name="dynamic_stretcher_store"):
+    """
+    Runs dynamic_stretcher_vary if should_recalculate=True, else reads from file (though does NOT check first that the file exists)
+    Writes this data to "store_name" file, appending if should_merge=True
+    Returns data_set, datalabel_set, graphlabel_set, pulled_data_set
+    """
+    store_name = "dynamic_stretcher_store"
+    if should_recalculate:
+        data_set, datalabel_set, graphlabel_set, pulled_data_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_type, yaxis_label)
+        
+        # Store data
+        data_dict = {"data_set":data_set, "datalabel_set":datalabel_set, "graphlabel_set":graphlabel_set, "pulled_data_set":pulled_data_set}
+        unique_filename = f"{store_name}{np.random.randint(0, 10000000)}.p"
+        # store in unique file so data not overwritten later. Comment this for fewer *.p files.
+        pickle_write(data_dict, unique_filename)
+
+        if should_merge:
+            pickle_merge(f"{store_name}.p", unique_filename) # 
+        else:
+            pickle_write(data_dict, f"{store_name}.p")
+    
+    # else, don't calculate just read from file.
+    else:
+        print("Loading file")
+        data_dict = pickle_read(f"{store_name}.p")
+        data_set, datalabel_set, graphlabel_set, pulled_data_set = data_dict["data_set"], data_dict["datalabel_set"], data_dict["graphlabel_set"], data_dict["pulled_data_set"]
+    
+    return data_set, datalabel_set, graphlabel_set, pulled_data_set
 
 #=================#
 # Perform Program #
@@ -4390,19 +4489,19 @@ match(sys.argv[1]):
 
     case "dynamic_stretcher_eccentricity":
         #
-        # Simulation of a sphere stretched between two oppsing Gaussian beams
+        # Dynamics simulation of a sphere stretched between two opposing Gaussian beams
         #
         filename = "Optical_stretcher"
-    
-        
         connection_mode = "num"
         connection_args = "5"
-        yaxis_label = "Bounding box ratio"#"Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio", "Bounding box ratio"
+        #yaxis_label = "Bounding box ratio"#"Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio", "Bounding box ratio"
+        expt_type = "Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio" (this is ignored if should_recalculate=False)
+        should_recalculate = False # if data should be calculated, not read from a file.
+        should_merge = False # if recalculating, option to extend existing data.
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "force_terms": ["optical", "spring", "bending", "buckingham"], #, "buckingham"
+            "force_terms": ["optical", "spring", "bending"], #, "buckingham"
             "dipole_radius": 100e-9,
-            "time_step": 10e-5, 
             "wavelength": 785e-9,
 
             "show_output": False,
@@ -4415,23 +4514,40 @@ match(sys.argv[1]):
             "beam_planes": [["y", 0]], #  [["z", 0], ["x", 0]]  [["z", 0]]
             "beam_alpha": 0.4,
         })
-        # MAIN
+
         variables_list = { # NOTE order of this is important
-            "stiffness": [2.6e-6],  #6.5e-6
-            "bending": [0.75e-19],
+            "stiffness": [2.7e-6],  #6.5e-6
+            "bending": [0.75e-19, 1e-19],
             "translation": ["0.0 0.0 130e-6"],
-            "num_particles": [100], # 40, 72, 84, 100, 120, 160, 200
+            "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
             "E0": [14e6],
             "w0": [5],
-            "time_step": [10e-5], # largest one used to calc actual frames, shorter ones only have more frames.
+            "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
             "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
-            "repeat": [i+1 for i in range(1)],
+            "repeat": [i+1 for i in range(2)],
         }
 
-        data_set, datalabel_set, graphlabel_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, yaxis_label)
-        Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
+        match expt_type:
+            case "Bounding box ratio": yaxis_label  = "Ratio of major to minor axis length"
+            case "Eccentricity": yaxis_label  = "Eccentricity"
+            case "Height/width ratio": yaxis_label  = "Height/width ratio"
+            case "Volume": yaxis_label = "Shape Volume [m^3]"
+
+        
+        data_set, datalabel_set, graphlabel_set, pulled_data_set = get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_type, yaxis_label, store_name="dynamic_stretcher_store")
+
+        Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set)
+
+        # Uses pulled_data_set (particle positions) to calculate the moments of inertia
+        axes = ["z", "x"]
+        data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes=axes)
+        for axi in range(len(axes)):
+            Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
+
+        
+
 
 
     case "stretcher_springs_cubic_sphere":
