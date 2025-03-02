@@ -3169,7 +3169,7 @@ def make_legend_labels(data_set_params, legend_params, indep_name, forces_output
 
 
 
-def dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_type, yaxis_label):
+def dynamic_stretcher_vary(filename, variables_list, option_parameters):
     # Makes a data set of either the eccentricity, the ratio of the longest and shortest radii against the frame number, or the bounding box ratio of the z height/ sqrt(x width * y width)
     # yaxis_label switches between the modes listed about, values should be "Eccentricity", "Height/width ratio", or "Bounding box ratio".
     # num_averaged is how many positions the longest/shortest are averaged over - reduces anomalous effects but dilutes differences.
@@ -3181,13 +3181,8 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_typ
     max_time = option_parameters["frames"] * max(variables_list["time_step"])
     parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"FT", "args":["FTx", "FTy", "FTz"]}, {"type":"C", "args":["Cx", "Cy", "Cz"]}]
     data_set = [] # it will be inhomogeneous
-    datalabel_set = []
     pulled_data_set = []
     count = 0
-    making_title = True
-    title_str = yaxis_label + " against frame number"
-    len_title = len(title_str)
-    max_title_len = 100 # roughly
     num_expts = reduce(mul, [len(v) for v in variables_list.values()])
     material = "RBC" # Red blood cell
 
@@ -3204,7 +3199,7 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_typ
         E0 = params[5]
         w0 = params[6]
         time_step = params[7]
-        num_averaged = params[8]
+        # num_averaged = params[8]
         sphere_radius = params[9]
         # repeat = params[10] # does nothing, just used to see the effect of randomness.
 
@@ -3213,6 +3208,41 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_typ
         num_frames = len(times)
         option_parameters["frames"] = num_frames
         read_frames = np.arange(0, num_frames, 1)
+        data_set.append( [times, np.zeros(num_frames)] )
+
+        # Run simulation for the current set of params.
+        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation, material=material)
+        particles = np.arange(0, num_particles, 1)
+        
+        try:
+            DM.main(filename)
+            read_parameters = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), particles)]
+            pulled_data = pull_file_data(filename, parameters_stored, read_frames, read_parameters)
+
+        except Exception as error: 
+            pulled_data = None
+            print(f"\nERROR, failed and continuing on params:")
+            for i, key in enumerate(variables_list.keys()): print(f"{key} = {params[i]}")
+            print(error)
+
+        pulled_data_set.append(pulled_data)
+        count +=1
+    
+    data_set = np.array(data_set, dtype=object) # object as inhomogeneous, currently y values left as zeros, to be calculated elsewhere
+    return data_set, pulled_data_set
+
+def process_dynamic_stretcher_vary(pulled_data_set, data_set, variables_list, expt_type, yaxis_label):
+    
+    datalabel_set = []
+    making_title = True
+    title_str = yaxis_label + " against frame number"
+    len_title = len(title_str)
+    max_title_len = 100 # roughly
+    count = 0
+    for params in it.product(*variables_list.values()):
+        # extract params values. NOTE order of this is important: stiffness, bending, beam translation, num_particles, particle radius, dipole radius, E0, w0, time step, num averaged, sphere radiusm repeat
+        num_particles = params[3]
+        num_averaged = params[8]
 
         # Make title/legend
         line_label = ""
@@ -3225,71 +3255,99 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_typ
                 string = f", {key} = {params[i]}"
                 title_str += string
                 len_title += len(string)
-        
+        datalabel_set.append(line_label)
         if title_str[-1] == "\n": title_str = title_str[:-1] # pop trailing \n
         making_title = False # just add params to the title for the first time
 
-        # Run simulation for the current set of params.
-        Generate_yaml.make_yaml_stretcher_springs(filename, option_parameters, num_particles, sphere_radius, particle_radius, connection_mode, connection_args, E0, w0, translation, material=material)
-        particles = np.arange(0, num_particles, 1)
-        data_set_values = np.zeros(num_frames) # default to zeros in case the "try" fails
+        pulled_data = pulled_data_set[count]
+        num_frames = len(data_set[count,0])
 
-        try:
-            DM.main(filename)
-            read_parameters = [{"type":"X", "particle":p, "subtype":s} for s, p in it.product(range(3), particles)]
-            pulled_data = pull_file_data(filename, parameters_stored, read_frames, read_parameters)
+        for f in range(num_frames):
+            data_of_frame = pulled_data[f]
+            positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
 
-            
-            for f in read_frames:
-                data_of_frame = pulled_data[f]
-                positions = np.array([data_of_frame[0:num_particles], data_of_frame[num_particles:2*num_particles], data_of_frame[2*num_particles:3*num_particles]])
+            match expt_type:
+                case "Eccentricity":
+                    centre = np.average(positions, axis=1)
+                    rs = np.linalg.norm(positions - centre[:,None], axis=0)
+                    smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  # sort for the num_averaged min values, then slice for them.
+                    largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]] # sort for the num_averaged max values, then slice for them.
+                    output = np.sqrt(1 - np.average(smallest_rs)**2/np.average(largest_rs)**2)
+                
+                case "Height/width ratio":
+                    centre = np.average(positions, axis=1)
+                    rs = np.linalg.norm(positions - centre[:,None], axis=0)
+                    smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  
+                    largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]]
+                    output = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
+                
+                case "Bounding box ratio":
+                    smallest_xs = positions[0, np.argpartition(positions[0], num_averaged)[:num_averaged]]
+                    largest_xs = positions[0, np.argpartition(positions[0], -num_averaged)[-num_averaged:]]
+                    smallest_ys = positions[1, np.argpartition(positions[1], num_averaged)[:num_averaged]]
+                    largest_ys = positions[1, np.argpartition(positions[1], -num_averaged)[-num_averaged:]]
+                    smallest_zs = positions[2, np.argpartition(positions[2], num_averaged)[:num_averaged]]
+                    largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]                   
+                    output = (np.average(largest_zs)-np.average(smallest_zs))/( np.sqrt( (np.average(largest_xs)-np.average(smallest_xs)) * (np.average(largest_ys)-np.average(smallest_ys))))
+                
+                case "Volume":
+                    output = get_cloud_volume("convex_hull", positions.T)   # Transpose to get into [[X,Y,Z], ...] format
 
-                match expt_type:
-                    case "Eccentricity":
-                        centre = np.average(positions, axis=1)
-                        rs = np.linalg.norm(positions - centre[:,None], axis=0)
-                        smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  # sort for the num_averaged min values, then slice for them.
-                        largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]] # sort for the num_averaged max values, then slice for them.
-                        output = np.sqrt(1 - np.average(smallest_rs)**2/np.average(largest_rs)**2)
-                    
-                    case "Height/width ratio":
-                        centre = np.average(positions, axis=1)
-                        rs = np.linalg.norm(positions - centre[:,None], axis=0)
-                        smallest_rs = rs[np.argpartition(rs, num_averaged)[:num_averaged]]  
-                        largest_rs = rs[np.argpartition(rs, -num_averaged)[-num_averaged:]]
-                        output = np.average(largest_rs)/np.average(smallest_rs) # long/short ratio
-                    
-                    case "Bounding box ratio":
-                        smallest_xs = positions[0, np.argpartition(positions[0], num_averaged)[:num_averaged]]
-                        largest_xs = positions[0, np.argpartition(positions[0], -num_averaged)[-num_averaged:]]
-                        smallest_ys = positions[1, np.argpartition(positions[1], num_averaged)[:num_averaged]]
-                        largest_ys = positions[1, np.argpartition(positions[1], -num_averaged)[-num_averaged:]]
-                        smallest_zs = positions[2, np.argpartition(positions[2], num_averaged)[:num_averaged]]
-                        largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]                   
-                        output = (np.average(largest_zs)-np.average(smallest_zs))/( np.sqrt( (np.average(largest_xs)-np.average(smallest_xs)) * (np.average(largest_ys)-np.average(smallest_ys))))
-                    
-                    case "Volume":
-                        output = get_cloud_volume("convex_hull", positions.T)   # Transpose to get into [[X,Y,Z], ...] format
+            data_set[count, 1, f] = output
+        
+        count += 1
 
-                data_set_values[f] = output
-
-        except Exception as error: 
-            pulled_data = None
-            print(f"\nERROR, failed and continuing on params:")
-            for i, key in enumerate(variables_list.keys()):
-                print(f"{key} = {params[i]}")
-            print(error)
-
-        data_set.append( [times, data_set_values] )
-        datalabel_set.append(line_label)
-        pulled_data_set.append(pulled_data)
-        count +=1
-    
-    data_set = np.array(data_set, dtype=object) # object as inhomogeneous
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
-    return data_set, datalabel_set, graphlabel_set, pulled_data_set
 
-  
+    return data_set, datalabel_set, graphlabel_set
+    
+
+def get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_types, yaxis_labels, store_name="dynamic_stretcher_store"):
+    """
+    Runs dynamic_stretcher_vary if should_recalculate=True, else reads from file (though does NOT check first that the file exists)
+    Writes this data to "store_name" file, appending if should_merge=True
+    Then, uses this to calculate the outputs for each experiment
+
+    Returns data_sets, datalabel_sets, graphlabel_sets, pulled_data_set
+    """
+    store_name = "dynamic_stretcher_store"
+    if should_recalculate:
+        data_set, pulled_data_set = dynamic_stretcher_vary(filename, variables_list, option_parameters)
+        
+        # Store data
+        data_dict = {"data_set":data_set, "pulled_data_set":pulled_data_set}
+        unique_filename = f"{store_name}{np.random.randint(0, 10000000)}.p"
+        # store in unique file so data not overwritten later. Comment this for fewer *.p files.
+        pickle_write(data_dict, unique_filename)
+
+        if should_merge: pickle_merge(f"{store_name}.p", unique_filename) # 
+        else: pickle_write(data_dict, f"{store_name}.p")
+    
+    # else, don't calculate just read from file.
+    else:
+        # WHEN USING THIS REMEMBER TO MAKE VARIABLES LIST THE SAME AS WHEN IT WAS SAVED.
+        print("Loading file")
+        data_dict = pickle_read(f"{store_name}.p")
+        data_set, pulled_data_set = data_dict["data_set"], data_dict["pulled_data_set"]
+    
+    
+    # Process data
+    num_expt_types = len(expt_types)
+    data_sets = []
+    datalabel_sets = []
+    graphlabel_sets = []
+
+    for expt_i in range(num_expt_types):
+        expt_data_set, datalabel_set, graphlabel_set = process_dynamic_stretcher_vary(pulled_data_set, data_set, variables_list, expt_types[expt_i], yaxis_labels[expt_i])
+        data_sets.append(expt_data_set)
+        datalabel_sets.append(datalabel_set)
+        graphlabel_sets.append(graphlabel_set)
+
+    data_sets = np.array(data_sets, dtype=object)
+    datalabel_sets = np.array(datalabel_sets, dtype=object)
+    graphlabel_sets = np.array(graphlabel_sets, dtype=object)
+
+    return data_sets, datalabel_sets, graphlabel_sets, pulled_data_set
 
 def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes=["z"]):
     """
@@ -3309,14 +3367,13 @@ def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes
     data_set = np.array(data_set)
     times = data_set[0,0,:]
     num_axes = len(axes)
-    num_expts = len(data_set)
+    num_expts = len(datalabel_set)
     num_frames = len(times)
     num_particles = int(len(pulled_data_set[0,0])/3)
     particle_mass = 1/num_particles # XXX
 
     data_set_moi = np.array([ [[times, np.zeros(times.shape)] for _ in range(num_expts*2)]  for _ in range(num_axes)])
     axis_lookup = {"x":[False, True, True], "y":[True, False, True], "z":[True, True, False]} # make np filters
-
     for expt_i in range(num_expts):
         for f in range(num_frames):
             data_of_frame = pulled_data_set[expt_i, f]
@@ -3343,7 +3400,7 @@ def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes
     # Make MoI labels
     graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
     ideal_labels = ["ideal; "+s for s in datalabel_set]
-    datalabel_set.extend(ideal_labels)
+    np.append(graphlabel_set, ideal_labels)
 
     return data_set_moi, datalabel_set, graphlabel_set
 
@@ -3434,34 +3491,16 @@ def pickle_merge(file_a, file_b): # append b into a
         np.append(dict_a[key], value)
     pickle_write(dict_a, file_a)
 
-def get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_type, yaxis_label, store_name="dynamic_stretcher_store"):
-    """
-    Runs dynamic_stretcher_vary if should_recalculate=True, else reads from file (though does NOT check first that the file exists)
-    Writes this data to "store_name" file, appending if should_merge=True
-    Returns data_set, datalabel_set, graphlabel_set, pulled_data_set
-    """
-    store_name = "dynamic_stretcher_store"
-    if should_recalculate:
-        data_set, datalabel_set, graphlabel_set, pulled_data_set = dynamic_stretcher_vary(filename, variables_list, option_parameters, expt_type, yaxis_label)
-        
-        # Store data
-        data_dict = {"data_set":data_set, "datalabel_set":datalabel_set, "graphlabel_set":graphlabel_set, "pulled_data_set":pulled_data_set}
-        unique_filename = f"{store_name}{np.random.randint(0, 10000000)}.p"
-        # store in unique file so data not overwritten later. Comment this for fewer *.p files.
-        pickle_write(data_dict, unique_filename)
-
-        if should_merge:
-            pickle_merge(f"{store_name}.p", unique_filename) # 
-        else:
-            pickle_write(data_dict, f"{store_name}.p")
-    
-    # else, don't calculate just read from file.
-    else:
-        print("Loading file")
-        data_dict = pickle_read(f"{store_name}.p")
-        data_set, datalabel_set, graphlabel_set, pulled_data_set = data_dict["data_set"], data_dict["datalabel_set"], data_dict["graphlabel_set"], data_dict["pulled_data_set"]
-    
-    return data_set, datalabel_set, graphlabel_set, pulled_data_set
+def get_dynamic_stretcher_yaxis_labels(expt_types):
+    yaxis_labels = []
+    for expt_type in expt_types:
+        match expt_type:
+            case "Bounding box ratio": yaxis_label  = "Ratio of major to minor axis length"
+            case "Eccentricity": yaxis_label  = "Eccentricity"
+            case "Height/width ratio": yaxis_label  = "Height/width ratio"
+            case "Volume": yaxis_label = "Shape Volume [m^3]"
+        yaxis_labels.append(yaxis_label)
+    return yaxis_labels
 
 #=================#
 # Perform Program #
@@ -4494,10 +4533,10 @@ match(sys.argv[1]):
         filename = "Optical_stretcher"
         connection_mode = "num"
         connection_args = "5"
-        #yaxis_label = "Bounding box ratio"#"Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio", "Bounding box ratio"
-        expt_type = "Volume"  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio" (this is ignored if should_recalculate=False)
-        should_recalculate = False # if data should be calculated, not read from a file.
+        expt_types = ["Volume", "Bounding box ratio"]  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio" (this is ignored if should_recalculate=False)
+        should_recalculate = True # if data should be calculated, not read from a file.
         should_merge = False # if recalculating, option to extend existing data.
+        axes = ["z", "x"] # which MoI graphs to plot
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
@@ -4506,8 +4545,8 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 900,
-            "frame_min": 1,
+            "frames": 1800,
+            "frame_min": 0,
             "max_size": 5e-6,
             "quiver_setting": 0,
             "resolution": 401,
@@ -4517,7 +4556,7 @@ match(sys.argv[1]):
 
         variables_list = { # NOTE order of this is important
             "stiffness": [2.7e-6],  #6.5e-6
-            "bending": [0.75e-19, 1e-19],
+            "bending": [1.0e-19],
             "translation": ["0.0 0.0 130e-6"],
             "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
@@ -4526,23 +4565,19 @@ match(sys.argv[1]):
             "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
             "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
-            "repeat": [i+1 for i in range(2)],
+            "repeat": [i+1 for i in range(1)],
         }
 
-        match expt_type:
-            case "Bounding box ratio": yaxis_label  = "Ratio of major to minor axis length"
-            case "Eccentricity": yaxis_label  = "Eccentricity"
-            case "Height/width ratio": yaxis_label  = "Height/width ratio"
-            case "Volume": yaxis_label = "Shape Volume [m^3]"
+        num_expt_types = len(expt_types)
+        yaxis_labels = get_dynamic_stretcher_yaxis_labels(expt_types)
 
-        
-        data_set, datalabel_set, graphlabel_set, pulled_data_set = get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_type, yaxis_label, store_name="dynamic_stretcher_store")
-
-        Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set)
+        data_sets, datalabel_sets, graphlabel_sets, pulled_data_set = get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_types, yaxis_labels, store_name="dynamic_stretcher_store")
+        for expt_i in range(num_expt_types):
+            print(data_sets[expt_i])
+            Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
 
         # Uses pulled_data_set (particle positions) to calculate the moments of inertia
-        axes = ["z", "x"]
-        data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes=axes)
+        data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_sets[0], datalabel_sets[0], graphlabel_sets[0], pulled_data_set, axes=axes)
         for axi in range(len(axes)):
             Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
 
