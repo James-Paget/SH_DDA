@@ -3170,10 +3170,13 @@ def make_legend_labels(data_set_params, legend_params, indep_name, forces_output
 
 
 def dynamic_stretcher_vary(filename, variables_list, option_parameters):
-    # Makes a data set of either the eccentricity, the ratio of the longest and shortest radii against the frame number, or the bounding box ratio of the z height/ sqrt(x width * y width)
-    # yaxis_label switches between the modes listed about, values should be "Eccentricity", "Height/width ratio", or "Bounding box ratio".
-    # num_averaged is how many positions the longest/shortest are averaged over - reduces anomalous effects but dilutes differences.
-    # Different variables are used, depending on varaibles list.
+    """
+    Calculates data_set, pulled_data_set for all combinations of params in variables_list
+    Some values are left as 0s in data_set: it is an inhomogeneous np array, indexed by expt number  (each combination in variables_list); 0 for times, 1 for values (zeros as calculated elsewhere); and value of times/values
+    pulled_data_set is a list for each expt number of the flattened positions (all x's 1st, then all y's etc.)
+    """
+    
+    # Different variables are used, depending on variables list.
     # Other parameters are given in option_parameters.
     # If the "try" fails, the values will be set to impossible ones - all zeros
 
@@ -3232,7 +3235,10 @@ def dynamic_stretcher_vary(filename, variables_list, option_parameters):
     return data_set, pulled_data_set
 
 def process_dynamic_stretcher_vary(pulled_data_set, data_set, variables_list, expt_type, yaxis_label):
-    
+    """
+    For the given expt_type:
+    Calculates data_set, datalabel_set, graphlabel_set using the particle positions in pulled_data_set, and fills in the expt specific values in data_set
+    """
     datalabel_set = []
     making_title = True
     title_str = yaxis_label + " against frame number"
@@ -3289,7 +3295,7 @@ def process_dynamic_stretcher_vary(pulled_data_set, data_set, variables_list, ex
                     smallest_zs = positions[2, np.argpartition(positions[2], num_averaged)[:num_averaged]]
                     largest_zs = positions[2, np.argpartition(positions[2], -num_averaged)[-num_averaged:]]                   
                     output = (np.average(largest_zs)-np.average(smallest_zs))/( np.sqrt( (np.average(largest_xs)-np.average(smallest_xs)) * (np.average(largest_ys)-np.average(smallest_ys))))
-                
+
                 case "Volume":
                     output = get_cloud_volume("convex_hull", positions.T)   # Transpose to get into [[X,Y,Z], ...] format
 
@@ -3298,7 +3304,6 @@ def process_dynamic_stretcher_vary(pulled_data_set, data_set, variables_list, ex
         count += 1
 
     graphlabel_set={"title":title_str, "xAxis":"Time [s]", "yAxis":f"{yaxis_label}"}
-
     return data_set, datalabel_set, graphlabel_set
     
 
@@ -3309,6 +3314,7 @@ def get_dynamic_stretcher_data(should_recalculate, should_merge, filename, varia
     Then, uses this to calculate the outputs for each experiment
 
     Returns data_sets, datalabel_sets, graphlabel_sets, pulled_data_set
+    The *_sets are lists of the *_set, for each expt_type, so are indexed by expt_type_i, then the *_set indices which are as normal (described in function dynamic_stretcher_vary)
     """
     store_name = "dynamic_stretcher_store"
     if should_recalculate:
@@ -3339,14 +3345,12 @@ def get_dynamic_stretcher_data(should_recalculate, should_merge, filename, varia
 
     for expt_i in range(num_expt_types):
         expt_data_set, datalabel_set, graphlabel_set = process_dynamic_stretcher_vary(pulled_data_set, data_set, variables_list, expt_types[expt_i], yaxis_labels[expt_i])
-        data_sets.append(expt_data_set)
-        datalabel_sets.append(datalabel_set)
+        data_sets.append(np.array(expt_data_set)) # np.array to prevent reference errors.
+        datalabel_sets.append(np.array(datalabel_set))
         graphlabel_sets.append(graphlabel_set)
 
-    data_sets = np.array(data_sets, dtype=object)
     datalabel_sets = np.array(datalabel_sets, dtype=object)
     graphlabel_sets = np.array(graphlabel_sets, dtype=object)
-
     return data_sets, datalabel_sets, graphlabel_sets, pulled_data_set
 
 def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes=["z"]):
@@ -4545,7 +4549,7 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 1800,
+            "frames": 5,
             "frame_min": 0,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4558,7 +4562,7 @@ match(sys.argv[1]):
             "stiffness": [2.7e-6],  #6.5e-6
             "bending": [1.0e-19],
             "translation": ["0.0 0.0 130e-6"],
-            "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
+            "num_particles": [4], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
             "E0": [14e6],
             "w0": [5],
@@ -4573,7 +4577,6 @@ match(sys.argv[1]):
 
         data_sets, datalabel_sets, graphlabel_sets, pulled_data_set = get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_types, yaxis_labels, store_name="dynamic_stretcher_store")
         for expt_i in range(num_expt_types):
-            print(data_sets[expt_i])
             Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
 
         # Uses pulled_data_set (particle positions) to calculate the moments of inertia
