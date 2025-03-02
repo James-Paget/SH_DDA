@@ -886,7 +886,7 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
     plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
     plt.ylabel(graphlabel_set["yAxis"])
-    if(show_legend and datalabel_set!=[""] and datalabel_set!=[]):
+    if(show_legend and len(datalabel_set)!=0 and datalabel_set[0]!=""):
         ax.legend(fontsize='small') #'large'
     plt.savefig("myImage.png", format="png", dpi=1200)
     plt.show()
