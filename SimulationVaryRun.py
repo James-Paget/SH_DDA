@@ -3392,11 +3392,11 @@ def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes
                 rs = np.linalg.norm(shifted_positions[ax_filter], axis=0) # norm of just the ax_filter components gives distance from the axis
                 moi = particle_mass * np.sum(rs**2)
 
-                # ideal spheroid moi
-                # using moi = 1/5 M (r1^2 + r2^2)
+                # ideal spheroid shell moi
+                # using moi = 1/3 M (r1^2 + r2^2)
                 mins = np.min(shifted_positions[ax_filter], axis=1) # find diameters in the 2 relevant axes
                 maxs = np.max(shifted_positions[ax_filter], axis=1)
-                moi_ideal = particle_mass * num_particles * np.sum( (maxs-mins)**2)/4
+                moi_ideal = 1/3 * particle_mass * num_particles * np.sum( (maxs-mins)**2)/4
 
                 data_set_moi[axi, expt_i, 1, f] = moi
                 data_set_moi[axi, expt_i+num_expts, 1, f] = moi_ideal
@@ -3404,7 +3404,7 @@ def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes
     # Make MoI labels
     graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
     ideal_labels = ["ideal; "+s for s in datalabel_set]
-    np.append(graphlabel_set, ideal_labels)
+    datalabel_set = np.append(datalabel_set, ideal_labels)
 
     return data_set_moi, datalabel_set, graphlabel_set
 
@@ -4538,9 +4538,9 @@ match(sys.argv[1]):
         connection_mode = "num"
         connection_args = "5"
         expt_types = ["Volume", "Bounding box ratio"]  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio" (this is ignored if should_recalculate=False)
-        should_recalculate = True # if data should be calculated, not read from a file.
+        should_recalculate = False # if data should be calculated, not read from a file.
         should_merge = False # if recalculating, option to extend existing data.
-        axes = ["z", "x"] # which MoI graphs to plot
+        axes = ["z", "x", "y"] # which MoI graphs to plot
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
@@ -4549,7 +4549,7 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 5,
+            "frames": 2000,
             "frame_min": 0,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4562,27 +4562,27 @@ match(sys.argv[1]):
             "stiffness": [2.7e-6],  #6.5e-6
             "bending": [1.0e-19],
             "translation": ["0.0 0.0 130e-6"],
-            "num_particles": [4], # 40, 72, 84, 100, 120, 160, 200
+            "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
             "E0": [14e6],
             "w0": [5],
             "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
             "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
-            "repeat": [i+1 for i in range(1)],
+            "repeat": [i+1 for i in range(3)],
         }
 
-        num_expt_types = len(expt_types)
         yaxis_labels = get_dynamic_stretcher_yaxis_labels(expt_types)
 
         data_sets, datalabel_sets, graphlabel_sets, pulled_data_set = get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_types, yaxis_labels, store_name="dynamic_stretcher_store")
-        for expt_i in range(num_expt_types):
-            Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
+        # for expt_i in range(len(expt_types)):
+        #     Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
 
         # Uses pulled_data_set (particle positions) to calculate the moments of inertia
         data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_sets[0], datalabel_sets[0], graphlabel_sets[0], pulled_data_set, axes=axes)
         for axi in range(len(axes)):
-            Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
+            graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
+            Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
 
         
 
