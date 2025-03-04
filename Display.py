@@ -932,7 +932,8 @@ def plot_example_DDA_voxel(num=9, dipole_size=40e-9, plot_size=0.7e-6):
         cols = [(r/256,g/256,b/256)]*6 # blue faces
         grey = 0.3
         ax.add_collection3d(Poly3DCollection(faces, facecolors=cols, linewidths=1.2, alpha=1.0, edgecolor=(grey, grey, grey))) # grey edges
-    plt.savefig("myImage.png", format="png", dpi=1200)
+    # plt.savefig("myImage.png", format="png", dpi=1200)
+    plt.savefig("myImage.eps", format="eps", dpi=1200)
     plt.show()
 
         

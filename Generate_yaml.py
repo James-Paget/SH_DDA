@@ -286,6 +286,14 @@ def make_yaml_stretcher_dipole_shape(filename, coords_list, dipole_size, connect
     args_list = [[dipole_size]] * len(coords_list)
     use_default_particles(filename, "cube", args_list, coords_list, connection_mode=connection_mode, connection_args=connection_args, material="FusedSilica")
 
+def make_coupled_sphere(filename, option_parameters, particle_radius, particle_translation):
+    use_parameter_options(filename, option_parameters)
+    use_beam(filename, "PLANE")
+    coords = [[-particle_translation, 0, 0], [particle_translation, 0, 0]]
+    args_list = [[particle_radius], [particle_radius]]
+    use_default_particles(filename, "sphere", args_list, coords, "num", "0")
+
+
 
 #=======================================================================
 # Particle configurations
@@ -566,6 +574,8 @@ def use_beam(filename, beam, translation=None, translationargs=None, translation
             use_bessel_beam(filename, translation, translationargs, translationtype, rotation=rotation)
         case "STRETCHER":
             use_stretcher_beam(filename, E0, w0, translation)
+        case "PLANE":
+            use_plane_wave_beam(filename)
 
         case _:
             print(f"Beam '{beam}' unknown, using LAGUERRE. Options are LAGUERRE, BESSEL")
@@ -599,6 +609,14 @@ def use_stretcher_beam(filename, E0=1.5e7, w0=0.4, translation=None):
     beam1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_X", "translation":translation, "translationargs":None, "translationtype":None, "rotation":None}
     beam2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_X", "translation":translation, "translationargs":None, "translationtype":None, "rotation":"180 90.0"}
     write_beams(filename, [beam1, beam2])   #POLARISATION_X
+
+def use_plane_wave_beam(filename):
+    """
+    Makes a plane wave beam.
+    """
+    beam = {"beamtype":"BEAMTYPE_PLANE", "E0":1.5e7, "order":1, "jones":"POLARISATION_X"}
+    write_beams(filename, [beam])
+    
 
 
 #=======================================================================

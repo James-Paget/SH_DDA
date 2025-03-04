@@ -5002,7 +5002,35 @@ match(sys.argv[1]):
         Generate_yaml.make_yaml_refine_cube_showcase(filename, 0.8e-6, [-2.8e-6, 0.0, 0.0], "sphere", option_parameters, beam="LAGUERRE", material="FusedSilica")
         DM.main(YAML_name=filename)
 
+    case "voxel_sphere":
+        Display.plot_example_DDA_voxel(num=7, dipole_size=40e-9, plot_size=0.5e-6)
 
+    case "coupling":
+        # x-force on one sphere in a 2 sphere system where they are separated by different translations from the origin.
+        # In a plane wave beam simply show optical coupling.
+        filename = "SingleLaguerre"
+        particle_radius = 300e-9
+        translations = np.linspace(particle_radius, 2.0e-6, 100)
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": False,
+            "show_stress": False,
+            "dipole_radius": 40e-9,
+            "quiver_setting":1,
+            "force_terms": ["optical"],
+        })
+
+        forces = np.zeros(translations.shape)
+        parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},{"type":"C", "args":["Cx", "Cy", "Cz"]}]
+        read_parameters = [{"type":"F", "particle":1, "subtype":0}] # x force on positively translated particle
+
+        for i, particle_translation in enumerate(translations):
+            print(f"Progress; {i}/{len(translations)}")
+            Generate_yaml.make_coupled_sphere(filename, option_parameters, particle_radius, particle_translation)
+            DM.main(YAML_name=filename)
+            forces[i] = pull_file_data(filename, parameters_stored, [0], read_parameters, invert_output=False)[0][0]
+        
+        graphlabel_set = {"title":"", "xAxis":f"Translation [m]", "yAxis":"Force [N]"} 
+        Display.plot_multi_data(np.array([[translations, forces]]), graphlabel_set=graphlabel_set, datalabel_set=[""])
 
     case _:
         print("Unknown run type: ",sys.argv[1])
