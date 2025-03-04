@@ -565,6 +565,9 @@ def use_default_particles(filename, shape, args_list, coords_list, connection_mo
 #=======================================================================
 
 def use_beam(filename, beam, translation=None, translationargs=None, translationtype=None, rotation=None, E0=1.5e7, w0=0.4, z_offset=0):
+    """
+    beam options are "GAUSS_CSP", "LAGUERRE", "BESSEL", "STRETCHER", "PLANE".
+    """
     match beam:
         case "GAUSS_CSP":
             use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype, rotation=rotation)

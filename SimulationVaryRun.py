@@ -5031,6 +5031,67 @@ match(sys.argv[1]):
         
         graphlabel_set = {"title":"", "xAxis":f"Translation [m]", "yAxis":"Force [N]"} 
         Display.plot_multi_data(np.array([[translations, forces]]), graphlabel_set=graphlabel_set, datalabel_set=[""])
+    
+    case "force_plane":
+        # plot the force on a test particle, swept across a plane.
+        filename = "SingleLaguerre"
+        beam_type = "LAGUERRE"
+
+        particle_radius = 200e-9
+        max_size = 2e-6
+        num = 20
+        plane = ["z", 0.9e-6]
+        # plane = ["x", 0.0e-6]
+        translations = np.linspace(-max_size, max_size, num)
+        option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": False,
+            "show_stress": False,
+            "dipole_radius": 40e-9,
+            "quiver_setting":1,
+            "force_terms": ["optical"],
+            "max_size": max_size,
+        })
+
+        parameters_stored = [{"type":"X", "args":["x", "y", "z"]},{"type":"F", "args":["Fx", "Fy", "Fz"]},{"type":"F_T", "args":["F_Tx", "F_Ty", "F_Tz"]},{"type":"C", "args":["Cx", "Cy", "Cz"]}]
+        if   plane[0] == "x": read_parameters = [{"type":"F", "particle":0, "subtype":1}, {"type":"F", "particle":0, "subtype":2}]
+        elif plane[0] == "y": read_parameters = [{"type":"F", "particle":0, "subtype":0}, {"type":"F", "particle":0, "subtype":2}]
+        elif plane[0] == "z": read_parameters = [{"type":"F", "particle":0, "subtype":0}, {"type":"F", "particle":0, "subtype":1}]
+        
+        q1s = []
+        q2s = []
+        f1s = []
+        f2s = []
+
+        count = 1
+        for i, t1 in enumerate(translations):
+            for j, t2 in enumerate(translations):
+                if   plane[0] == "x": coords = [[plane[1], t1, t2]]
+                elif plane[0] == "y": coords = [[t1, plane[1], t2]]
+                elif plane[0] == "z": coords = [[t1, t2, plane[1]]]
+
+                print(f"Progress; {count}/{num**2}")
+                Generate_yaml.use_parameter_options(filename, option_parameters)
+                Generate_yaml.use_beam(filename, beam_type)
+                
+                Generate_yaml.use_default_particles(filename, "sphere", [[particle_radius]], coords, "num", "0")
+                DM.main(YAML_name=filename)
+                output= pull_file_data(filename, parameters_stored, [0], read_parameters, invert_output=False)[0]
+                q1s.append(t1)
+                q2s.append(t2)
+                f1s.append(output[0])
+                f2s.append(output[1])
+                count += 1
+
+        # The next 3 lines can be used to save/load the data for speed.
+        pickle_write({"1":q1s, "2":q2s,"3":f1s, "4":f2s}, "temp")
+        # d = pickle_read("temp")
+        # q1s,q2s,f1s,f2s = d["1"], d["2"],d["3"],d["4"]
+
+        if   plane[0] == "x": graphlabel_set = {"title":"", "xAxis":f"y [m]", "yAxis":"z [m]"} 
+        elif plane[0] == "y": graphlabel_set = {"title":"", "xAxis":f"x [m]", "yAxis":"z [m]"} 
+        elif plane[0] == "z": graphlabel_set = {"title":"", "xAxis":f"x [m]", "yAxis":"y [m]"} 
+        
+        Display.plot_quiver_2d(q1s,q2s,f1s,f2s, graphlabel_set)
 
     case _:
         print("Unknown run type: ",sys.argv[1])
