@@ -680,8 +680,8 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    ax.plot(particle_numbers, total_force_magnitudes, label="Net Force", color="red")
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="Angular Force", color="blue")
+    ax.plot(particle_numbers, total_force_magnitudes, label="Net Force") #, color="red"
+    ax.plot(particle_numbers, tangential_force_magnitudes, label="Angular Force") # , color="blue"
     ax.text(
         0.0, text_ypos,
         parameter_text,
@@ -896,12 +896,11 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
     plt.savefig("myImage.png", format="png", dpi=1200)
     plt.show()
 
-def plot_quiver_2d(xs,ys,Fxs,Fys, graphlabel_set={"title":"", "xAxis":"", "yAxis":""}):
+def plot_quiver_2d(xs,ys,Fxs,Fys, graphlabel_set={"title":"", "xAxis":"", "yAxis":""}, show_colours=False, scale=1.3e-10):
     """
     Simple 2D quiver plot for plotting forces on a test particle swept across a plane.
     """
 
-    show_colours=False
     _, ax = plt.subplots()
     if show_colours:
         # colour representing the angular force
@@ -911,12 +910,12 @@ def plot_quiver_2d(xs,ys,Fxs,Fys, graphlabel_set={"title":"", "xAxis":"", "yAxis
             F_dot_theta_hat = (-Fxs[i] * np.sin(theta_x) + Fys[i] * np.cos(theta_x))
             cols_arr[i] = F_dot_theta_hat
 
-        quiver = ax.quiver(xs, ys, Fxs, Fys, cols_arr, scale=1.3e-10, cmap=cm.viridis, norm=mcolors.Normalize(np.min(cols_arr), np.max(cols_arr)))
+        quiver = ax.quiver(xs, ys, Fxs, Fys, cols_arr, scale=scale, cmap=cm.viridis, norm=mcolors.Normalize(np.min(cols_arr), np.max(cols_arr)))
         cbar = plt.colorbar(quiver, ax=ax)
         cbar.set_label(r"$F \cdot \hat{\theta}$")
 
     else:
-        ax.quiver(xs,ys,Fxs,Fys, scale=1.6e-10) ## scale scales in reverse: small value makes arrows bigger
+        ax.quiver(xs,ys,Fxs,Fys, scale=scale) ## scale scales in reverse: small value makes arrows bigger
     plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
     plt.ylabel(graphlabel_set["yAxis"])
