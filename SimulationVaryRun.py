@@ -673,7 +673,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     particle_info = []
     place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
-    parameters = {"frames": 1, "frame_max": 1, "show_output": True}
+    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
 
     record_parameters = ["F"]
     if(include_additionalForces):   # Record total forces instead of just optical forces
@@ -890,7 +890,7 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
     particle_radii = 200e-9     #200e-9
     frames_of_animation = 1
 
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": True}
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
 
     # For each scenario to be tested
     for i, dipole_size in enumerate(dipole_sizes):
@@ -905,20 +905,21 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
         run_command = "python DipolesMulti2024Eigen.py "+filename
         run_command = run_command.split(" ")
         print("=== Log ===")
-        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+        result = subprocess.run(run_command) #, stdout=subprocess.DEVNULL
         
         # Pull data from xlsx into a local list in python
         record_particle_info(filename, particle_info)
 
     # Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Spheres",
-            "R_placed   (m)= "+str(place_radius),
-            "R_particle (m)= "+str(particle_radii)
-        )
-    )
+    # parameter_text = "\n".join(
+    #     (
+    #         "Spheres",
+    #         "R_placed   (m)= "+str(place_radius),
+    #         "R_particle (m)= "+str(particle_radii)
+    #     )
+    # )
+    parameter_text = ""
     return parameter_text, dipole_sizes
 
 
@@ -3517,9 +3518,9 @@ match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre"
         #1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
-        particle_numbers = [6,7,8,9,10,11,12,13,14,15,16]
+        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
-        #Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     case "torusInCircle":
         filename = "SingleLaguerre"
@@ -3550,10 +3551,10 @@ match(sys.argv[1]):
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, x_values, "Wave spacing", "(wavelengths)", parameter_text)
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre"
-        particle_total = 12
-        dipole_size_range = [50e-9, 150e-9, 20]
+        particle_total = 16
+        dipole_size_range = [30e-9, 100e-9, 50]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename)
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "(m)", parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "[m]", parameter_text)
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre"
         particle_total = 6
@@ -3573,14 +3574,14 @@ match(sys.argv[1]):
             volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
             dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "[m]", parameter_text)
     case "torusInCircleSeparation":
         filename = "SingleLaguerre"
         particle_total = 6
         separation_range = [0.2e-7, 3e-7, 25]
         dipole_size = 40e-9
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size)
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "(m)", parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "[m]", parameter_text)
     case "torusInCircle_FixedSep_SectorDipole":
         #
         # Compares force for different sector numbers, for a dipole sizes
@@ -3596,7 +3597,7 @@ match(sys.argv[1]):
         data_axes = [dipoleSize_numbers, particle_numbers]
         separation = 0#1e-7
         parameter_text, data_set = simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particle_numbers, dipoleSize_numbers, separation, filename)
-        Display.plotMulti_tangential_force_against_arbitrary(data_set, data_axes, 0, ["Dip.Rad", "Particle Number"], ["(m)", ""], parameter_text)
+        Display.plotMulti_tangential_force_against_arbitrary(data_set, data_axes, 0, ["Dip.Rad", "Particle Number"], ["[m]", ""], parameter_text)
     case "testVolumes":
         # use this mode to make a new volume storage entry or to plot it.
         particle_total = 6
@@ -5039,9 +5040,9 @@ match(sys.argv[1]):
 
         particle_radius = 200e-9
         max_size = 2e-6
-        num = 20
-        plane = ["z", 0.9e-6]
-        # plane = ["x", 0.0e-6]
+        num = 15
+        # plane = ["z", 0.9e-6]
+        plane = ["x", 0.0e-6]
         translations = np.linspace(-max_size, max_size, num)
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
