@@ -891,6 +891,18 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
     plt.savefig("myImage.png", format="png", dpi=1200)
     plt.show()
 
+def plot_quiver_2d(xs,ys,Fxs,Fys, graphlabel_set={"title":"", "xAxis":"", "yAxis":""}):
+    """
+    Simple 2D quiver plot for plotting forces on a test particle swept across a plane.
+    """
+    _, ax = plt.subplots()
+    ax.quiver(xs,ys,Fxs,Fys, scale=3e-10) ## scale scales in reverse
+    plt.title(graphlabel_set["title"])
+    plt.xlabel(graphlabel_set["xAxis"])
+    plt.ylabel(graphlabel_set["yAxis"])
+    plt.savefig("myImage.png", format="png", dpi=1200)
+    plt.show()
+
 def plot_example_DDA_voxel(num=9, dipole_size=40e-9, plot_size=0.7e-6):
     # function to plot a sphere of cubic dipoles, used to show what voxels look like in DDA.
     # Run using the program: import Display; Display.plot_example_DDA_voxel(9, 40e-9)
@@ -932,7 +944,8 @@ def plot_example_DDA_voxel(num=9, dipole_size=40e-9, plot_size=0.7e-6):
         cols = [(r/256,g/256,b/256)]*6 # blue faces
         grey = 0.3
         ax.add_collection3d(Poly3DCollection(faces, facecolors=cols, linewidths=1.2, alpha=1.0, edgecolor=(grey, grey, grey))) # grey edges
-    plt.savefig("myImage.png", format="png", dpi=1200)
+    # plt.savefig("myImage.png", format="png", dpi=1200)
+    plt.savefig("myImage.eps", format="eps", dpi=1200)
     plt.show()
 
         

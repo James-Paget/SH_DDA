@@ -1,0 +1,55 @@
+options:
+  frames: 1
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+  polarisability_type: RR
+  constants:
+    bending: 1e-19
+  stiffness_spec:
+    type: 
+    default_value: 5e-06
+  equilibrium_shape: None
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+  verbosity: 0
+  include_dipole_forces: False
+  force_terms: optical
+display:
+  show_output: False
+  show_stress: False
+  frame_interval: 2
+  resolution: 201
+  max_size: 2e-06
+  frame_min: 0
+  frame_max: 1
+  z_offset: 0.0
+  beam_planes: [['z', 0.0]]
+  quiver_setting: 1
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: num
+  connection_args: 0
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 2e-06 2e-06 9e-07
+      altcolour: True
