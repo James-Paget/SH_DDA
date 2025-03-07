@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import matplotlib.animation as animation
+import matplotlib.colors as mcolors
 import pandas as pd
 import sys
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -100,6 +101,7 @@ class DisplayObject (object):
     def plot_intensity(self, beam_collection):
         #I = []
         #fig, ax = plt.subplots(1, num_plots)
+        # self.max_size /=2
         upper = self.max_size
         lower = -upper
         _,_,_, I, I0 = self.get_intensity_points(beam_collection)[0] # [0] just gets default ["z",0] value from the list.
@@ -114,9 +116,9 @@ class DisplayObject (object):
         extents = (lower,upper,lower,upper)
         cs=ax.imshow(I,cmap=cm.viridis,vmin=0.0,vmax=I0,origin="lower",extent=extents)
         ax.set_aspect('equal','box')
-        ax.set_xlabel("x (m)")
-        ax.set_ylabel("y (m)")
-        cbar = fig.colorbar(cs)
+        ax.set_xlabel("x [m]")
+        ax.set_ylabel("y [m]")
+        # cbar = fig.colorbar(cs)
         # ax.set_title("z = {:.1e}".format(z[k]))
         return fig,ax
 
@@ -177,7 +179,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 4 #20
+        samples = 20 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -426,7 +428,7 @@ class DisplayObject (object):
             #plt.savefig("myImage.png", format="png", dpi=1200)
             if t in save_frames:
                 save_frames.remove(t)
-                #plt.savefig(f"myImage{t}.png", format="png", dpi=1200)  # NOTE; Sometimes does not record in single frame runs
+                plt.savefig(f"myImage{t}.png", format="png", dpi=300)  # NOTE; Sometimes does not record in single frame runs
 
         # Initialise
         positions = np.array(positions)
@@ -611,8 +613,8 @@ def plot_tangential_force_against_number(filename, particle_target, parameter_te
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    ax.plot(particle_numbers, total_force_magnitudes, label="total", color="red")
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="tangential", color="blue")
+    ax.plot(particle_numbers, total_force_magnitudes, label="Net Force", color="red")
+    ax.plot(particle_numbers, tangential_force_magnitudes, label="Angular Force", color="blue")
     ax.text(
         0.0, text_ypos,
         parameter_text,
@@ -620,9 +622,10 @@ def plot_tangential_force_against_number(filename, particle_target, parameter_te
         fontsize=12
     )
     plt.xlabel("Particle Number")
-    plt.ylabel("Force (N)")
-    plt.title("Tangential force for varying particle numbers")
+    plt.ylabel("Force [N]")
+    # plt.title("Tangential force for varying particle numbers")
     plt.legend()
+    plt.savefig("myImage.png", format="png", dpi=300)
     plt.show()
 
 def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
@@ -690,7 +693,7 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     plt.ylabel("Averaged Force [N]")
     #plt.title("Tangential force (averaged) for varying particle numbers")
     plt.legend()
-    #plt.savefig("myImage.png", format="png", dpi=1200)
+    plt.savefig("myImage.png", format="png", dpi=300)
     plt.show()
 
 def plot_tangential_force_against_arbitrary(filename, particle_target, x_values, x_label, x_units, parameter_text="", parameters_per_particle=2):
@@ -753,8 +756,8 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    ax.plot(x_values, total_force_magnitudes, label="total", color="red")
-    ax.plot(x_values, tangential_force_magnitudes, label="tangential", color="blue")
+    # ax.plot(x_values, total_force_magnitudes, label="Net Force", color="red")
+    ax.plot(x_values, tangential_force_magnitudes, label="Angular Force") #  color="blue"
     ax.text(
         0.0, text_ypos,
         parameter_text,
@@ -762,9 +765,11 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
         fontsize=12
     )
     plt.xlabel(f"{x_label} {x_units}") # Brackets included in units so not left over if unitless i.e. ()
-    plt.ylabel("Force (N)")
-    plt.title(f"Tangential force against {x_label}")
-    plt.legend()
+    # plt.ylabel("Force [N]")
+    plt.ylabel("Angular Force [N]")
+    # plt.title(f"Tangential force against {x_label}")
+    # plt.legend()
+    plt.savefig("myImage.png", format="png", dpi=300)
     plt.show()
 
 
@@ -895,12 +900,27 @@ def plot_quiver_2d(xs,ys,Fxs,Fys, graphlabel_set={"title":"", "xAxis":"", "yAxis
     """
     Simple 2D quiver plot for plotting forces on a test particle swept across a plane.
     """
+
+    show_colours=False
     _, ax = plt.subplots()
-    ax.quiver(xs,ys,Fxs,Fys, scale=3e-10) ## scale scales in reverse
+    if show_colours:
+        # colour representing the angular force
+        cols_arr = np.zeros(len(xs))
+        for i in range(len(xs)):
+            theta_x = np.arctan2(ys[i], xs[i])
+            F_dot_theta_hat = (-Fxs[i] * np.sin(theta_x) + Fys[i] * np.cos(theta_x))
+            cols_arr[i] = F_dot_theta_hat
+
+        quiver = ax.quiver(xs, ys, Fxs, Fys, cols_arr, scale=1.3e-10, cmap=cm.viridis, norm=mcolors.Normalize(np.min(cols_arr), np.max(cols_arr)))
+        cbar = plt.colorbar(quiver, ax=ax)
+        cbar.set_label(r"$F \cdot \hat{\theta}$")
+
+    else:
+        ax.quiver(xs,ys,Fxs,Fys, scale=1.6e-10) ## scale scales in reverse: small value makes arrows bigger
     plt.title(graphlabel_set["title"])
     plt.xlabel(graphlabel_set["xAxis"])
     plt.ylabel(graphlabel_set["yAxis"])
-    plt.savefig("myImage.png", format="png", dpi=1200)
+    plt.savefig("myImage.png", format="png", dpi=300)
     plt.show()
 
 def plot_example_DDA_voxel(num=9, dipole_size=40e-9, plot_size=0.7e-6):
@@ -945,7 +965,7 @@ def plot_example_DDA_voxel(num=9, dipole_size=40e-9, plot_size=0.7e-6):
         grey = 0.3
         ax.add_collection3d(Poly3DCollection(faces, facecolors=cols, linewidths=1.2, alpha=1.0, edgecolor=(grey, grey, grey))) # grey edges
     # plt.savefig("myImage.png", format="png", dpi=1200)
-    plt.savefig("myImage.eps", format="eps", dpi=1200)
+    plt.savefig("myImage.png", format="png", dpi=300)
     plt.show()
 
         

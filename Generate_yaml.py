@@ -27,7 +27,7 @@ def generate_yaml(preset, filename="Preset"):
             use_tetrahedron(filename, 1e-6, 0.2e-6, [0,0,1], 0)
 
         case "TETRAHEDRON_BESSEL":
-            make_yaml_tetrahedron(filename, beam="BESSEL")
+            make_yaml_tetrahedron(filename, beam="GAUSS_CSP")
 
         case "TETRAHEDRON_ROTATED":
             make_yaml_tetrahedron(filename, rotation_axis=[1,0,0], rotation_theta=np.pi)
