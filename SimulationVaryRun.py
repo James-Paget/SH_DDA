@@ -5037,12 +5037,30 @@ match(sys.argv[1]):
         # plot the force on a test particle, swept across a plane.
         filename = "SingleLaguerre"
         beam_type = "LAGUERRE"
-
-        particle_radius = 200e-9
         max_size = 2e-6
         num = 15
-        # plane = ["z", 0.9e-6]
-        plane = ["x", 0.0e-6]
+        
+        mode = 0
+        if mode==0:
+            particle_radius = 200e-9
+            plane = ["z", 1e-6]
+            scale = 1.3e-10  ## scale scales in reverse: small value makes arrows bigger
+            show_colours = True
+        elif mode==1:
+            particle_radius = 100e-9
+            plane = ["z", 0.9e-6]
+            scale = 1.3e-11
+            show_colours = True
+        elif mode==2:
+            plane = ["x", 0.0e-6]
+            scale = 1.6e-10
+            show_colours = False
+        elif mode==3:
+            particle_radius = 300e-9
+            plane = ["z", 0.9e-6]
+            scale = 1.3e-10
+            show_colours = True
+        
         translations = np.linspace(-max_size, max_size, num)
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
@@ -5092,7 +5110,7 @@ match(sys.argv[1]):
         elif plane[0] == "y": graphlabel_set = {"title":"", "xAxis":f"x [m]", "yAxis":"z [m]"} 
         elif plane[0] == "z": graphlabel_set = {"title":"", "xAxis":f"x [m]", "yAxis":"y [m]"} 
         
-        Display.plot_quiver_2d(q1s,q2s,f1s,f2s, graphlabel_set)
+        Display.plot_quiver_2d(q1s,q2s,f1s,f2s, graphlabel_set, show_colours=show_colours, scale=scale)
 
     case _:
         print("Unknown run type: ",sys.argv[1])
