@@ -110,10 +110,6 @@ def func4(a, b, r):
 
 
 def Djj(dipole_radius, k_B, temperature, viscosity):  # For Diffusion
-    #
-    # This is valid for a sphere, but not other shapes e.g. a torus
-    # This will need to be changed when considering the dynamics of other particle shapes
-    #
     djj = (k_B * temperature) / (6 * np.pi * viscosity * dipole_radius)
     D = np.zeros([3, 3])
     np.fill_diagonal(D, djj)
@@ -538,7 +534,7 @@ def stop_particles_overlapping(array_of_positions, effective_radii, particle_nei
                     # print(f"Now {array_of_positions[i]} and {array_of_positions[j]}")
 
         if count > 10:
-            print("stop_particles_overlapping: could not resolve overlaps, continuing.")
+            print("Eeek! stop_particles_overlapping: could not resolve overlaps, continuing.")
             break
 
             
@@ -1878,14 +1874,15 @@ def simulation(frames, dipole_radius, excel_output, include_dipole_forces, inclu
                 dipole_primitive_num[particle_i] = cylinder_size(args[particle_i], dipole_radius)
             case "cube":
                 dipole_primitive_num[particle_i] = cube_size(args[particle_i], dipole_radius)
-    dipole_primitive_num_total = np.sum(dipole_primitive_num);
+    dipole_primitive_num_total = np.sum(dipole_primitive_num)
     if(verbosity==0):
         print("Dipole Total; ",dipole_primitive_num_total)
 
     # Check dipole_primitive_num_total is an expected number
     dipole_primitive_num_max = 15000
     if not (dipole_primitive_num_total >= 0 and dipole_primitive_num_total <= dipole_primitive_num_max):
-        sys.exit(f"Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap. (Search This Error)")
+        eee = "e"*int(np.log10(dipole_primitive_num_total))
+        sys.exit(f"E{eee}k! Too many dipoles requested: {dipole_primitive_num_total}.\nMaximum has been set to {dipole_primitive_num_max}. Please raise this cap. (Search This Error)")
 
     # Get dipole primitive positions for each particle
     dipole_primitives = np.zeros( (dipole_primitive_num_total,3), dtype=float)   # Flattened 1D list of all dipoles for all particles

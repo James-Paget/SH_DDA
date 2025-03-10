@@ -558,6 +558,8 @@ class DisplayObject (object):
         plt.savefig("myImage.png", format="png", dpi=300)
         plt.show()
 
+    
+
 
 # End of display object.
 
@@ -681,8 +683,8 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    ax.plot(particle_numbers, total_force_magnitudes, label="Net Force") #, color="red"
-    ax.plot(particle_numbers, tangential_force_magnitudes, label="Angular Force") # , color="blue"
+    ax.plot(particle_numbers, total_force_magnitudes, label="Net Force", color="red") #, color="red"
+    ax.plot(particle_numbers, tangential_force_magnitudes, label="Angular Force", color="blue") # , color="blue"
     ax.text(
         0.0, text_ypos,
         parameter_text,
@@ -758,8 +760,8 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    # ax.plot(x_values, total_force_magnitudes, label="Net Force", color="red")
-    ax.plot(x_values, tangential_force_magnitudes, label="Angular Force") #  color="blue"
+    # ax.plot(x_values, total_force_magnitudes, label="Net Force", color="red") #, color="red"
+    ax.plot(x_values, tangential_force_magnitudes, label="Angular Force", color="blue") #  color="blue"
     ax.text(
         0.0, text_ypos,
         parameter_text,
@@ -840,8 +842,8 @@ def plotMulti_tangential_force_against_arbitrary(data_set, data_axes, particle_t
         fontsize=12
     )
     plt.xlabel(f"{set_label[1]} {set_units[1]}") # Brackets included in units so not left over if unitless i.e. ()
-    plt.ylabel("Force (N)")
-    plt.title(f"Force against {set_label[1]}")
+    plt.ylabel("Force [N]")
+    # plt.title(f"Force against {set_label[1]}")
     plt.legend()
     plt.show()
 
