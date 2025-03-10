@@ -1,5 +1,5 @@
 options:
-  frames: 2001
+  frames: 1801
 parameters:
   wavelength: 7.85e-07
   dipole_radius: 1e-07
@@ -26,7 +26,7 @@ display:
   resolution: 401
   max_size: 5e-06
   frame_min: 0
-  frame_max: 2000
+  frame_max: 1800
   z_offset: 0.0
   beam_planes: [['y', 0]]
   quiver_setting: 0

@@ -736,14 +736,15 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
         record_particle_info(filename, particle_info)
     #Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Spheres +Slider",
-            "R_placed   (m)= "+str(place_radius),
-            "R_particle (m)= "+str(particle_radii),
-            "Slider range= "+ f"{slider_range[0]:.3f}, {slider_range[1]:.3f}, {slider_range[2]:.3f}"
-        )
-    )
+    # parameter_text = "\n".join(
+    #     (
+    #         "Spheres +Slider",
+    #         "R_placed   (m)= "+str(place_radius),
+    #         "R_particle (m)= "+str(particle_radii),
+    #         "Slider range= "+ f"{slider_range[0]:.3f}, {slider_range[1]:.3f}, {slider_range[2]:.3f}"
+    #     )
+    # )
+    parameter_text=""
     return parameter_text
 
 def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=None, reducedSet=0):
@@ -865,13 +866,14 @@ def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam
 
     #Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Spheres Wave Spacing",
-            "R_beam   (m)= "+str(beam_radius),
-            "R_target (m)= "+str(target_radius)
-        )
-    )
+    # parameter_text = "\n".join(
+    #     (
+    #         "Spheres Wave Spacing",
+    #         "R_beam   (m)= "+str(beam_radius),
+    #         "R_target (m)= "+str(target_radius)
+    #     )
+    # )
+    parameter_text = ""
     return parameter_text
         
         
@@ -934,7 +936,7 @@ def simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename):
     inner_radii = 1.15e-6
     tube_radii  = 200e-9
     separation  = 0.3e-6
-    parameters = {"frames": 1, "frame_max": 1}
+    parameters = {"frames": 1, "frame_max": 1, "show_output":True}
     #For each scenario to be tested
     for i, particle_number in enumerate(particle_numbers):
         print(f"\n{i}/{len(particle_numbers)}: Performing calculation for {particle_number} particles")
@@ -951,14 +953,7 @@ def simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename):
         record_particle_info(filename, particle_info)
     #Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Torus Sectors= ",
-            "R_inner (m)= "+str(inner_radii),
-            "R_tube  (m)= "+str(tube_radii),
-            "Arc Sep.(m)= "+str(separation)
-        )
-    )
+    parameter_text = ""
     return parameter_text
 
 def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, filename):
@@ -982,24 +977,25 @@ def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, fil
         run_command = "python DipolesMulti2024Eigen.py "+filename
         run_command = run_command.split(" ")
         print("=== Log ===")
-        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+        result = subprocess.run(run_command) #, stdout=subprocess.DEVNULL
 
         #Pull data from xlsx into a local list in python
         record_particle_info(filename, particle_info)
     #Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Torus Sectors= ",
-            "R_inner   (m)= "+str(inner_radii),
-            "R_tube    (m)= "+str(tube_radii),
-            "Phi Sector(m)= "+str(sector_phi)
-        )
-    )
+    # parameter_text = "\n".join(
+    #     (
+    #         "Torus Sectors= ",
+    #         "R_inner   (m)= "+str(inner_radii),
+    #         "R_tube    (m)= "+str(tube_radii),
+    #         "Phi Sector(m)= "+str(sector_phi)
+    #     )
+    # )
+    parameter_text = ""
     return parameter_text
 
 
-def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename, separating_dist=0.1e-6):
+def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename, separating_dist=0.1e-6, show=False):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
     #
@@ -1012,7 +1008,7 @@ def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dip
     tube_radii  = 200e-9
     frames_of_animation = 1
 
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": show}
     torus_gap_theta    = separating_dist/inner_radii    # Full angle occupied by gap between torus sectors
     torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
  
@@ -1035,18 +1031,19 @@ def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dip
 
     # Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Torus Sectors= ",
-            "R_inner   (m)= "+str(inner_radii),
-            "R_tube    (m)= "+str(tube_radii),
-            f"Phi Sector(m)= {torus_sector_theta:.3f}"
-        )
-    )
+    # parameter_text = "\n".join(
+    #     (
+    #         "Torus Sectors= ",
+    #         "R_inner   (m)= "+str(inner_radii),
+    #         "R_tube    (m)= "+str(tube_radii),
+    #         f"Phi Sector(m)= {torus_sector_theta:.3f}"
+    #     )
+    # )
+    parameter_text = ""
     return parameter_text, dipole_sizes
 
 
-def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size):
+def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size, show):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
     #
@@ -1058,7 +1055,7 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
     tube_radii  = 200e-9
     frames_of_animation = 1
 
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipole_size, "show_output": False}
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipole_size, "show_output": show}
     separations = np.linspace(*separation_range) # unpack list to fill the 3 arguments
  
     # For each scenario to be tested
@@ -1082,14 +1079,14 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
 
     # Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Torus Sectors= ",
-            "R_inner   (m)= "+str(inner_radii),
-            "R_tube    (m)= "+str(tube_radii),
-            f"Phi Sector(m)= {torus_sector_theta:.3f}"
-        )
-    )
+    parameter_text = "" #"\n".join(
+    #     (
+    #         "Torus Sectors= ",
+    #         "R_inner   (m)= "+str(inner_radii),
+    #         "R_tube    (m)= "+str(tube_radii),
+    #         f"Phi Sector(m)= {torus_sector_theta:.3f}"
+    #     )
+    # )
     return parameter_text, separations
 
 def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particle_numbers, dipoleSize_numbers, separation, filename):
@@ -1140,6 +1137,7 @@ def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particl
             "Separation(m)= "+str(separation)
         )
     )
+    parameter_text = ""
     return parameter_text, multi_plot_data
 
 def simulations_singleFrame_connected_sphereGrid(particle_radius, particle_spacing, bounding_sphere_radius, connection_mode, connection_args, filename):
@@ -3557,9 +3555,10 @@ match(sys.argv[1]):
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "[m]", parameter_text)
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre"
-        particle_total = 6
+        particle_total = 4
         separation = 0.5e-7
-        dipole_sizes = [35e-9, 200e-9, 20]
+        dipole_sizes = [35e-9, 120e-9, 50]
+        show = False
 
         # Option to filter dipole sizes so that the objects have a similar volume.
         filter_dipoleSizes_by_volume = False
@@ -3573,14 +3572,15 @@ match(sys.argv[1]):
             old_dipole_sizes = dipole_sizes
             volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
             dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
-        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation, show=show)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "[m]", parameter_text)
     case "torusInCircleSeparation":
         filename = "SingleLaguerre"
         particle_total = 6
-        separation_range = [0.2e-7, 3e-7, 25]
+        separation_range = [0.2e-7, 3e-7, 50]
         dipole_size = 40e-9
-        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size)
+        show = False
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size, show)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "[m]", parameter_text)
     case "torusInCircle_FixedSep_SectorDipole":
         #
@@ -4264,12 +4264,12 @@ match(sys.argv[1]):
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
         disc_radius     = [1.14e-6]    #1.14e-6 #1.09e-6                   # Radius of full disc
-        particle_sizes  = [100e-9]                  # Radius of spherical particles used to model the disc
+        particle_sizes  = [150e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 20
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [75e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
+        dipole_sizes    = [50e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         particle_shapes         = ["sphere"]
         indep_vector_component  = 0              # Which component to plot when dealing with vector quantities to plot (Often not used)
@@ -4279,7 +4279,7 @@ match(sys.argv[1]):
         mode        = "sphere"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        materials = ["FusedSilica"]
+        materials = ["FusedSilica", "FusedSilica01"]
         fix_to_ring = False
         # NOTE; The following lists must be the same length.
         forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
@@ -4292,6 +4292,7 @@ match(sys.argv[1]):
             "show_stress": False,
             "force_terms": ["optical"],
             "polarisability_type": "RR",
+            "quiver_setting": 0,
         })
         # Only make dipoles file if torque about given centre are needed.
         if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: option_parameters["include_dipole_forces"] = True
@@ -4326,7 +4327,7 @@ match(sys.argv[1]):
 
         # Format output and make legend/title strings
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-      
+        datalabel_set = ["Fx, non-absorbing","Fy, non-absorbing", "Fx, absorbing", "Fy, absorbing"]
         graphlabel_set["title"] += f", mesh_shape={mode}, fix_ring={fix_to_ring}"
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
@@ -4347,11 +4348,11 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
         # force_terms=["optical"]              # ["optical", "spring", "bending", "buckingham"]
         # Args
-        dimensions  =  [2.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
+        dimensions  =  [1.0e-6]*3            # Total dimension of the object, NOTE: only 0th value used by a sphere object
         object_shape = "sphere" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
-        num_particles_in_diameter = 15
+        num_particles_in_diameter = 10
         particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
         dipole_size=particle_size  # Done to fix the dipoles to reduce computation time
         # particle_size = 0.15e-6 # NOTE *2 for diameter
@@ -4538,10 +4539,11 @@ match(sys.argv[1]):
         filename = "Optical_stretcher"
         connection_mode = "num"
         connection_args = "5"
-        expt_types = ["Volume", "Bounding box ratio"]  #"Volume", "Bounding box ratio", "Eccentricity", "Height/width ratio" (this is ignored if should_recalculate=False)
+        expt_types = ["Bounding box ratio", "Volume"]  #"Volume", "Bounding box ratio" (better: z/sqrt(xy) where x,y,z come from the bounding box), "Eccentricity", "Height/width ratio" (max height over max radius) (this is ignored if should_recalculate=False)
         should_recalculate = False # if data should be calculated, not read from a file.
         should_merge = False # if recalculating, option to extend existing data.
         axes = ["z", "x", "y"] # which MoI graphs to plot
+        random_seed = 42 # None for no seed, else a number
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "force_terms": ["optical", "spring", "bending"], #, "buckingham"
@@ -4550,7 +4552,7 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 2000,
+            "frames": 1800,
             "frame_min": 0,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4564,7 +4566,7 @@ match(sys.argv[1]):
             "bending": [1.0e-19],
             "translation": ["0.0 0.0 130e-6"],
             "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
-            "particle_radius": [0.1e-6], # adjust dipole size to match this.
+            "particle_radius": [0.1e-6], # adjust dipole size to match this.§
             "E0": [14e6],
             "w0": [5],
             "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
@@ -4572,18 +4574,33 @@ match(sys.argv[1]):
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
             "repeat": [i+1 for i in range(3)],
         }
-
+        
         yaxis_labels = get_dynamic_stretcher_yaxis_labels(expt_types)
+        if random_seed != None: np.random.seed(random_seed)
 
         data_sets, datalabel_sets, graphlabel_sets, pulled_data_set = get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_types, yaxis_labels, store_name="dynamic_stretcher_store")
-        # for expt_i in range(len(expt_types)):
-        #     Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
+        for expt_i in range(len(expt_types)):
+            Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
 
         # Uses pulled_data_set (particle positions) to calculate the moments of inertia
         data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_sets[0], datalabel_sets[0], graphlabel_sets[0], pulled_data_set, axes=axes)
+        
+        should_average_moi = True
+        num_vars = 3 # Needs to be changed to the correct value each time, = total expts in variables_list
+        if should_average_moi:
+            data_set_moi_true = np.average(data_set_moi[:,:num_vars], axis=1)
+            data_set_moi_ideal = np.average(data_set_moi[:,num_vars:], axis=1)
+            data_set_moi = np.zeros((len(axes),2, 2, data_set_moi_true.shape[2])) # indices: axis, averaged MoIs for true/ideal, x- or y-axis, values
+            data_set_moi[:,0] = data_set_moi_true
+            data_set_moi[:,1] = data_set_moi_ideal
+            datalabel_set = ["Analytical", "Ellipsoidal"]
+        
         for axi in range(len(axes)):
-            graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
-            Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
+            if should_average_moi: graphlabel_set["yAxis"] = f"Repeat-averaged MoI, axis {axes[axi]}"
+            else: graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
+            # Display.plot_multi_data(data_set_moi[axi][[0,4]], datalabel_set[[0,4]], graphlabel_set=graphlabel_set)
+            # Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
+            Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
 
         
 
