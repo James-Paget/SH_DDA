@@ -1,15 +1,15 @@
 options:
-  frames: 2001
+  frames: 1001
 parameters:
   wavelength: 7.85e-07
   dipole_radius: 1e-07
   time_step: 5e-05
   polarisability_type: RR
   constants:
-    bending: 1e-19
+    bending: 3e-20
   stiffness_spec:
     type: 
-    default_value: 2.7e-06
+    default_value: 8e-07
   equilibrium_shape: None
 output:
   vmd_output: True
@@ -26,7 +26,7 @@ display:
   resolution: 401
   max_size: 5e-06
   frame_min: 0
-  frame_max: 2000
+  frame_max: 1000
   z_offset: 0.0
   beam_planes: [['y', 0]]
   quiver_setting: 0
@@ -91,7 +91,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 9.868062733293703e-07 -7.246877803011447e-07 3.129e-06
+      coords: 9.8680627332937e-07 -7.246877803011446e-07 3.129e-06
       altcolour: True
     part_6:
       material: RBC
@@ -127,7 +127,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -1.3552955876662244e-06 -1.0842715850064801e-06 2.8769999999999997e-06
+      coords: -1.3552955876662244e-06 -1.08427158500648e-06 2.8769999999999997e-06
       altcolour: True
     part_12:
       material: RBC
@@ -163,7 +163,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -8.401553225260472e-07 1.9217476509758387e-06 2.625e-06
+      coords: -8.401553225260472e-07 1.921747650975839e-06 2.625e-06
       altcolour: True
     part_18:
       material: RBC
@@ -175,7 +175,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.0835818031261147e-06 -7.011461115072441e-07 2.541e-06
+      coords: -2.083581803126115e-06 -7.011461115072441e-07 2.541e-06
       altcolour: True
     part_20:
       material: RBC
@@ -205,7 +205,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -1.5209453771300417e-06 -1.882223196060115e-06 2.331e-06
+      coords: -1.5209453771300419e-06 -1.8822231960601154e-06 2.331e-06
       altcolour: True
     part_25:
       material: RBC
@@ -223,7 +223,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.5344392365005735e-06 6.475149794709391e-08 2.2049999999999996e-06
+      coords: -2.534439236500573e-06 6.475149794709391e-08 2.205e-06
       altcolour: True
     part_28:
       material: RBC
@@ -295,19 +295,19 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.4691278624962858e-06 -1.5164453826777035e-06 1.7009999999999995e-06
+      coords: 2.4691278624962858e-06 -1.516445382677703e-06 1.7009999999999995e-06
       altcolour: True
     part_40:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.8688113895614355e-06 -5.542925320826398e-07 1.659e-06
+      coords: -2.868811389561436e-06 -5.542925320826399e-07 1.659e-06
       altcolour: True
     part_41:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 1.7549260011258813e-06 2.3654060392609817e-06 1.6170000000000001e-06
+      coords: 1.7549260011258813e-06 2.365406039260982e-06 1.6169999999999995e-06
       altcolour: True
     part_42:
       material: RBC
@@ -373,7 +373,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.9805062583345087e-06 -1.0354503580707402e-06 1.1550000000000004e-06
+      coords: 2.980506258334509e-06 -1.0354503580707402e-06 1.1549999999999997e-06
       altcolour: True
     part_53:
       material: RBC
@@ -403,7 +403,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 3.1378445524301916e-06 7.419612960149405e-07 9.450000000000004e-07
+      coords: 3.137844552430192e-06 7.419612960149407e-07 9.449999999999996e-07
       altcolour: True
     part_58:
       material: RBC
@@ -415,13 +415,13 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -4.681708010766334e-07 3.213890959727673e-06 8.610000000000001e-07
+      coords: -4.681708010766335e-07 3.2138909597276735e-06 8.610000000000001e-07
       altcolour: True
     part_60:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.5245683269476867e-06 -2.060435333266384e-06 8.190000000000005e-07
+      coords: 2.5245683269476867e-06 -2.060435333266384e-06 8.189999999999998e-07
       altcolour: True
     part_61:
       material: RBC
@@ -457,7 +457,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.6883326272425e-06 -1.934160977091472e-06 5.670000000000004e-07
+      coords: -2.6883326272425e-06 -1.934160977091472e-06 5.669999999999997e-07
       altcolour: True
     part_67:
       material: RBC
@@ -469,7 +469,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 1.6985141069049211e-06 -2.858559222518396e-06 4.830000000000007e-07
+      coords: 1.6985141069049211e-06 -2.858559222518396e-06 4.83e-07
       altcolour: True
     part_69:
       material: RBC
@@ -487,7 +487,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -1.2410104291956687e-06 -3.101941990854694e-06 3.5700000000000035e-07
+      coords: -1.2410104291956687e-06 -3.101941990854694e-06 3.569999999999996e-07
       altcolour: True
     part_72:
       material: RBC
@@ -511,7 +511,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 1.7695684565074755e-06 2.850001136444291e-06 1.8900000000000062e-07
+      coords: 1.7695684565074755e-06 2.850001136444291e-06 1.8899999999999985e-07
       altcolour: True
     part_76:
       material: RBC
@@ -529,19 +529,19 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 3.343143520707897e-06 3.3018540238600336e-07 6.300000000000064e-08
+      coords: 3.343143520707897e-06 3.3018540238600336e-07 6.299999999999989e-08
       altcolour: True
     part_79:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.242443375345432e-06 -2.5021204424186663e-06 2.1000000000000307e-08
+      coords: -2.242443375345432e-06 -2.5021204424186668e-06 2.0999999999999563e-08
       altcolour: True
     part_80:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -3.665011809438521e-08 3.3597344789199736e-06 -2.0999999999999897e-08
+      coords: -3.665011809438521e-08 3.3597344789199736e-06 -2.100000000000064e-08
       altcolour: True
     part_81:
       material: RBC
@@ -553,7 +553,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -3.348503579080489e-06 2.570968317291286e-07 -1.049999999999996e-07
+      coords: -3.348503579080489e-06 2.570968317291286e-07 -1.0500000000000034e-07
       altcolour: True
     part_83:
       material: RBC
@@ -577,13 +577,13 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 3.2433653799733764e-06 -8.340575591589322e-07 -2.7299999999999965e-07
+      coords: 3.2433653799733764e-06 -8.340575591589322e-07 -2.730000000000004e-07
       altcolour: True
     part_87:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.9516992250871564e-06 -1.5741177480162909e-06 -3.149999999999999e-07
+      coords: -2.9516992250871564e-06 -1.574117748016291e-06 -3.1499999999999984e-07
       altcolour: True
     part_88:
       material: RBC
@@ -595,7 +595,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 1.3065207164911627e-06 -3.0697561169218995e-06 -3.9899999999999917e-07
+      coords: 1.3065207164911627e-06 -3.0697561169218995e-06 -3.9899999999999996e-07
       altcolour: True
     part_90:
       material: RBC
@@ -613,7 +613,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -1.6326166226949556e-06 -2.8893836649534998e-06 -5.249999999999995e-07
+      coords: -1.6326166226949554e-06 -2.8893836649534993e-06 -5.250000000000003e-07
       altcolour: True
     part_93:
       material: RBC
@@ -631,25 +631,25 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -3.2641831135529982e-06 -4.592467759227656e-07 -6.510000000000003e-07
+      coords: -3.2641831135529982e-06 -4.592467759227655e-07 -6.510000000000003e-07
       altcolour: True
     part_96:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.0912370389462534e-06 2.5369427756532674e-06 -6.929999999999998e-07
+      coords: 2.0912370389462534e-06 2.5369427756532674e-06 -6.930000000000004e-07
       altcolour: True
     part_97:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 1.711902003891376e-07 -3.274151632910536e-06 -7.349999999999995e-07
+      coords: 1.7119020038913757e-07 -3.2741516329105357e-06 -7.350000000000003e-07
       altcolour: True
     part_98:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.330971985047296e-06 2.291820369253373e-06 -7.769999999999994e-07
+      coords: -2.330971985047296e-06 2.2918203692533733e-06 -7.770000000000001e-07
       altcolour: True
     part_99:
       material: RBC
@@ -661,7 +661,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.4707698170882916e-06 -2.10797901103533e-06 -8.610000000000005e-07
+      coords: -2.470769817088292e-06 -2.10797901103533e-06 -8.610000000000005e-07
       altcolour: True
     part_101:
       material: RBC
@@ -679,7 +679,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -3.1409538876622262e-06 6.707008838368617e-07 -9.869999999999994e-07
+      coords: -3.1409538876622262e-06 6.707008838368617e-07 -9.87e-07
       altcolour: True
     part_104:
       material: RBC
@@ -697,19 +697,19 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -1.3610109520350404e-06 2.863298829748769e-06 -1.1129999999999998e-06
+      coords: -1.3610109520350404e-06 2.863298829748769e-06 -1.1130000000000006e-06
       altcolour: True
     part_107:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.9237436418091366e-06 -1.186295965170855e-06 -1.155e-06
+      coords: 2.923743641809136e-06 -1.186295965170855e-06 -1.155e-06
       altcolour: True
     part_108:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.942500979230182e-06 -1.0947506507097499e-06 -1.1969999999999995e-06
+      coords: -2.942500979230182e-06 -1.0947506507097497e-06 -1.1970000000000001e-06
       altcolour: True
     part_109:
       material: RBC
@@ -721,13 +721,13 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 8.244629166615397e-07 -2.9948121642350035e-06 -1.2809999999999999e-06
+      coords: 8.244629166615395e-07 -2.994812164235003e-06 -1.2810000000000005e-06
       altcolour: True
     part_111:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.6159466340962198e-06 1.6419787475971362e-06 -1.3229999999999997e-06
+      coords: -2.6159466340962193e-06 1.6419787475971362e-06 -1.3230000000000003e-06
       altcolour: True
     part_112:
       material: RBC
@@ -781,7 +781,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.8563165173257314e-06 -4.874986695901905e-07 -1.7009999999999999e-06
+      coords: 2.856316517325731e-06 -4.874986695901904e-07 -1.7009999999999999e-06
       altcolour: True
     part_121:
       material: RBC
@@ -829,7 +829,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.3199860211382936e-06 -1.3258566520264964e-06 -2.0369999999999997e-06
+      coords: 2.3199860211382936e-06 -1.3258566520264966e-06 -2.0369999999999997e-06
       altcolour: True
     part_129:
       material: RBC
@@ -859,13 +859,13 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 2.495316473499181e-06 1.1826536721969747e-07 -2.2470000000000007e-06
+      coords: 2.495316473499181e-06 1.1826536721969747e-07 -2.2470000000000003e-06
       altcolour: True
     part_134:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -1.7330075932003103e-06 -1.7454981185638857e-06 -2.2890000000000004e-06
+      coords: -1.7330075932003113e-06 -1.7454981185638868e-06 -2.288999999999999e-06
       altcolour: True
     part_135:
       material: RBC
@@ -883,7 +883,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -2.31707604346485e-06 2.975459776257678e-07 -2.4150000000000006e-06
+      coords: -2.31707604346485e-06 2.9754597762576786e-07 -2.4150000000000006e-06
       altcolour: True
     part_138:
       material: RBC
@@ -895,13 +895,13 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -4.797372783530608e-07 -2.194185758717433e-06 -2.4989999999999997e-06
+      coords: -4.797372783530608e-07 -2.194185758717433e-06 -2.499e-06
       altcolour: True
     part_140:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -1.1044791716797468e-06 1.9008010835765068e-06 -2.541e-06
+      coords: -1.1044791716797462e-06 1.9008010835765057e-06 -2.5410000000000007e-06
       altcolour: True
     part_141:
       material: RBC
@@ -937,7 +937,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 1.8032221827822916e-06 4.86971004806107e-07 -2.7929999999999998e-06
+      coords: 1.8032221827822904e-06 4.869710048061067e-07 -2.7930000000000006e-06
       altcolour: True
     part_147:
       material: RBC
@@ -949,13 +949,13 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: -3.042864367784808e-07 1.7087658600266615e-06 -2.877e-06
+      coords: -3.042864367784808e-07 1.7087658600266615e-06 -2.8769999999999997e-06
       altcolour: True
     part_149:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 1.3217508421298908e-06 -1.0109469379393405e-06 -2.9189999999999995e-06
+      coords: 1.3217508421298906e-06 -1.0109469379393405e-06 -2.9189999999999995e-06
       altcolour: True
     part_150:
       material: RBC
@@ -1003,7 +1003,7 @@ particles:
       material: RBC
       shape: sphere
       args: 1e-07
-      coords: 4.4812492880156067e-07 -7.026799044989101e-07 -3.2549999999999998e-06
+      coords: 4.481249288015598e-07 -7.02679904498909e-07 -3.255e-06
       altcolour: True
     part_158:
       material: RBC

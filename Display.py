@@ -418,12 +418,13 @@ class DisplayObject (object):
             #if len(save_frames)==0:
             if(steps > 1):
                 # Add frame counter
-                textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
-                plots.append(textplot)
+                pass
+                #textplot = ax.text2D(0.0, 1.0, "Frame: "+str(t), transform=ax.transAxes)
+                #plots.append(textplot)
             
             # NOTE; ** Remove Z axis for cleaner plots sometimes **
-            #ax.set_zticks([])
-            #ax.set_zlabel("")
+            # ax.set_zticks([])
+            # ax.set_zlabel("")
 
             #plt.savefig("myImage.png", format="png", dpi=1200)
             if t in save_frames:
@@ -554,7 +555,7 @@ class DisplayObject (object):
                 quiver_scale = 1e-7/(4*particle_radius**2)# /area as stress = Force/Area
                 ax.quiver(pos[0], pos[1], pos[2], shifted_forces[p_i,0]*quiver_scale, shifted_forces[p_i,1]*quiver_scale, shifted_forces[p_i,2]*quiver_scale)
 
-        plt.savefig("myImage.png", format="png", dpi=1200)
+        plt.savefig("myImage.png", format="png", dpi=300)
         plt.show()
 
 
@@ -689,6 +690,7 @@ def plot_tangential_force_against_number_averaged(filename, parameter_text=""):
         fontsize=12
     )
 
+    #plt.ylim(bottom=0.0)
     plt.xlabel("Particle Number")
     plt.ylabel("Averaged Force [N]")
     #plt.title("Tangential force (averaged) for varying particle numbers")
@@ -764,9 +766,15 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
         transform=ax.transAxes,
         fontsize=12
     )
+
+    plt.ylim(bottom=0.0)
     plt.xlabel(f"{x_label} {x_units}") # Brackets included in units so not left over if unitless i.e. ()
+    plt.ylabel("Force [N]")
+    plt.title("")   #f"Tangential force against {x_label}"
+    plt.legend()
+    
     # plt.ylabel("Force [N]")
-    plt.ylabel("Angular Force [N]")
+    # plt.ylabel("Angular Force [N]")
     # plt.title(f"Tangential force against {x_label}")
     # plt.legend()
     plt.savefig("myImage.png", format="png", dpi=300)
@@ -893,7 +901,7 @@ def plot_multi_data(data_set, datalabel_set, datacolor_set=np.array([]), graphla
     plt.ylabel(graphlabel_set["yAxis"])
     if(show_legend and len(datalabel_set)!=0 and datalabel_set[0]!=""):
         ax.legend(fontsize='small') #'large'
-    plt.savefig("myImage.png", format="png", dpi=1200)
+    plt.savefig("myImage.png", format="png", dpi=300)
     plt.show()
 
 def plot_quiver_2d(xs,ys,Fxs,Fys, graphlabel_set={"title":"", "xAxis":"", "yAxis":""}, show_colours=False, scale=1.3e-10):

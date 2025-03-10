@@ -372,7 +372,7 @@ def generate_sphereShell_yaml(particle_radius, num_pts, shell_radius, wavelength
     
     generate_yaml(filename, particle_list, parameters, beam_type="BEAMTYPE_BESSEL")
 
-def generate_sphere_arbitrary_yaml(particles, wavelength=1.0e-6, particle_material="FusedSilica", frames_of_animation=1):
+def generate_sphere_arbitrary_yaml(particles, wavelength=1.0e-6, particle_material="FusedSilica", frames_of_animation=1, show_output=False):
     #
     # Generates a YAML file for a set of arbitrary spheres specified
     #
@@ -380,7 +380,7 @@ def generate_sphere_arbitrary_yaml(particles, wavelength=1.0e-6, particle_materi
     # Create / overwrite YAML file
     # Writing core system parameters
     filename = "SingleLaguerre"
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "wavelength": wavelength}
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "wavelength": wavelength, "show_output": show_output}
     particle_list = []
 
     # Writing specific parameters for particle formation
@@ -663,7 +663,7 @@ def rotate_arbitrary(theta, v, n):
         v_rotated = np.dot( arb_rotation_matrix, v )    # Apply rotation
         return v_rotated
 
-def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False):
+def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, dipole_radius=40e-9, include_additionalForces=False):
     #
     # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
@@ -673,7 +673,8 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     particle_info = []
     place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
-    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
+    parameters = {"frames": 1, "frame_max": 1, "dipole_radius":dipole_radius, "show_output": True}
+#     parameters = {"frames": 1, "frame_max": 1, "show_output": False}
 
     record_parameters = ["F"]
     if(include_additionalForces):   # Record total forces instead of just optical forces
@@ -683,6 +684,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     for i, particle_number in enumerate(particle_numbers):
         print(f"\n{i}/{len(particle_numbers)}: Performing calculation for {particle_number} particles")
         #Generate required YAML, perform calculation, then pull force data
+        # FusedSilica01, FusedSilica
         generate_sphere_yaml("circle", particle_number, particle_material="FusedSilica", characteristic_distance=place_radius, particle_radii=particle_radii, parameters=parameters)     # Writes to SingleLaguerre.yml
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -715,7 +717,7 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
     particle_info = [];
     place_radius = 1.15e-6      #1.15e-6
     particle_radii = 200e-9     #200e-9
-    parameters = {"frames": 1, "frame_max": 1}
+    parameters = {"frames": 1, "frame_max": 1, "show_output": False}
 
     #For each scenario to be tested
     for slider_index in range(slider_range[2]):
@@ -746,7 +748,7 @@ def simulations_singleFrame_optForce_spheresInCircleSlider(particle_total, slide
     )
     return parameter_text
 
-def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=None, reducedSet=0):
+def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=None, reducedSet=0, show_output=False):
     #
     # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
@@ -850,9 +852,9 @@ def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam
             particles.append( {"radius": target_radius, "position": [particle_pos[0], particle_pos[1], target_pos[2]]} )    # Add others
 
         if(wavelength != None):
-            generate_sphere_arbitrary_yaml(particles, frames_of_animation=1, wavelength=wavelength)     # Writes to SingleLaguerre.yml
+            generate_sphere_arbitrary_yaml(particles, frames_of_animation=1, wavelength=wavelength, show_output=show_output)     # Writes to SingleLaguerre.yml
         else:
-            generate_sphere_arbitrary_yaml(particles, frames_of_animation=1)
+            generate_sphere_arbitrary_yaml(particles, frames_of_animation=1, show_output=show_output)
 
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -912,6 +914,7 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
 
     # Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
+    parameter_text=""
     # parameter_text = "\n".join(
     #     (
     #         "Spheres",
@@ -919,7 +922,6 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
     #         "R_particle (m)= "+str(particle_radii)
     #     )
     # )
-    parameter_text = ""
     return parameter_text, dipole_sizes
 
 
@@ -1058,7 +1060,7 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
     tube_radii  = 200e-9
     frames_of_animation = 1
 
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipole_size, "show_output": False}
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "dipole_radius": dipole_size, "show_output": True}
     separations = np.linspace(*separation_range) # unpack list to fill the 3 arguments
  
     # For each scenario to be tested
@@ -1069,7 +1071,7 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
         torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
         
         # Generate YAML
-        generate_torus_yaml(particle_total, inner_radii, tube_radii, separation, particle_material="FusedSilica", parameters=parameters)
+        generate_torus_yaml(particle_total, inner_radii, tube_radii, separation, particle_material="FusedSilica01", parameters=parameters)
 
         # Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -1082,14 +1084,15 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
 
     # Write combined data to a new xlsx file
     store_combined_particle_info(filename, particle_info)
-    parameter_text = "\n".join(
-        (
-            "Torus Sectors= ",
-            "R_inner   (m)= "+str(inner_radii),
-            "R_tube    (m)= "+str(tube_radii),
-            f"Phi Sector(m)= {torus_sector_theta:.3f}"
-        )
-    )
+    parameter_text= ""
+    # parameter_text = "\n".join(
+    #     (
+    #         "Torus Sectors= ",
+    #         "R_inner   (m)= "+str(inner_radii),
+    #         "R_tube    (m)= "+str(tube_radii),
+    #         f"Phi Sector(m)= {torus_sector_theta:.3f}"
+    #     )
+    # )
     return parameter_text, separations
 
 def simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particle_numbers, dipoleSize_numbers, separation, filename):
@@ -2149,7 +2152,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
     match test_type:
         case "single":
             if(len(test_args)==3):
-                graphlabel_set  = {"title":"Single Dipole", "xAxis":"X Offset(m)", "yAxis":"Force(N)"}
+                graphlabel_set  = {"title":"Single Dipole", "xAxis":"X Offset[m]", "yAxis":"Force[N]"}
                 data_set_Fx = [[], []]
                 data_set_Fy = [[], []]
                 data_set_Fz = [[], []]
@@ -2193,7 +2196,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
         
         case "7shell":
             if(len(test_args)==3):
-                graphlabel_set  = {"title":"7 Single Dipoles", "xAxis":"X Offset(m)", "yAxis":"Force(N)"}
+                graphlabel_set  = {"title":"7 Single Dipoles", "xAxis":"X Offset[m]", "yAxis":"Force[N]"}
                 data_set_Fx = [[], []]
                 data_set_Fy = [[], []]
                 data_set_Fz = [[], []]
@@ -2239,7 +2242,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
             if(len(test_args)==4):
                 offset_lower, offset_upper, offset_number, polarisabilities = test_args
 
-                graphlabel_set  = {"title":"Single Dipole Difference"+str(polarisabilities), "xAxis":"X Offset(m)", "yAxis":"Force(N)"}
+                graphlabel_set  = {"title":"Single Dipole Difference"+str(polarisabilities), "xAxis":"X Offset[m]", "yAxis":"Force[N]"}
 
                 object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
                 print("LIST IS ", polarisabilities)
@@ -2299,7 +2302,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
             if(len(test_args)==4):
                 particle_number, lower_separation, upper_separation, separation_number = test_args
 
-                graphlabel_set  = {"title":str(particle_number)+" dipoles separated in X axis", "xAxis":"X Dipole Center Separation(m)", "yAxis":"Force(N)"}
+                graphlabel_set  = {"title":str(particle_number)+" dipoles separated in X axis", "xAxis":"X Dipole Center Separation[m]", "yAxis":"Force[N]"}
                 data_set_Fx = [[], []]
                 data_set_Fy = [[], []]
                 data_set_Fz = [[], []]
@@ -3522,9 +3525,74 @@ match(sys.argv[1]):
         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
+    # case "spheresInCircle_dipoleVary":
+    #     filename = "SingleLaguerre"
+    #     #1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+    #     particle_numbers = [6,7,8,9,10] #,11,12,13,14,15,16
+        
+    #     data_set = []
+    #     datalabel_set = []
+    #     dipole_set = [40e-9]
+    #     for i in range(len(dipole_set)):
+            
+    #         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, dipole_radius=dipole_set[i], include_additionalForces=False)
+        
+    #         data = pd.read_excel(filename+".xlsx")
+    #         data_num = data.count(axis='columns')
+    #         total_force_magnitudes = []
+    #         tangential_force_magnitudes = []
+    #         particle_numbers = []
+    #         for scenario_index in range(len(data) ):
+    #             #Look through each scenario setup, get number of particles involved, try extract data from this scenario
+    #             number_of_particles = int(np.floor(data_num[scenario_index]/(6.0)))
+    #             total_force_mag      = 0.0
+    #             tangential_force_mag = 0.0
+    #             for particle_index in range(number_of_particles):
+    #                 # Total Force Magnitude
+    #                 total_force_mag += np.sqrt(
+    #                     pow(data.iloc[scenario_index, 3 +6*particle_index], 2) 
+    #                     +pow(data.iloc[scenario_index, 4 +6*particle_index], 2)
+    #                 )
+
+    #                 # Tangential Force Magnitude
+    #                 position_xy_mag = np.sqrt(
+    #                     pow(data.iloc[scenario_index, 0 +6*particle_index],2) +
+    #                     pow(data.iloc[scenario_index, 1 +6*particle_index],2)
+    #                 )
+    #                 position_xy_vector_norm = [
+    #                     data.iloc[scenario_index, 0 +6*particle_index] / position_xy_mag,
+    #                     data.iloc[scenario_index, 1 +6*particle_index] / position_xy_mag
+    #                 ]
+    #                 tangential_xy_vector = [
+    #                     -position_xy_vector_norm[1],
+    #                     position_xy_vector_norm[0]
+    #                 ]
+    #                 tangential_force_mag += tangential_xy_vector[0]*data.iloc[scenario_index, 3 +6*particle_index] + tangential_xy_vector[1]*data.iloc[scenario_index, 4 +6*particle_index]
+    #             #Add values to plot
+    #             total_force_magnitudes.append(total_force_mag/number_of_particles)
+    #             tangential_force_magnitudes.append(tangential_force_mag/number_of_particles)
+    #             particle_numbers.append(number_of_particles)
+    #         # Fill in data_set
+    #         data_set.append(
+    #             np.array([
+    #                 np.array(particle_numbers),
+    #                 np.array(total_force_magnitudes)
+    #             ])
+    #         )
+    #         datalabel_set.append(f"Total Force; dipole_size={dipole_set[i]}")
+    #         data_set.append(
+    #             np.array([
+    #                 np.array(particle_numbers),
+    #                 np.array(tangential_force_magnitudes)
+    #             ])
+    #         )
+    #         datalabel_set.append(f"Angular Force; dipole_size={dipole_set[i]}")
+
+    #     #graphlabel_set = ...
+    #     Display.plot_multi_data(np.array(data_set), datalabel_set, datacolor_set=np.array([]), graphlabel_set={"title":"", "xAxis":"", "yAxis":""})
     case "torusInCircle":
         filename = "SingleLaguerre"
-        particle_numbers = [2,3,4,5,6,7,8,9]
+        particle_numbers = [2,3,4,5,6,7,8,9,11,12,13,14]
         parameter_text = simulations_singleFrame_optForce_torusInCircle(particle_numbers, filename)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
     case "torusInCircleFixedPhi":
@@ -3547,12 +3615,12 @@ match(sys.argv[1]):
         wave_start = 4.0*wave_jump
         x_values = np.arange(wave_start, abs(target_pos[0])+beam_radius, wave_jump) /wavelength 
         #NOTE; Make sure the start is a multiple of jump in order for constructive to be nice
-        parameter_text = simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=wavelength, reducedSet=2)
+        parameter_text = simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam_radius, target_pos, target_radius, filename, wavelength=wavelength, reducedSet=2, show_output=False)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, x_values, "Wave spacing", "(wavelengths)", parameter_text)
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre"
         particle_total = 16
-        dipole_size_range = [30e-9, 100e-9, 50]
+        dipole_size_range = [35e-9, 100e-9, 20]
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "[m]", parameter_text)
     case "torusInCircleDipoleSize":
@@ -3578,7 +3646,7 @@ match(sys.argv[1]):
     case "torusInCircleSeparation":
         filename = "SingleLaguerre"
         particle_total = 6
-        separation_range = [0.2e-7, 3e-7, 25]
+        separation_range = [1.8e-7, 3e-7, 50]   #[0.2e-7, 3e-7, 50]
         dipole_size = 40e-9
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "[m]", parameter_text)
@@ -3686,6 +3754,9 @@ match(sys.argv[1]):
         parameter_text = simulations_fibre_1D_cylinder(filename, chain_length, particle_length, particle_radius, particle_number, connection_mode, connection_args, option_parameters)
     
     case "fibre_2D_sphere_hollowShell":
+        
+        #Setup to get deflection in 2 orbiting gaussian beams
+        
         # Save file
         filename = "SingleLaguerre"
         # Args
@@ -3697,7 +3768,9 @@ match(sys.argv[1]):
         E0 = 4.6e7
         object_offset=np.array([0.0, -1.0e-6, 0.0])
 
-        stiffness = 1.5e-6
+        # Calm for k=1.5e-6, B=0.1e-18
+        # Free for k=0.5m B=0.015e-18
+        stiffness = 0.15e-6
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
         # Get connections
@@ -3718,47 +3791,93 @@ match(sys.argv[1]):
             bead_indices.append((particle_number_radial*particle_number_angular)-i)
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "time_step": 0.25e-4,
+            "time_step": 0.125e-4,   #0.25e-4
             "frames": 90,
             "max_size":3e-6,    #2e-6
-            "constants": {"bending": 0.1e-18},
-            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":5.0*stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
+            "constants": {"bending": 1.5e-19},
+            # NOTE *5 for stiffness worked quite well
+            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":500.0*stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
             "force_terms": ["optical", "spring", "bending"],
             "show_output": True,
             "beam_planes": [['z',0]],
             "quiver_setting": 0,
-            "frames": 1,
         })
-
         # Run
         parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
-    case "fibre_2D_cylinder_hollowShell":
-        # Save file
-        filename = "SingleLaguerre"
-        # Args
-        chain_length    = 3e-6
-        particle_length = 300e-9
-        particle_radius = 100e-9
-        shell_radius    = 300e-9
-        particle_number_radial  = 8
-        particle_number_angular = 6
 
-        connection_mode = "dist"
-        connection_args = 0.0   # NOTE; Is overwritten in the function to pick the correct value
 
-        option_parameters = Generate_yaml.fill_yaml_options({
-            "time_step": 5e-5,
-            "frames": 90,
-            "constants": {"bending": 0.65e-18},
-            "stiffness_spec": {"type":"", "default_value":5e-7},
-            "force_terms": ["optical", "spring", "bending"],
-            "show_output": True,
-            "beam_planes": [],
-            "quiver_setting": 0
-        })
+    #     # Save file
+    #     filename = "SingleLaguerre"
+    #     # Args
+    #     chain_length    = 3e-6
+    #     particle_radius = 100e-9
+    #     shell_radius    = 1000e-9
+    #     particle_number_radial  = 6
+    #     particle_number_angular = 8
+    #     E0 = 4.6e7
+    #     object_offset=np.array([0.0, -0.0e-6, 0.0])
 
-        # Run
-        parameter_text = simulations_fibre_2D_cylinder_hollowShell(filename, chain_length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, option_parameters)
+    #     stiffness = 1.5e-6
+    #     include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
+
+    #     # Get connections
+    #     connection_mode = "dist"
+    #     connection_args = [0.0]   # NOTE; Is overwritten in the function to pick the correct value
+    #     if(include_beads):
+    #         connection_mode = "dist_beads"
+    #         connection_args = [0.0, 0.0, 2] # NOTE; 0.0 values will be overwritten later in the function for correct values
+    #         # "dist_beads" has args = [
+    #         #       distance to connect non-bead particles,
+    #         #       distance to connect bead particles,
+    #         #       number of bead particles (NOTE; Assumes all beads are located at the end of the particle list)
+    #         #   ]
+
+    #     # Get stiffness matrix specs
+    #     bead_indices = []
+    #     for i in range(1, connection_args[2]+1):
+    #         bead_indices.append((particle_number_radial*particle_number_angular)-i)
+
+    #     option_parameters = Generate_yaml.fill_yaml_options({
+    #         "time_step": 0.25e-4,
+    #         "frames": 90,
+    #         "max_size":3e-6,    #2e-6
+    #         "constants": {"bending": 0.1e-18},
+    #         "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":5.0*stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
+    #         "force_terms": ["optical", "spring", "bending"],
+    #         "show_output": True,
+    #         "beam_planes": [],  #['z',0]
+    #         "quiver_setting": 0,
+    #         "frames": 1,
+    #     })
+    #     # Run
+    #     parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
+    # case "fibre_2D_cylinder_hollowShell":
+    #     # Save file
+    #     filename = "SingleLaguerre"
+    #     # Args
+    #     chain_length    = 3e-6
+    #     particle_length = 300e-9
+    #     particle_radius = 100e-9
+    #     shell_radius    = 300e-9
+    #     particle_number_radial  = 8
+    #     particle_number_angular = 6
+
+    #     connection_mode = "dist"
+    #     connection_args = 0.0   # NOTE; Is overwritten in the function to pick the correct value
+
+    #     option_parameters = Generate_yaml.fill_yaml_options({
+    #         "time_step": 5e-5,
+    #         "frames": 90,
+    #         "constants": {"bending": 0.65e-18},
+    #         "stiffness_spec": {"type":"", "default_value":5e-7},
+    #         "force_terms": ["optical", "spring", "bending"],
+    #         "show_output": True,
+    #         "beam_planes": [],
+    #         "quiver_setting": 0
+    #     })
+
+    #     # Run
+    #     parameter_text = simulations_fibre_2D_cylinder_hollowShell(filename, chain_length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, option_parameters)
     case "fibre_2D_sphere_thick_connectUniform":
         # Save file
         filename = "SingleLaguerre"
@@ -3829,6 +3948,7 @@ match(sys.argv[1]):
             "constants": {"bending": 0.1e-18},
             "stiffness_spec": {"type":"", "default_value":7.5e-6},
             "force_terms": ["optical"], #["optical", "spring", "bending"],
+            "beam_planes": [],  #['z',0]
             "show_output": True,
         })
 
@@ -3865,10 +3985,6 @@ match(sys.argv[1]):
         ##
         ## Dipole data new can be pulled from simualtion, can rewrite get_bound_indices() and get_index_forces() 
         ## again if want to look at force on a bounded area of dipoles again
-        ##
-        ## --> MAKE SURE ALL THE DIPOLE STUFF IS FINE AND NOT CAUSING PROBLEMS
-        ##
-        ## GENERALISE FORCE FOR REFINE EMTHOD, AND FOR PLOTTER SO IS NICER TO USE
         ##
 
         # Save file
@@ -4154,7 +4270,7 @@ match(sys.argv[1]):
         rotation = None#"180 0.0 0.0"
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": False,
+            "show_output": True,
             "force_terms": ["optical"],
             "polarisability_type": "RR",    # Which polarisability to test
             "time_step": 1e-4,
@@ -4198,7 +4314,7 @@ match(sys.argv[1]):
             
             case "multi_separated":
                 dipole_size = option_parameters["dipole_radius"]
-                test_args = [15, dipole_size*2.0, dipole_size*10.0, 50]  # [particle_number, lower_separation, upper_separation, separation_number]
+                test_args = [15, dipole_size*2.0, dipole_size*10.0, 100]  # [particle_number, lower_separation, upper_separation, separation_number]
 
                 # Read forces from all dipoles
                 read_parameters=[]
@@ -4214,6 +4330,7 @@ match(sys.argv[1]):
 
         # Run simulation
         data_set, data_set_labels, graphlabel_set = simulations_single_dipole(filename, read_parameters, beam_type, test_type, test_args, object_offset, option_parameters, rotation=rotation)
+        graphlabel_set["title"] = ""
         Display.plot_multi_data(data_set, data_set_labels, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)
 
     case "sphere_spheredisc_model":
@@ -4269,18 +4386,18 @@ match(sys.argv[1]):
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 20
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [75e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
+        dipole_sizes    = [50e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         particle_shapes         = ["sphere"]
         indep_vector_component  = 0              # Which component to plot when dealing with vector quantities to plot (Often not used)
         indep_var               = "separations_list"
         beam_type               = "LAGUERRE" 
         linestyle_var           = None
-        mode        = "sphere"     #"disc", "sphere"
+        mode        = "disc"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        materials = ["FusedSilica"]
-        fix_to_ring = False
+        materials   = ["FusedSilica", "FusedSilica01"]
+        fix_to_ring = True
         # NOTE; The following lists must be the same length.
         forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = [[0], [0]]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
@@ -4292,6 +4409,8 @@ match(sys.argv[1]):
             "show_stress": False,
             "force_terms": ["optical"],
             "polarisability_type": "RR",
+            "quiver_setting":0,
+            "beam_planes":[['z',0]]
         })
         # Only make dipoles file if torque about given centre are needed.
         if "Tmag" in forces_output or "Tx" in forces_output or "Ty" in forces_output or "Tz" in forces_output: option_parameters["include_dipole_forces"] = True
@@ -4411,7 +4530,7 @@ match(sys.argv[1]):
         dimensions      = [400e-9]                       # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
         particle_sizes  = [40e-9, 100e-9, 200e-9]              # Single particle
-        dipole_sizes    = np.linspace(20e-9, 200e-9, 200)  
+        dipole_sizes    = np.linspace(20e-9, 200e-9, 200)   # np.linspace(20e-9, 200e-9, 200)  
         object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
         particle_shapes = ["sphere", "cube"]
         materials = ["FusedSilica"] # , "FusedSilica01"
@@ -4427,7 +4546,7 @@ match(sys.argv[1]):
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
-            "show_stress": False,
+            "show_stress": True,
             "force_terms": ["optical"],
         })
 
@@ -4484,11 +4603,12 @@ match(sys.argv[1]):
             option_parameters = Generate_yaml.fill_yaml_options({
                 "show_output": True,
                 "show_stress": False,
+                #"frame_min":10,
                 "force_terms": ["optical", "spring", "bending"], #, "buckingham"
                 "constants": {"bending": 1e-19}, # 5e-20  # 0.5e-18 # 5e-19
                 "stiffness_spec": {"type":"", "default_value":5e-6}, #5e-8  # 5e-7
                 "dipole_radius": 100e-9,
-                "frames": 21,
+                "frames": 20,
                 "time_step": 10e-5, 
                 "max_size": 5e-6,
                 "resolution": 401,
@@ -4535,6 +4655,9 @@ match(sys.argv[1]):
         #
         # Dynamics simulation of a sphere stretched between two opposing Gaussian beams
         #
+        # (1) Set "should_recalculate" to true if you want to calculate a new experiment
+        # (2) Set to false to read previously calculated data
+        #
         filename = "Optical_stretcher"
         connection_mode = "num"
         connection_args = "5"
@@ -4550,7 +4673,7 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 2000,
+            "frames": 1000,
             "frame_min": 0,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4560,8 +4683,8 @@ match(sys.argv[1]):
         })
 
         variables_list = { # NOTE order of this is important
-            "stiffness": [2.7e-6],  #6.5e-6
-            "bending": [1.0e-19],
+            "stiffness": [8.0e-7],  #2.7e-6, 6.5e-6
+            "bending": [3.0e-20],  #1.0e-19
             "translation": ["0.0 0.0 130e-6"],
             "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.
@@ -4576,14 +4699,15 @@ match(sys.argv[1]):
         yaxis_labels = get_dynamic_stretcher_yaxis_labels(expt_types)
 
         data_sets, datalabel_sets, graphlabel_sets, pulled_data_set = get_dynamic_stretcher_data(should_recalculate, should_merge, filename, variables_list, option_parameters, expt_types, yaxis_labels, store_name="dynamic_stretcher_store")
-        # for expt_i in range(len(expt_types)):
-        #     Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
+        for expt_i in range(len(expt_types)):
+            Display.plot_multi_data(data_sets[expt_i], datalabel_sets[expt_i], graphlabel_set=graphlabel_sets[expt_i])
 
         # Uses pulled_data_set (particle positions) to calculate the moments of inertia
         data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_sets[0], datalabel_sets[0], graphlabel_sets[0], pulled_data_set, axes=axes)
         for axi in range(len(axes)):
             graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
-            Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
+            # Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
+            Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
 
         
 
