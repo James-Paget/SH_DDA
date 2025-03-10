@@ -193,9 +193,10 @@ def make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, objec
 
     beam_offset = np.array([2.6e-6, 0.0, 0.0]) +object_offset
 
+    #circle => translationargs={N nx ny nz vx vy vz}
     #2.5e-6 1.5e-6 0.0
-    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "-0.5 0.0 0.0 1.0 -2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
-    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"-{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "0.5 0.0 0.0 1.0 2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_1 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "-0.25 0.0 0.0 1.0 -2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
+    beam_2 = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":0.4, "jones":"POLARISATION_LCP", "translation": f"-{beam_offset[0]} {beam_offset[1]} {beam_offset[2]}", "translationargs": "0.25 0.0 0.0 1.0 2.2e-6 0.0 0.0", "translationtype":"circle", "rotation":None}
     write_beams(filename, [beam_1, beam_2])
 
     # Varies depending on if beads are included within this function
@@ -394,7 +395,7 @@ def use_fibre_2d_sphere_hollowshell(filename, length, shell_radius, particle_rad
 
     connection_args[0] = 1.01*max( shell_radius*(2.0*np.pi/particle_number_angular), (length/(particle_number_radial-1)) )   # NOTE; with this approach to separation, you want the two separations to be similar (your angular and radial) to avoid excess connections
     if(include_beads):
-        connection_args[1] = 1.1*(abs(bead_positions[0][0]) - length/2.0)  # How far is each bead from the particles at the very edge +some tolerance 
+        connection_args[1] = 1.3*(abs(bead_positions[0][0]) - length/2.0)  # How far is each bead from the particles at the very edge +some tolerance 
 
     # Shell material
     default_radius = 1e-07
