@@ -2272,6 +2272,10 @@ def main(YAML_name=None):
 
     if display.show_output==True:
         # Plot beam, particles, forces and tracers (forces and tracers optional)
+        # fig, ax = display.plot_intensity(beam_collection)
+        # plt.savefig(f"myImage.png", format="png", dpi=300) 
+        # plt.show()
+
         fig, ax = None, None
         if beam_collection_list==None and 1==1: # 1==1 use as override.
             fig, ax = display.plot_intensity3d(beam_collection)    # Hash out if beam profile [NOT wanted] <-- For a stationary beam only (will overlay if using translating beam)

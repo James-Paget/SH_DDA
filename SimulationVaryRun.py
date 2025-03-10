@@ -674,6 +674,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
     parameters = {"frames": 1, "frame_max": 1, "dipole_radius":dipole_radius, "show_output": True}
+#     parameters = {"frames": 1, "frame_max": 1, "show_output": False}
 
     record_parameters = ["F"]
     if(include_additionalForces):   # Record total forces instead of just optical forces
@@ -906,7 +907,7 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
         run_command = "python DipolesMulti2024Eigen.py "+filename
         run_command = run_command.split(" ")
         print("=== Log ===")
-        result = subprocess.run(run_command, stdout=subprocess.DEVNULL) #, stdout=subprocess.DEVNULL
+        result = subprocess.run(run_command) #, stdout=subprocess.DEVNULL
         
         # Pull data from xlsx into a local list in python
         record_particle_info(filename, particle_info)
@@ -3520,9 +3521,9 @@ match(sys.argv[1]):
     case "spheresInCircle":
         filename = "SingleLaguerre"
         #1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
-        particle_numbers = [6,7,8,9,10,11,12,13,14,15,16]
+        particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
         parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
-        #Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     # case "spheresInCircle_dipoleVary":
     #     filename = "SingleLaguerre"
@@ -3641,7 +3642,7 @@ match(sys.argv[1]):
             volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
             dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
         parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation)
-        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "(m)", parameter_text)
+        Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "[m]", parameter_text)
     case "torusInCircleSeparation":
         filename = "SingleLaguerre"
         particle_total = 6
@@ -3664,7 +3665,7 @@ match(sys.argv[1]):
         data_axes = [dipoleSize_numbers, particle_numbers]
         separation = 0#1e-7
         parameter_text, data_set = simulations_singleFrame_optForce_torusInCircle_FixedSep_SectorDipole(particle_numbers, dipoleSize_numbers, separation, filename)
-        Display.plotMulti_tangential_force_against_arbitrary(data_set, data_axes, 0, ["Dip.Rad", "Particle Number"], ["(m)", ""], parameter_text)
+        Display.plotMulti_tangential_force_against_arbitrary(data_set, data_axes, 0, ["Dip.Rad", "Particle Number"], ["[m]", ""], parameter_text)
     case "testVolumes":
         # use this mode to make a new volume storage entry or to plot it.
         particle_total = 6
@@ -5160,12 +5161,30 @@ match(sys.argv[1]):
         # plot the force on a test particle, swept across a plane.
         filename = "SingleLaguerre"
         beam_type = "LAGUERRE"
-
-        particle_radius = 200e-9
         max_size = 2e-6
-        num = 20
-        plane = ["z", 0.9e-6]
-        # plane = ["x", 0.0e-6]
+        num = 15
+        
+        mode = 0
+        if mode==0:
+            particle_radius = 200e-9
+            plane = ["z", 1e-6]
+            scale = 1.3e-10  ## scale scales in reverse: small value makes arrows bigger
+            show_colours = True
+        elif mode==1:
+            particle_radius = 100e-9
+            plane = ["z", 0.9e-6]
+            scale = 1.3e-11
+            show_colours = True
+        elif mode==2:
+            plane = ["x", 0.0e-6]
+            scale = 1.6e-10
+            show_colours = False
+        elif mode==3:
+            particle_radius = 300e-9
+            plane = ["z", 0.9e-6]
+            scale = 1.3e-10
+            show_colours = True
+        
         translations = np.linspace(-max_size, max_size, num)
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
@@ -5215,7 +5234,7 @@ match(sys.argv[1]):
         elif plane[0] == "y": graphlabel_set = {"title":"", "xAxis":f"x [m]", "yAxis":"z [m]"} 
         elif plane[0] == "z": graphlabel_set = {"title":"", "xAxis":f"x [m]", "yAxis":"y [m]"} 
         
-        Display.plot_quiver_2d(q1s,q2s,f1s,f2s, graphlabel_set)
+        Display.plot_quiver_2d(q1s,q2s,f1s,f2s, graphlabel_set, show_colours=show_colours, scale=scale)
 
     case _:
         print("Unknown run type: ",sys.argv[1])
