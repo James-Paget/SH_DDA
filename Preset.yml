@@ -1,0 +1,121 @@
+options:
+  frames: 2
+parameters:
+  wavelength: 1e-06
+  dipole_radius: 4e-08
+  time_step: 0.0001
+  polarisability_type: RR
+  constants:
+    bending: 1e-19
+  stiffness_spec:
+    type: 
+    default_value: 5e-06
+  equilibrium_shape: None
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+  verbosity: 0
+  include_dipole_forces: False
+  force_terms: optical spring bending buckingham
+display:
+  show_output: True
+  show_stress: False
+  frame_interval: 2
+  resolution: 201
+  max_size: 1.2e-06
+  frame_min: 0
+  frame_max: 2
+  z_offset: 0.0
+  beam_planes: []
+  quiver_setting: 0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_LAGUERRE_GAUSSIAN
+    E0: 300
+    order: 3
+    w0: 0.6
+    jones: POLARISATION_LCP
+    translation: None
+    translationargs: None
+    translationtype: None
+    rotation: None
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: num
+  connection_args: 5
+  particle_list:
+    part_0:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 0.0 -5e-07 -8.09015e-07
+      altcolour: True
+    part_1:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -5e-07 -8.09015e-07 0.0
+      altcolour: True
+    part_2:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -8.09015e-07 0.0 -5e-07
+      altcolour: True
+    part_3:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 0.0 -5e-07 8.09015e-07
+      altcolour: True
+    part_4:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -5e-07 8.09015e-07 0.0
+      altcolour: True
+    part_5:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: -8.09015e-07 0.0 5e-07
+      altcolour: True
+    part_6:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 0.0 5e-07 -8.09015e-07
+      altcolour: True
+    part_7:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 5e-07 -8.09015e-07 0.0
+      altcolour: True
+    part_8:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 8.09015e-07 0.0 -5e-07
+      altcolour: True
+    part_9:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 0.0 5e-07 8.09015e-07
+      altcolour: True
+    part_10:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 5e-07 8.09015e-07 0.0
+      altcolour: True
+    part_11:
+      material: FusedSilica
+      shape: sphere
+      args: 2e-07
+      coords: 8.09015e-07 0.0 5e-07
+      altcolour: True
