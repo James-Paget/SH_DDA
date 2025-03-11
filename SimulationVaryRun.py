@@ -3433,8 +3433,9 @@ def calculate_MoI(data_set, datalabel_set, graphlabel_set, pulled_data_set, axes
 
     # Make MoI labels
     graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
-    ideal_labels = ["ideal; "+s for s in datalabel_set]
-    datalabel_set = np.append(datalabel_set, ideal_labels)
+    true_labels = ["Analytical, "+s for s in datalabel_set]
+    ideal_labels = ["Ellipsoidal, "+s for s in datalabel_set]
+    datalabel_set = np.append(true_labels, ideal_labels)
 
     return data_set_moi, datalabel_set, graphlabel_set
 
@@ -3532,7 +3533,7 @@ def get_dynamic_stretcher_yaxis_labels(expt_types):
             case "Bounding box ratio": yaxis_label  = "Ratio of major to minor axis length"
             case "Eccentricity": yaxis_label  = "Eccentricity"
             case "Height/width ratio": yaxis_label  = "Height/width ratio"
-            case "Volume": yaxis_label = "Shape Volume [m^3]"
+            case "Volume": yaxis_label = r"Shape Volume [$\text{m}^3$]"
         yaxis_labels.append(yaxis_label)
     return yaxis_labels
 
@@ -4716,6 +4717,22 @@ match(sys.argv[1]):
             "beam_alpha": 0.4,
         })
 
+        # SPRING BENDING VARS
+        # variables_list = { # NOTE order of this is important
+        #     "stiffness": [2.2e-6, 2.7e-6],  #2.7e-6, 6.5e-6
+        #     "bending": [0.6e-19, 1.0e-19],  #1.0e-19
+        #     "translation": ["0.0 0.0 130e-6"],
+        #     "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
+        #     "particle_radius": [0.1e-6], # adjust dipole size to match this.§
+        #     "E0": [14e6],
+        #     "w0": [5],
+        #     "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
+        #     "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
+        #     "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
+        #     "repeat": [i+1 for i in range(1)],
+        # }
+
+        # # REPEAT VARS
         variables_list = { # NOTE order of this is important
             "stiffness": [8.0e-7],  #2.7e-6, 6.5e-6
             "bending": [3.0e-20],  #1.0e-19
@@ -4740,7 +4757,7 @@ match(sys.argv[1]):
         # Uses pulled_data_set (particle positions) to calculate the moments of inertia
         data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_sets[0], datalabel_sets[0], graphlabel_sets[0], pulled_data_set, axes=axes)
         
-        should_average_moi = True
+        should_average_moi = False
         num_vars = 3 # Needs to be changed to the correct value each time, = total expts in variables_list
         if should_average_moi:
             data_set_moi_true = np.average(data_set_moi[:,:num_vars], axis=1)
@@ -4748,14 +4765,15 @@ match(sys.argv[1]):
             data_set_moi = np.zeros((len(axes),2, 2, data_set_moi_true.shape[2])) # indices: axis, averaged MoIs for true/ideal, x- or y-axis, values
             data_set_moi[:,0] = data_set_moi_true
             data_set_moi[:,1] = data_set_moi_ideal
-            datalabel_set = ["Analytical", "Ellipsoidal"]
+            datalabel_set = ["Analytical", "Ellipsoidal"] # now averaged, overwrite and simplify the labels.
         
         for axi in range(len(axes)):
             if should_average_moi: graphlabel_set["yAxis"] = f"Repeat-averaged MoI, axis {axes[axi]}"
             else: graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
-            # Display.plot_multi_data(data_set_moi[axi][[0,4]], datalabel_set[[0,4]], graphlabel_set=graphlabel_set)
+            Display.plot_multi_data(data_set_moi[axi][[0,4]], datalabel_set[[0,4]], graphlabel_set=graphlabel_set)
+            Display.plot_multi_data(data_set_moi[axi][[3,7]], datalabel_set[[3,7]], graphlabel_set=graphlabel_set)
             # Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
-            Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
+            # Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
 
         
 
