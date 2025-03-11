@@ -179,7 +179,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 20 #20
+        samples = 6 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -423,13 +423,13 @@ class DisplayObject (object):
                 #plots.append(textplot)
             
             # NOTE; ** Remove Z axis for cleaner plots sometimes **
-            # ax.set_zticks([])
-            # ax.set_zlabel("")
+            ax.set_zticks([])
+            ax.set_zlabel("")
 
             #plt.savefig("myImage.png", format="png", dpi=1200)
             if t in save_frames:
                 save_frames.remove(t)
-                plt.savefig(f"myImage{t}.png", format="png", dpi=300)  # NOTE; Sometimes does not record in single frame runs
+            plt.savefig(f"myImage{t}.png", format="png", dpi=300)  # NOTE; Sometimes does not record in single frame runs
 
         # Initialise
         positions = np.array(positions)

@@ -1477,6 +1477,33 @@ def simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, obj
     parameter_text = ""
     return parameter_text
 
+def simulations_fibre_2D_sphere_otherModel(model_type, filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=False):
+    particle_info = []
+    record_parameters = ["F"]
+
+    # Generate YAML for set of particles and beams
+    print(f"Performing calculation for {particle_number_radial*particle_number_angular} particles")
+    with open(f"{filename}.yml", "w") as _:     # Used to reset file each time this is run
+        pass                                    #
+    match model_type:
+        case "hollowShell":
+            Generate_yaml.make_yaml_fibre_2d_sphere_hollowshell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
+        case "uniConnect":
+            Generate_yaml.make_yaml_fibre_2d_sphere_beadModelUniformConnected(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
+        case "shellLayers":
+            Generate_yaml.make_yaml_fibre_2d_sphere_beadModelShellLayers(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
+        case _:
+            print(f"Invalid model: {model_type}")
+
+    # Run simulation
+    DM.main(YAML_name=filename)
+
+    # Pull data from xlsx into a local list in python, Write combined data to a new xlsx file
+    record_particle_info(filename, particle_info, record_parameters=record_parameters)
+    store_combined_particle_info(filename, particle_info, record_parameters=record_parameters)
+    parameter_text = ""
+    return parameter_text
+
 def simulations_fibre_2D_cylinder_hollowShell(filename, chain_length, shell_radius, particle_length, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, option_parameters):
     particle_info = [];
     record_parameters = ["F"]
@@ -3767,10 +3794,13 @@ match(sys.argv[1]):
         particle_number_angular = 8
         E0 = 4.6e7
         object_offset=np.array([0.0, -1.0e-6, 0.0])
+        model_type = "shellLayers"  # Used for multi model bead generation     "hollowShell", "uniConnect"
 
         # Calm for k=1.5e-6, B=0.1e-18
         # Free for k=0.5m B=0.015e-18
-        stiffness = 0.15e-6
+        # [altStrong=0.1e-6], [altStrongHighK=2.0e-6], [altWeakHighK=2.0e-6], [altWeak=0.1e-6]
+        # [altWeak_uniConnect=0.1e-6]
+        stiffness = 1.5e-6 # 1.5e-6  0.15e-6
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
         # Get connections
@@ -3792,19 +3822,21 @@ match(sys.argv[1]):
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "time_step": 0.125e-4,   #0.25e-4
-            "frames": 90,
+            "frames": 1,
             "max_size":3e-6,    #2e-6
-            "constants": {"bending": 1.5e-19},
-            # NOTE *5 for stiffness worked quite well
-            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":500.0*stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
+            # [altStrong=1.0e-18] [altStrongHighK=1.0e-18] [altWeak=0.05e-18] [altWeakHighK=0.05e-18]
+            # [altWeak_uniConnect]
+            "constants": {"bending": 0.01e-18},  # 0.1e-18 0.15e-18  [0.05e-18]
+            # NOTE *5 for stiffness worked quite well   #500 for small originals        [all=1.0e-6/0.01e-6]
+            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":1.0e-6, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
             "force_terms": ["optical", "spring", "bending"],
             "show_output": True,
             "beam_planes": [['z',0]],
             "quiver_setting": 0,
         })
         # Run
-        parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
-
+        #parameter_text = simulations_fibre_2D_sphere_hollowShell(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
+        parameter_text = simulations_fibre_2D_sphere_otherModel(model_type, filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, include_beads=include_beads)
 
     #     # Save file
     #     filename = "SingleLaguerre"
