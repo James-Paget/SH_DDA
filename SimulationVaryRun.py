@@ -1491,6 +1491,7 @@ def simulations_fibre_2D_sphere_otherModel(model_type, filename, E0, option_para
         case "uniConnect":
             Generate_yaml.make_yaml_fibre_2d_sphere_beadModelUniformConnected(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
         case "shellLayers":
+            # NOTE; Tuning difficult here to have layers connected separately -> currently does this based on distance but needs to be converted to a manual method to ensure connections always correct
             Generate_yaml.make_yaml_fibre_2d_sphere_beadModelShellLayers(filename, E0, option_parameters, object_offset, chain_length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, connection_mode, connection_args, beam="GAUSS_CSP", include_beads=include_beads)
         case _:
             print(f"Invalid model: {model_type}")
@@ -3794,7 +3795,7 @@ match(sys.argv[1]):
         particle_number_angular = 8
         E0 = 4.6e7
         object_offset=np.array([0.0, -1.0e-6, 0.0])
-        model_type = "shellLayers"  # Used for multi model bead generation     "hollowShell", "uniConnect"
+        model_type = "uniConnect"  # Used for multi model bead generation     "hollowShell", "uniConnect", "shellLayers"
 
         # Calm for k=1.5e-6, B=0.1e-18
         # Free for k=0.5m B=0.015e-18

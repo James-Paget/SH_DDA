@@ -269,7 +269,7 @@ def make_yaml_fibre_2d_sphere_beadModelShellLayers(filename, E0, option_paramete
     use_fibre_2d_sphere_beadModelShellLayers(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, object_offset, connection_mode, connection_args, include_beads=include_beads)
 def use_fibre_2d_sphere_beadModelShellLayers(filename, length, shell_radius, particle_radius, particle_number_radial, particle_number_angular, object_offset, connection_mode, connection_args, include_beads=False):
     shell_number = 2
-    particle_separation = (np.pi*2.0*shell_radius)/(12.0)
+    particle_separation = (np.pi*2.0*shell_radius)/(10.0)
 
     coords_list = get_fibre_2d_shelllayers_points(length, shell_radius, shell_number, particle_separation)
     coords_list = np.array(coords_list) + object_offset
