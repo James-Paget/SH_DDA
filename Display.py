@@ -760,7 +760,7 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
     #Count lines of parameter text to align position (shift down by ~0.05 per line, calibrated for default size.)
     text_ypos = 1 - 0.05*(parameter_text.count("\n")+1)
 
-    # ax.plot(x_values, total_force_magnitudes, label="Net Force", color="red") #, color="red"
+    ax.plot(x_values, total_force_magnitudes, label="Net Force", color="red") #, color="red"
     ax.plot(x_values, tangential_force_magnitudes, label="Angular Force", color="blue") #  color="blue"
     ax.text(
         0.0, text_ypos,

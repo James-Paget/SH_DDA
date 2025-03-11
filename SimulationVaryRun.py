@@ -880,7 +880,7 @@ def simulations_singleFrame_optForce_wavelengthTrial(wave_start, wave_jump, beam
         
         
         
-def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename):
+def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename, show=False):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
     #
@@ -894,7 +894,7 @@ def simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, d
     particle_radii = 200e-9     #200e-9
     frames_of_animation = 1
 
-    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": False}
+    parameters = {"frames": frames_of_animation, "frame_max": frames_of_animation, "show_output": show}
 
     # For each scenario to be tested
     for i, dipole_size in enumerate(dipole_sizes):
@@ -3646,9 +3646,10 @@ match(sys.argv[1]):
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, x_values, "Wave spacing", "(wavelengths)", parameter_text)
     case "spheresInCircleDipoleSize":
         filename = "SingleLaguerre"
-        particle_total = 16
-        dipole_size_range = [35e-9, 100e-9, 20]
-        parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename)
+        particle_total = 17
+        dipole_size_range = [35e-9, 100e-9, 10]
+        show=False # show the output plot
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_spheresInCircleDipoleSize(particle_total, dipole_size_range, filename, show=show)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "[m]", parameter_text)
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre"
