@@ -1333,13 +1333,13 @@ def get_refine_cube_showcase(dimension):
     #
     coords_list = []
     args_list = []
-    mesh_spacing = 2.0*dimension
+    mesh_spacing = 3*dimension
     particle_spacing = dimension*0.01
 
     particle_numbers = [1,2,5]
     
     for p in range(len(particle_numbers)):   # Number of meshes to generate side-by-side
-        particle_size = (dimension-particle_numbers[p]*particle_spacing)/(particle_numbers[p]+1)
+        particle_size = (dimension-particle_numbers[p]*particle_spacing)/(particle_numbers[p])
         for i in range(particle_numbers[p]):            # Generate cubes of particles to create each mesh
             for j in range(particle_numbers[p]):        #
                 for k in range(particle_numbers[p]):    #

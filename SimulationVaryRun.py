@@ -663,7 +663,7 @@ def rotate_arbitrary(theta, v, n):
         v_rotated = np.dot( arb_rotation_matrix, v )    # Apply rotation
         return v_rotated
 
-def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, dipole_radius=40e-9, include_additionalForces=False):
+def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, dipole_radius=40e-9, include_additionalForces=False, material="FusedSilica"):
     #
     # Performs a DDA calculation for various particles in a circular ring on the Z=0 plane
     #
@@ -673,7 +673,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
     particle_info = []
     place_radius = 1.15e-6#152e-6         #1.15e-6
     particle_radii = 200e-9         #200e-9
-    parameters = {"frames": 1, "frame_max": 1, "dipole_radius":dipole_radius, "show_output": True}
+    parameters = {"frames": 1, "frame_max": 1, "dipole_radius":dipole_radius, "show_output": False}
 #     parameters = {"frames": 1, "frame_max": 1, "show_output": False}
 
     record_parameters = ["F"]
@@ -685,7 +685,7 @@ def simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename,
         print(f"\n{i}/{len(particle_numbers)}: Performing calculation for {particle_number} particles")
         #Generate required YAML, perform calculation, then pull force data
         # FusedSilica01, FusedSilica
-        generate_sphere_yaml("circle", particle_number, particle_material="FusedSilica", characteristic_distance=place_radius, particle_radii=particle_radii, parameters=parameters)     # Writes to SingleLaguerre.yml
+        generate_sphere_yaml("circle", particle_number, particle_material=material, characteristic_distance=place_radius, particle_radii=particle_radii, parameters=parameters)     # Writes to SingleLaguerre.yml
         #Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
         run_command = run_command.split(" ")
@@ -997,7 +997,7 @@ def simulations_singleFrame_optForce_torusInCircleFixedPhi(particle_numbers, fil
     return parameter_text
 
 
-def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename, separating_dist=0.1e-6, show=False):
+def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_size_range, filename, separating_dist=0.1e-6, show=False, material="FusedSilica"):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
     #
@@ -1020,7 +1020,7 @@ def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dip
 
         # Change parameters to use each dipole_size, then generate YAML
         parameters["dipole_radius"] = dipole_size
-        generate_torus_yaml(particle_total, inner_radii, tube_radii, separating_dist, particle_material="FusedSilica", parameters=parameters)
+        generate_torus_yaml(particle_total, inner_radii, tube_radii, separating_dist, particle_material=material, parameters=parameters)
 
         # Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -1045,7 +1045,7 @@ def simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dip
     return parameter_text, dipole_sizes
 
 
-def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size, show):
+def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size, show, material="FusedSilica"):
     #
     # Performs a DDA calculation for particles in a circular ring for various dipole sizes. 
     #
@@ -1068,7 +1068,7 @@ def simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, sep
         torus_sector_theta = (2.0*np.pi -particle_total*torus_gap_theta) / (particle_total) #Full angle occupied by torus sector
         
         # Generate YAML
-        generate_torus_yaml(particle_total, inner_radii, tube_radii, separation, particle_material="FusedSilica01", parameters=parameters)
+        generate_torus_yaml(particle_total, inner_radii, tube_radii, separation, particle_material=material, parameters=parameters)
 
         # Run DipolesMulti2024Eigen.py
         run_command = "python DipolesMulti2024Eigen.py "+filename
@@ -2178,7 +2178,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
     match test_type:
         case "single":
             if(len(test_args)==3):
-                graphlabel_set  = {"title":"Single Dipole", "xAxis":"X Offset[m]", "yAxis":"Force[N]"}
+                graphlabel_set  = {"title":"Single Dipole", "xAxis":"X Offset [m]", "yAxis":"Force [N]"}
                 data_set_Fx = [[], []]
                 data_set_Fy = [[], []]
                 data_set_Fz = [[], []]
@@ -2222,7 +2222,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
         
         case "7shell":
             if(len(test_args)==3):
-                graphlabel_set  = {"title":"7 Single Dipoles", "xAxis":"X Offset[m]", "yAxis":"Force[N]"}
+                graphlabel_set  = {"title":"7 Single Dipoles", "xAxis":"X Offset [m]", "yAxis":"Force [N]"}
                 data_set_Fx = [[], []]
                 data_set_Fy = [[], []]
                 data_set_Fz = [[], []]
@@ -2268,7 +2268,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
             if(len(test_args)==4):
                 offset_lower, offset_upper, offset_number, polarisabilities = test_args
 
-                graphlabel_set  = {"title":"Single Dipole Difference"+str(polarisabilities), "xAxis":"X Offset[m]", "yAxis":"Force[N]"}
+                graphlabel_set  = {"title":"Single Dipole Difference"+str(polarisabilities), "xAxis":"X Offset [m]", "yAxis":"Force [N]"}
 
                 object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
                 print("LIST IS ", polarisabilities)
@@ -2328,7 +2328,7 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
             if(len(test_args)==4):
                 particle_number, lower_separation, upper_separation, separation_number = test_args
 
-                graphlabel_set  = {"title":str(particle_number)+" dipoles separated in X axis", "xAxis":"X Dipole Center Separation[m]", "yAxis":"Force[N]"}
+                graphlabel_set  = {"title":str(particle_number)+" dipoles separated in X axis", "xAxis":"X Dipole Centre Separation [m]", "yAxis":"Force [N]"}
                 data_set_Fx = [[], []]
                 data_set_Fy = [[], []]
                 data_set_Fz = [[], []]
@@ -3520,6 +3520,9 @@ def pickle_read(filename):
     with open(filename, "rb") as f: return pickle.load(f)
     
 def pickle_merge(file_a, file_b): # append b into a
+    """
+    !! May not work
+    """
     dict_a = pickle_read(file_a)
     dict_b = pickle_read(file_b)
     for key, value in dict_b.items(): # assuming they have the same keys, and that they contain arrays that can be extended.
@@ -3549,7 +3552,8 @@ match(sys.argv[1]):
         filename = "SingleLaguerre"
         #1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
         particle_numbers = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
-        parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False)
+        material = "FusedSilica01"
+        parameter_text = simulations_singleFrame_optForce_spheresInCircle(particle_numbers, filename, include_additionalForces=False, material=material)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, particle_numbers, "Particle number", "", parameter_text)
         Display.plot_tangential_force_against_number_averaged(filename+"_combined_data", parameter_text)
     # case "spheresInCircle_dipoleVary":
@@ -3653,10 +3657,11 @@ match(sys.argv[1]):
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*dipole_size_range), "Dipole size", "[m]", parameter_text)
     case "torusInCircleDipoleSize":
         filename = "SingleLaguerre"
-        particle_total = 4
+        particle_total = 6
         separation = 0.5e-7
         dipole_sizes = [35e-9, 120e-9, 50]
         show = False
+        material = "FusedSilica"
 
         # Option to filter dipole sizes so that the objects have a similar volume.
         filter_dipoleSizes_by_volume = False
@@ -3670,7 +3675,7 @@ match(sys.argv[1]):
             old_dipole_sizes = dipole_sizes
             volumes = get_torus_volumes(particle_total, inner_radii, tube_radii, separation, dipole_sizes)
             dipole_sizes, indices, _ = filter_dipole_sizes(volumes, dipole_sizes, filter_num)
-        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation, show=show)
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleDipoleSize(particle_total, dipole_sizes, filename, separation, show=show, material=material)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, make_array(dipole_sizes), "Dipole size", "[m]", parameter_text)
     case "torusInCircleSeparation":
         filename = "SingleLaguerre"
@@ -3678,7 +3683,8 @@ match(sys.argv[1]):
         separation_range = [0.2e-7, 3e-7, 50]
         dipole_size = 40e-9
         show = False
-        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size, show)
+        material = "FusedSilica"
+        parameter_text, dipole_sizes = simulations_singleFrame_optForce_torusInCircleSeparation(particle_total, separation_range, filename, dipole_size, show, material=material)
         Display.plot_tangential_force_against_arbitrary(filename+"_combined_data", 0, np.linspace(*separation_range), "Separation", "[m]", parameter_text)
     case "torusInCircle_FixedSep_SectorDipole":
         #
@@ -3786,26 +3792,55 @@ match(sys.argv[1]):
     case "fibre_2D_sphere_hollowShell":
         
         #Setup to get deflection in 2 orbiting gaussian beams
+        # ROD_BENDING expt
         
         # Save file
         filename = "SingleLaguerre"
         # Args
         chain_length    = 3e-6
-        particle_radius = 100e-9
+        particle_radius = 100e-9#100e-9
         shell_radius    = 500e-9
         particle_number_radial  = 6
         particle_number_angular = 8
         E0 = 4.6e7
         object_offset=np.array([0.0, -1.0e-6, 0.0])
-        model_type = "uniConnect"  # Used for multi model bead generation     "hollowShell", "uniConnect", "shellLayers"
+        # object_offset = np.zeros(3)
+        model_type = "hollowShell"  # Used for multi model bead generation     "hollowShell", "uniConnect", "shellLayers"
 
         # Calm for k=1.5e-6, B=0.1e-18
-        # Free for k=0.5m B=0.015e-18
+        # Free for k=0.5, B=0.015e-18
         # [altStrong=0.1e-6], [altStrongHighK=2.0e-6], [altWeakHighK=2.0e-6], [altWeak=0.1e-6]
         # [altWeak_uniConnect=0.1e-6]
-        stiffness = 1.5e-6 # 1.5e-6  0.15e-6
-        include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
+        
+        # model_type = "hollowShell"
+        # stiffness = 1e-6 # 1.5e-6  0.15e-6
+        # bead_stiffness = 50 * stiffness
+        # bending = 1e-18
 
+        model_type = "hollowShell"
+        stiffness = 0.15e-6 # 1.5e-6  0.15e-6
+        bead_stiffness = 50 * stiffness
+        bending = 1e-18
+
+        model_type = "hollowShell"
+        stiffness = 1.5e-6 # 1.5e-6  0.15e-6
+        bead_stiffness = 50 * stiffness
+        bending = 1e-18
+
+        model_type = "hollowShell"
+        stiffness = 0.15e-6 # 1.5e-6  0.15e-6
+        bead_stiffness = 50 * stiffness
+        bending = 0.3e-18
+
+
+        # FIRST GOOD UNICONNECT
+        # model_type = "uniConnect"
+        # stiffness = 0.15e-6 # 1.5e-6  0.15e-6
+        # bead_stiffness = 50 * stiffness
+        # bending = 0.5e-18
+
+
+        include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
         # Get connections
         connection_mode = "dist"
         connection_args = [0.0]   # NOTE; Is overwritten in the function to pick the correct value
@@ -3824,17 +3859,17 @@ match(sys.argv[1]):
             bead_indices.append((particle_number_radial*particle_number_angular)-i)
 
         option_parameters = Generate_yaml.fill_yaml_options({
+            "show_output": True,
             "time_step": 0.125e-4,   #0.25e-4
-            "frames": 1,
+            "frames": 70, #50
             "max_size":3e-6,    #2e-6
             # [altStrong=1.0e-18] [altStrongHighK=1.0e-18] [altWeak=0.05e-18] [altWeakHighK=0.05e-18]
             # [altWeak_uniConnect]
-            "constants": {"bending": 0.01e-18},  # 0.1e-18 0.15e-18  [0.05e-18]
+            "constants": {"bending": bending},  # 0.1e-18 0.15e-18  [0.05e-18]
             # NOTE *5 for stiffness worked quite well   #500 for small originals        [all=1.0e-6/0.01e-6]
-            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":1.0e-6, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
+            "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":bead_stiffness, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
             "force_terms": ["optical", "spring", "bending"],
-            "show_output": True,
-            "beam_planes": [['z',0]],
+            # "beam_planes": [],
             "quiver_setting": 0,
         })
         # Run
@@ -4298,16 +4333,16 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
 
-        beam_type = "BESSEL"          # Which beam to use
+        beam_type = "GAUSS_CSP"          # Which beam to use
         object_offset = [0.0, 0.0, 0.0]
-        test_type = "7shell"  # Particle setup to test
+        test_type = "MULTI"  # Particle setup to test
         linestyle_set = None
         rotation = None#"180 0.0 0.0"
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "force_terms": ["optical"],
-            "polarisability_type": "RR",    # Which polarisability to test
+            "polarisability_type": "CM",    # Which polarisability to test
             "time_step": 1e-4,
             "dipole_radius": 100e-9, # Half-width/radius of dipole
             "frames": 1,
@@ -4357,6 +4392,67 @@ match(sys.argv[1]):
                     read_parameters.append({"type":"F", "particle":p, "subtype":0})
                     read_parameters.append({"type":"F", "particle":p, "subtype":1})
                     read_parameters.append({"type":"F", "particle":p, "subtype":2})
+
+            case "MULTI":
+                # do 1 and 7 dipoles on the same plot, for each CM and RR.
+                # this mode is its own thing hence plots its own graphs - so overrides a few things
+                beam_type = "LAGUERRE"          # Which beam to use
+
+                # for polarisability in ["CM", "RR"]:
+                #     option_parameters["polarisability_type"] = polarisability
+                #     data_set = np.zeros((6, 2, 50))
+                #     data_set_labels = []
+                #     ii = 0
+                #     for n, test_type in zip([1,7], ["single", "7shell"]):
+                #         test_args = [0.0, 1.5e-6, 50] 
+                #         read_parameters = []
+                #         for p in range(n):
+                #             read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                #             read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                #             read_parameters.append({"type":"F", "particle":p, "subtype":2})
+                #         data_set_raw, data_set_labels_raw, graphlabel_set = simulations_single_dipole(filename, read_parameters, beam_type, test_type, test_args, object_offset, option_parameters, rotation=rotation)
+                #         data_set[ii:ii+3] = data_set_raw
+                #         print(data_set_raw)
+                #         print(data_set)
+                #         string = "1 dipole" if n==1 else "7 dipoles"
+                #         data_set_labels_raw = [f"{data_set_labels_raw[i]}, {string}" for i in range(len(data_set_labels_raw))]
+                #         data_set_labels.extend(data_set_labels_raw)
+                #         ii += 3
+                    
+                #     graphlabel_set["title"] = ""
+                #     linestyle_set = ["dashed", "dashed", "dashed", "solid", "solid", "solid"]
+                #     datacolor_set = ["red", "green", "blue", "red", "green", "blue"]
+ 
+                #     Display.plot_multi_data(data_set, data_set_labels, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
+                
+                
+                beam_type = "GAUSS_CSP"
+                # beam_type = "LAGUERRE"
+                # beam_type = "BESSEL"
+                data_set_labels = []
+                dipole_size = option_parameters["dipole_radius"]
+                test_args = [20, dipole_size*2.7, dipole_size*20.0, 60]  # [particle_number, lower_separation, upper_separation, separation_number]
+                data_set = np.zeros((6, 2, test_args[3]))
+
+                # Read forces from all dipoles
+                read_parameters=[]
+                ii = 0
+                for p in range(test_args[0]):
+                    read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":2})
+
+                test_type = "multi_separated"
+                for polarisability in ["CM", "RR"]:
+                    option_parameters["polarisability_type"] = polarisability
+                    data_set_raw, data_set_labels_raw, graphlabel_set = simulations_single_dipole(filename, read_parameters, beam_type, test_type, test_args, object_offset, option_parameters, rotation=rotation)
+                    data_set[ii:ii+3] = data_set_raw
+                    string = "CM" if polarisability in "CM" else "RR"
+                    data_set_labels_raw = [f"{data_set_labels_raw[i]}, {string}" for i in range(len(data_set_labels_raw))]
+                    data_set_labels.extend(data_set_labels_raw)
+                    ii += 3
+                graphlabel_set["title"] = ""
+                Display.plot_multi_data(data_set[2::3], data_set_labels[2::3], graphlabel_set=graphlabel_set, linestyle_set=linestyle_set)
 
             case _:
                 test_args=[]
@@ -4432,7 +4528,7 @@ match(sys.argv[1]):
         frames      = 1
         time_step   = 1e-4
         materials   = ["FusedSilica", "FusedSilica01"]
-        fix_to_ring = True
+        fix_to_ring = False
         # NOTE; The following lists must be the same length.
         forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
         particle_selections = [[0], [0]]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
@@ -4440,7 +4536,7 @@ match(sys.argv[1]):
         # particle_selections = [ [0],[0] ]
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": False,
+            "show_output": True,
             "show_stress": False,
             "force_terms": ["optical"],
             "polarisability_type": "RR",
@@ -4482,6 +4578,7 @@ match(sys.argv[1]):
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
         datalabel_set = ["Fx, non-absorbing","Fy, non-absorbing", "Fx, absorbing", "Fy, absorbing"]
         graphlabel_set["title"] += f", mesh_shape={mode}, fix_ring={fix_to_ring}"
+        # graphlabel_set["xAxis"] = "Separation [m]" # NOTE THIS IS OVERRIDING
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
         # Plot particle number and dipoles per particle against the independent variable.
@@ -4614,7 +4711,7 @@ match(sys.argv[1]):
         data_set, data_set_params, particle_nums_set, dpp_nums_set = simulations_refine_all(filename, variables_list, partial_yaml_func, forces_output, particle_selections, indep_vector_component=2, torque_centre=torque_centre)
 
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_var, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-
+        graphlabel_set["xAxis"] = "Dipole size [m]" # NOTE THIS IS OVERRIDING
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
 
@@ -4709,7 +4806,7 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 1800,
+            "frames": 3000,
             "frame_min": 0,
             "max_size": 5e-6,
             "quiver_setting": 0,
@@ -4718,31 +4815,15 @@ match(sys.argv[1]):
             "beam_alpha": 0.4,
         })
 
-        # SPRING BENDING VARS
-        # variables_list = { # NOTE order of this is important
-        #     "stiffness": [2.2e-6, 2.7e-6],  #2.7e-6, 6.5e-6
-        #     "bending": [0.6e-19, 1.0e-19],  #1.0e-19
-        #     "translation": ["0.0 0.0 130e-6"],
-        #     "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
-        #     "particle_radius": [0.1e-6], # adjust dipole size to match this.§
-        #     "E0": [14e6],
-        #     "w0": [5],
-        #     "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
-        #     "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
-        #     "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
-        #     "repeat": [i+1 for i in range(1)],
-        # }
-
-        # # REPEAT VARS
         variables_list = { # NOTE order of this is important
-            "stiffness": [8.0e-7],  #2.7e-6, 6.5e-6
+            "stiffness": [1e-7],  #2.7e-6, 6.5e-6
             "bending": [3.0e-20],  #1.0e-19
-            "translation": ["0.0 0.0 130e-6"],
-            "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
+            "translation": ["0.0 0.0 35e-6"],
+            "num_particles": [200], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.§
-            "E0": [14e6],
-            "w0": [5],
-            "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
+            "E0": [3.5e6],
+            "w0": [2.7],
+            "time_step": [10e-5], # largest one used to calc actual frames, shorter ones only have more frames.
             "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
             "repeat": [i+1 for i in range(3)],
@@ -4758,7 +4839,7 @@ match(sys.argv[1]):
         # Uses pulled_data_set (particle positions) to calculate the moments of inertia
         data_set_moi, datalabel_set, graphlabel_set = calculate_MoI(data_sets[0], datalabel_sets[0], graphlabel_sets[0], pulled_data_set, axes=axes)
         
-        should_average_moi = False
+        should_average_moi = True
         num_vars = 3 # Needs to be changed to the correct value each time, = total expts in variables_list
         if should_average_moi:
             data_set_moi_true = np.average(data_set_moi[:,:num_vars], axis=1)
@@ -4771,10 +4852,10 @@ match(sys.argv[1]):
         for axi in range(len(axes)):
             if should_average_moi: graphlabel_set["yAxis"] = f"Repeat-averaged MoI, axis {axes[axi]}"
             else: graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
-            Display.plot_multi_data(data_set_moi[axi][[0,4]], datalabel_set[[0,4]], graphlabel_set=graphlabel_set)
-            Display.plot_multi_data(data_set_moi[axi][[3,7]], datalabel_set[[3,7]], graphlabel_set=graphlabel_set)
-            # Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
-            # Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
+            length = int(len(data_set_moi[axi])/2)
+            Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
+            # for i in range(length):
+            #     Display.plot_multi_data(data_set_moi[axi][[i,i+length]], datalabel_set[[i,i+length]], graphlabel_set=graphlabel_set)
 
         
 
@@ -5039,9 +5120,10 @@ match(sys.argv[1]):
         # Stretching for experimentally accurate BUT scaled shape (1/3 scale)
         #
         dimension = 6720e-9     # Base diameter of the full untransformed sphere
+        # dimension = 6720e-9 /2 
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 4.0 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 10
+        critical_transform_factor = 1.3#2.0 # The max transform you want to apply, which sets the default separation of particles in the system
+        num_factors_tested = 40
         particle_size = 100e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
@@ -5049,20 +5131,14 @@ match(sys.argv[1]):
         connection_mode = "manual"  #"num"          # "dist", 0.0
         connection_args = []    #5    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "radial_meridional"         # "linear", "inverse_area", "radial_meridional"
+        transform_type = "linear"         # "linear", "inverse_area", "radial_meridional"
         E0 = 14.0e6 #14e6
-        w0 = 4.0    #4.4   #5.4
-        translation = "0.0 0.0 135.0e-6"  # Offset applied to both beams
+        w0 = 5.0    #4.4   #5.4
+        translation = "0.0 0.0 130.0e-6"  # Offset applied to both beams
         
         coords_list, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
-        
-        # coords_list_python = []
-        # coords_list = Generate_yaml.get_sunflower_points(120, dimension/2.0)
-        # for i in range(len(coords_list)):
-        #     coords_list_python.append(list(coords_list[i]))
 
-        sphere_type = "shell" # options are "solid" or "shell"
-        
+        sphere_type = "solid" # options are "solid" or "shell"
         match sphere_type:
             case "solid":
                 # currently not working
@@ -5071,7 +5147,7 @@ match(sys.argv[1]):
                 connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
                 coords_list, _, _ = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
             case "shell":
-                num_particles = 100
+                num_particles = 160
                 connection_mode = "num"
                 connection_args = 5
                 coords_list = []
@@ -5085,15 +5161,15 @@ match(sys.argv[1]):
             "quiver_setting": 0,
             "wavelength": 1.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
-            "constants": {"bending": 0.75e-20}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 2.0e-3}, #3.35e-5 #3.5e-5
+            "constants": {"bending": 1e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
+            "stiffness_spec": {"type":"", "default_value": 2.7e-6}, #3.35e-5 #3.5e-5 2.0e-3
             "frames": 1,
             "max_size": 5e-6,
-            "time_step": 0.0625e-4,  #0.125e-4 
+            "time_step": 0.5e-4,  #0.125e-4 
             "equilibrium_shape": coords_list,
             "dipole_radius": 100e-9,
-            "beam_planes": [], #  [["x", 0],["z", 0]]
-            "beam_alpha": 0.4,
+            "beam_planes": [["y", 0]], #  [["x", 0],["z", 0]]
+            "beam_alpha": 0.2,
         })
 
         if option_parameters["show_output"] == False: option_parameters["frames"] = 1
@@ -5178,6 +5254,8 @@ match(sys.argv[1]):
         #     data_set = get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_output, ["all"], read_frames, read_parameters_lookup, parameters_stored, parameters_stored_torque=None, torque_centre=None)
 
         # Plot forces for each step considered to see if equilibrium is being reached
+        datalabel_set = ["Fx", "Fy", "Fz"]
+        graphlabel_set = {"title":f"", "xAxis":"Transform factor [m]", "yAxis":"Forces [N]"}
         Display.plot_multi_data(np.array(data_set), datalabel_set, graphlabel_set=graphlabel_set) 
 
 
@@ -5189,9 +5267,10 @@ match(sys.argv[1]):
             "dipole_radius": 300e-9,
             "quiver_setting":0,
             "force_terms": ["optical"],
-            "beam_planes": []
+            "beam_planes": [],
+            "max_size": 1.5e-6,
         })
-        Generate_yaml.make_yaml_refine_cube_showcase(filename, 0.8e-6, [-2.8e-6, 0.0, 0.0], "sphere", option_parameters, beam="LAGUERRE", material="FusedSilica")
+        Generate_yaml.make_yaml_refine_cube_showcase(filename, 0.4e-6, [-1.5e-6, -0.9e-6, 5e-7], "sphere", option_parameters, beam="LAGUERRE", material="FusedSilica")
         DM.main(YAML_name=filename)
 
     case "voxel_sphere":

@@ -69,6 +69,10 @@ class DisplayObject (object):
         lower = -upper
 
         # assumes z has the same range as x and y.
+
+
+        # p1 = np.linspace(0.05e-6, 1.75e-6, nx)
+        # p2 = np.linspace(-0.85e-6, 0.85e-6, ny)
         p1 = np.linspace(lower, upper, nx)
         p2 = np.linspace(lower, upper, ny)
         P1, P2 = np.meshgrid(p1, p2)
@@ -179,7 +183,7 @@ class DisplayObject (object):
 
     def make_sphere_surface(self, args, centre):
         radius = args[0]
-        samples = 6 #20
+        samples = 10 #20
         u = np.linspace(0, 2 * np.pi, samples)
         v = np.linspace(0, np.pi, samples)
         x = radius * np.outer(np.cos(u), np.sin(v)) + centre[0]
@@ -414,7 +418,7 @@ class DisplayObject (object):
                     beam_plane = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=self.beam_alpha)
                     plots.append(beam_plane)
 
-            save_frames = [0]
+            save_frames = [0, 49, 59]
             #if len(save_frames)==0:
             if(steps > 1):
                 # Add frame counter
@@ -423,13 +427,17 @@ class DisplayObject (object):
                 #plots.append(textplot)
             
             # NOTE; ** Remove Z axis for cleaner plots sometimes **
-            ax.set_zticks([])
-            ax.set_zlabel("")
+            # ax.set_zticks([])
+            # ax.set_zlabel("")
 
             #plt.savefig("myImage.png", format="png", dpi=1200)
             if t in save_frames:
                 save_frames.remove(t)
-            plt.savefig(f"myImage{t}.png", format="png", dpi=300)  # NOTE; Sometimes does not record in single frame runs
+                plt.savefig(f"myImage{t}.png", format="png", dpi=300)  # NOTE; Sometimes does not record in single frame runs
+
+            # if t%2==0:
+            #     plt.savefig(f"myImage{t}.png", format="png", dpi=300)  # NOTE; Sometimes does not record in single frame runs
+
 
         # Initialise
         positions = np.array(positions)
@@ -511,6 +519,7 @@ class DisplayObject (object):
         zlower = -2e-6
         zupper = 2e-6
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
+        # ax = fig.add_subplot(111, projection='3d', xlim=(0.05e-6, 1.75e-6), ylim=(-0.85e-6, 0.85e-6), zlim=(-0.5e-6, 0.5e-6))
         ax.set_aspect('equal','box')
         ax.set_xlabel("x [m]")
         ax.set_ylabel("y [m]")
@@ -769,14 +778,14 @@ def plot_tangential_force_against_arbitrary(filename, particle_target, x_values,
         fontsize=12
     )
 
-    plt.ylim(bottom=0.0)
+    # plt.ylim(bottom=0.0)
     plt.xlabel(f"{x_label} {x_units}") # Brackets included in units so not left over if unitless i.e. ()
     plt.ylabel("Force [N]")
     plt.title("")   #f"Tangential force against {x_label}"
-    plt.legend()
+    # plt.legend()
     
     # plt.ylabel("Force [N]")
-    # plt.ylabel("Angular Force [N]")
+    plt.ylabel("Angular Force [N]")
     # plt.title(f"Tangential force against {x_label}")
     # plt.legend()
     plt.savefig("myImage.png", format="png", dpi=300)
