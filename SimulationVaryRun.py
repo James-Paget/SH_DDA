@@ -2655,6 +2655,8 @@ def simulations_refine_all(filename, variables_list, partial_yaml_func, forces_o
         "Fx":   [["F",0]],
         "Fy":   [["F",1]],
         "Fz":   [["F",2]],
+        "Fr":   [["X",0], ["X",1], ["F",0], ["F",1]], 
+        "Ftheta":   [["X",0], ["X",1], ["F",0], ["F",1]], 
         "Cmag": [["C",0], ["C",1], ["C",2]],
         "Cx":   [["C",0]],
         "Cy":   [["C",1]],
@@ -2840,6 +2842,20 @@ def get_forces_via_lookup(filename, data_set, particle_num, i, params_i, expt_ou
                 output = 0
                 for d in range(len(particles) * dpp_num):
                     output += (value_list[4*d+0]-centre[0]) * value_list[4*d+3] - (value_list[4*d+1]-centre[0]) * value_list[4*d+2] # order for cross product comes from read_parameters_args
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+
+            case "Fr":
+                output = 0
+                for p in range(int(len(value_list)/4)):
+                    theta = np.arctan2(value_list[4*p+1], value_list[4*p+0])
+                    output += value_list[4*p+2] * np.cos(theta) + value_list[4*p+3] * np.sin(theta)
+                data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
+
+            case "Ftheta":
+                output = 0
+                for p in range(int(len(value_list)/4)):
+                    theta = np.arctan2(value_list[4*p+1], value_list[4*p+0])
+                    output += value_list[4*p+2] * -np.sin(theta) + value_list[4*p+3] * np.cos(theta)
                 data_set[params_i*num_expts_per_param + expt_i, 1, i] = output
 
             case "Tmag":
@@ -4512,31 +4528,33 @@ match(sys.argv[1]):
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
         disc_radius     = [1.14e-6]    #1.14e-6 #1.09e-6                   # Radius of full disc
-        particle_sizes  = [150e-9]                  # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 20
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [50e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
+        # dipole_sizes    = [50e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
+        # particle_sizes  = [150e-9]                  # Radius of spherical particles used to model the disc
+        dipole_sizes    = [100e-9] 
+        particle_sizes  = [100e-9]   
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         particle_shapes         = ["sphere"]
         indep_vector_component  = 0              # Which component to plot when dealing with vector quantities to plot (Often not used)
         indep_var               = "separations_list"
         beam_type               = "LAGUERRE" 
         linestyle_var           = None
-        mode        = "disc"     #"disc", "sphere"
+        mode        = "sphere"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
-        materials   = ["FusedSilica", "FusedSilica01"]
+        materials   = ["FusedSilica", "FusedSilica01"] #, "FusedSilica01"
         fix_to_ring = False
         # NOTE; The following lists must be the same length.
-        forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
-        particle_selections = [[0], [0]]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
-        # forces_output= ["Fx", "Fy"]
-        # particle_selections = [ [0],[0] ]
+        # forces_output= ["Fx", "Fy"]     # options are ["Fmag","Fx", "Fy", "Fz", "Cmag","Cx", "Cy", "Cz",] 
+        # particle_selections = [[0], [0]]#[ [[disc_radius, 0.0, 0.0]], [[disc_radius, 0.0, 0.0]] ]#[[[0.0,0.0,0.0], [1.0,0.0,0.0]]] # list of "all", [i,j,k...], [[rx,ry,rz]...]
+        forces_output= ["Fr", "Ftheta"]
+        particle_selections = [ "all","all" ]
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "show_stress": False,
             "force_terms": ["optical"],
             "polarisability_type": "RR",
@@ -4576,9 +4594,9 @@ match(sys.argv[1]):
 
         # Format output and make legend/title strings
         title_str, datalabel_set, linestyle_set, datacolor_set, graphlabel_set = get_title_label_line_colour(variables_list, data_set_params, forces_output, particle_selections, indep_name, linestyle_var=linestyle_var, cgrad=lambda x: (1/4+3/4*x, x/3, 1-x))
-        datalabel_set = ["Fx, non-absorbing","Fy, non-absorbing", "Fx, absorbing", "Fy, absorbing"]
+        datalabel_set = [f"{forces_output[0]}, non-absorbing", f"{forces_output[1]}, non-absorbing", f"{forces_output[0]}, absorbing", f"{forces_output[1]}, absorbing"]
         graphlabel_set["title"] += f", mesh_shape={mode}, fix_ring={fix_to_ring}"
-        # graphlabel_set["xAxis"] = "Separation [m]" # NOTE THIS IS OVERRIDING
+        graphlabel_set["xAxis"] = "Separation [m]" # NOTE THIS IS OVERRIDING
         Display.plot_multi_data(data_set, datalabel_set, graphlabel_set=graphlabel_set, linestyle_set=linestyle_set, datacolor_set=datacolor_set)
 
         # Plot particle number and dipoles per particle against the independent variable.
@@ -4969,12 +4987,12 @@ match(sys.argv[1]):
                     eps = sys.float_info.epsilon
                     transformed_coords_list = np.array(coordinates)
                     z_values = np.sort(np.unique(np.abs(coordinates[:,2]))) # get all unique absolute values of planes, then sort for the lowest.
-                    print("z_values are", z_values)
+                    # print("z_values are", z_values)
                     plane_spacing = z_values[1] # XXX !!! assumes there are enough layers
                     accumulated_factor = 0
 
                     for z_plane in z_values: # note, these are ABS z values.
-                        print("for transform ", transform_factor, "; accum factor is", accumulated_factor)
+                        # print("for transform ", transform_factor, "; accum factor is", accumulated_factor)
                         upper_z_indices = np.argwhere(abs(coordinates[:,2]-z_plane) <= eps)
                         lower_z_indices = np.argwhere(abs(coordinates[:,2]+z_plane) <= eps)
 
@@ -5123,7 +5141,7 @@ match(sys.argv[1]):
         # dimension = 6720e-9 /2 
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
         critical_transform_factor = 1.3#2.0 # The max transform you want to apply, which sets the default separation of particles in the system
-        num_factors_tested = 40
+        num_factors_tested = 50
         particle_size = 100e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
         material = "FusedSilica"
@@ -5131,14 +5149,14 @@ match(sys.argv[1]):
         connection_mode = "manual"  #"num"          # "dist", 0.0
         connection_args = []    #5    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "linear"         # "linear", "inverse_area", "radial_meridional"
-        E0 = 14.0e6 #14e6
-        w0 = 5.0    #4.4   #5.4
-        translation = "0.0 0.0 130.0e-6"  # Offset applied to both beams
+        transform_type = "radial_meridional"         # "linear", "inverse_area", "radial_meridional"
+        E0 = 3.5e6 #14e6
+        w0 = 2.7    #4.4   #5.4
+        translation = "0.0 0.0 35.0e-6"  # Offset applied to both beams
         
         coords_list, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
 
-        sphere_type = "solid" # options are "solid" or "shell"
+        sphere_type = "shell" # options are "solid" or "shell"
         match sphere_type:
             case "solid":
                 # currently not working
@@ -5147,7 +5165,7 @@ match(sys.argv[1]):
                 connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
                 coords_list, _, _ = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
             case "shell":
-                num_particles = 160
+                num_particles = 200
                 connection_mode = "num"
                 connection_args = 5
                 coords_list = []
@@ -5161,8 +5179,8 @@ match(sys.argv[1]):
             "quiver_setting": 0,
             "wavelength": 1.0e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
-            "constants": {"bending": 1e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 2.7e-6}, #3.35e-5 #3.5e-5 2.0e-3
+            "constants": {"bending": 3e-19}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
+            "stiffness_spec": {"type":"", "default_value": 1e-7}, #3.35e-5 #3.5e-5 2.0e-3
             "frames": 1,
             "max_size": 5e-6,
             "time_step": 0.5e-4,  #0.125e-4 
