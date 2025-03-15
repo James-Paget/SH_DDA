@@ -2264,6 +2264,66 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
                 data_set_labels.append("Fz")
             else:invalidArgs=True
 
+        case "single_difference":
+            if(len(test_args)==4):
+                offset_lower, offset_upper, offset_number, polarisabilities = test_args
+
+                graphlabel_set  = {"title":"Single Dipole Difference"+str(polarisabilities), "xAxis":"X Offset[m]", "yAxis":"Force[N]"}
+
+                object_offset_set = np.linspace(offset_lower, offset_upper, offset_number)
+                print("LIST IS ", polarisabilities)
+                for polarisability in polarisabilities:
+                    option_parameters["polarisability_type"] = polarisability
+                    data_set_Fx = [[], []]
+                    data_set_Fy = [[], []]
+                    data_set_Fz = [[], []]
+                    for offset in object_offset_set:
+                        # Setup and run simulation
+                        Generate_yaml.make_yaml_single_dipole_exp(filename, test_type=test_type, test_args=test_args, object_offset=[offset, 0.0, 0.0], option_parameters=option_parameters, rotation=rotation, beam=beam_type)
+                        DM.main(YAML_name=filename)
+
+                        # Pull forces found
+                        output_data = pull_file_data(
+                            filename, 
+                            parameters_stored, 
+                            read_frames, 
+                            read_parameters, 
+                            invert_output=False
+                        )[0]    # NOTE; [0] To immediately get the 0th frame from results
+
+                        # Populate data set to visualise
+                        data_set_Fx[0].append(offset) # X-axis
+                        data_set_Fx[1].append(output_data[0]) # Y-axis
+                        data_set_Fy[0].append(offset) # X-axis
+                        data_set_Fy[1].append(output_data[1]) # Y-axis
+                        data_set_Fz[0].append(offset) # X-axis
+                        data_set_Fz[1].append(output_data[2]) # Y-axis
+
+                    data_set.append(data_set_Fx)
+                    data_set_labels.append("Fx-"+polarisability)
+                    data_set.append(data_set_Fy)
+                    data_set_labels.append("Fy="+polarisability)
+                    data_set.append(data_set_Fz)
+                    data_set_labels.append("Fz-"+polarisability)
+                # Calculate and add difference plot
+                # data_set_FxDiff=[[],[]]
+                # data_set_FyDiff=[[],[]]
+                # data_set_FzDiff=[[],[]]
+                # for offset_ind in range(len(object_offset_set)):
+                #     data_set_FxDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                #     data_set_FxDiff[1].append(data_set[0][1][offset_ind] -data_set[3+0][1][offset_ind]) # Y-axis
+                #     data_set_FyDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                #     data_set_FyDiff[1].append(data_set[1][1][offset_ind] -data_set[3+1][1][offset_ind]) # Y-axis
+                #     data_set_FzDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                #     data_set_FzDiff[1].append(data_set[2][1][offset_ind] -data_set[3+2][1][offset_ind]) # Y-axis
+                # data_set.append(data_set_FxDiff)
+                # data_set_labels.append("Fx-Difference")
+                # data_set.append(data_set_FyDiff)
+                # data_set_labels.append("Fy-Difference")
+                # data_set.append(data_set_FzDiff)
+                # data_set_labels.append("Fz-Difference")
+            else:invalidArgs=True
+
         case "7shell_difference":
             if(len(test_args)==4):
                 offset_lower, offset_upper, offset_number, polarisabilities = test_args
@@ -2306,22 +2366,22 @@ def simulations_single_dipole(filename, read_parameters, beam_type, test_type, t
                     data_set.append(data_set_Fz)
                     data_set_labels.append("Fz-"+polarisability)
                 # Calculate and add difference plot
-                data_set_FxDiff=[[],[]]
-                data_set_FyDiff=[[],[]]
-                data_set_FzDiff=[[],[]]
-                for offset_ind in range(len(object_offset_set)):
-                    data_set_FxDiff[0].append(object_offset_set[offset_ind]) # X-axis
-                    data_set_FxDiff[1].append(data_set[0][1][offset_ind] -data_set[3+0][1][offset_ind]) # Y-axis
-                    data_set_FyDiff[0].append(object_offset_set[offset_ind]) # X-axis
-                    data_set_FyDiff[1].append(data_set[1][1][offset_ind] -data_set[3+1][1][offset_ind]) # Y-axis
-                    data_set_FzDiff[0].append(object_offset_set[offset_ind]) # X-axis
-                    data_set_FzDiff[1].append(data_set[2][1][offset_ind] -data_set[3+2][1][offset_ind]) # Y-axis
-                data_set.append(data_set_FxDiff)
-                data_set_labels.append("Fx-Difference")
-                data_set.append(data_set_FyDiff)
-                data_set_labels.append("Fy-Difference")
-                data_set.append(data_set_FzDiff)
-                data_set_labels.append("Fz-Difference")
+                # data_set_FxDiff=[[],[]]
+                # data_set_FyDiff=[[],[]]
+                # data_set_FzDiff=[[],[]]
+                # for offset_ind in range(len(object_offset_set)):
+                #     data_set_FxDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                #     data_set_FxDiff[1].append(data_set[0][1][offset_ind] -data_set[3+0][1][offset_ind]) # Y-axis
+                #     data_set_FyDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                #     data_set_FyDiff[1].append(data_set[1][1][offset_ind] -data_set[3+1][1][offset_ind]) # Y-axis
+                #     data_set_FzDiff[0].append(object_offset_set[offset_ind]) # X-axis
+                #     data_set_FzDiff[1].append(data_set[2][1][offset_ind] -data_set[3+2][1][offset_ind]) # Y-axis
+                # data_set.append(data_set_FxDiff)
+                # data_set_labels.append("Fx-Difference")
+                # data_set.append(data_set_FyDiff)
+                # data_set_labels.append("Fy-Difference")
+                # data_set.append(data_set_FzDiff)
+                # data_set_labels.append("Fz-Difference")
             else:invalidArgs=True
 
         case "multi_separated":
@@ -3801,8 +3861,8 @@ match(sys.argv[1]):
         # Calm for k=1.5e-6, B=0.1e-18
         # Free for k=0.5m B=0.015e-18
         # [altStrong=0.1e-6], [altStrongHighK=2.0e-6], [altWeakHighK=2.0e-6], [altWeak=0.1e-6]
-        # [altWeak_uniConnect=0.1e-6]
-        stiffness = 1.5e-6 # 1.5e-6  0.15e-6
+        # [altWeak_uniConnect=0.1e-6]   [altWeakHighK_uniConnect=1.5e-6]
+        stiffness = 0.1e-6 # 1.5e-6  0.15e-6
         include_beads = True  # Silica beads attached to either side of the rod, used to deform the rod
 
         # Get connections
@@ -3827,8 +3887,8 @@ match(sys.argv[1]):
             "frames": 1,
             "max_size":3e-6,    #2e-6
             # [altStrong=1.0e-18] [altStrongHighK=1.0e-18] [altWeak=0.05e-18] [altWeakHighK=0.05e-18]
-            # [altWeak_uniConnect]
-            "constants": {"bending": 0.01e-18},  # 0.1e-18 0.15e-18  [0.05e-18]
+            # [altWeak_uniConnect=0.05e-18]     [altFurtherWeak_uniConnect=0.01e-18]
+            "constants": {"bending": 1.0e-18},  # 0.1e-18 0.15e-18  [0.05e-18]
             # NOTE *5 for stiffness worked quite well   #500 for small originals        [all=1.0e-6/0.01e-6]
             "stiffness_spec": {"type":"beads", "default_value":stiffness, "bead_value":1.0e-6, "bead_indices":bead_indices}, # for uniform stiffness: {"type":"", "default_value":1e-6}
             "force_terms": ["optical", "spring", "bending"],
@@ -4297,14 +4357,14 @@ match(sys.argv[1]):
         #-----------------------
         # Variable args
 
-        beam_type = "BESSEL"          # Which beam to use
+        beam_type = "BESSEL"          # Which beam to use -> Care for non-bessel beams, as a Z gradient would go against the top of the experiment (want as small of a Z gradient as possible)
         object_offset = [0.0, 0.0, 0.0]
-        test_type = "7shell"  # Particle setup to test
+        test_type = "single_difference"  # Particle setup to test
         linestyle_set = None
         rotation = None#"180 0.0 0.0"
 
         option_parameters = Generate_yaml.fill_yaml_options({
-            "show_output": True,
+            "show_output": False,
             "force_terms": ["optical"],
             "polarisability_type": "RR",    # Which polarisability to test
             "time_step": 1e-4,
@@ -4334,8 +4394,8 @@ match(sys.argv[1]):
                     read_parameters.append({"type":"F", "particle":p, "subtype":1})
                     read_parameters.append({"type":"F", "particle":p, "subtype":2})
             
-            case "7shell_difference":
-                test_args = [0.0, 1.5e-6, 50, ["CM", "RR"]]  # [offset_lower, offset_upper, offset_number]
+            case "single_difference":
+                test_args = [0.0, 1.5e-6, 50, ["CM", "RR", "LDR"]]  # [offset_lower, offset_upper, offset_number]
 
                 # Read forces on the only dipole present
                 read_parameters = []
@@ -4344,11 +4404,24 @@ match(sys.argv[1]):
                     read_parameters.append({"type":"F", "particle":p, "subtype":1})
                     read_parameters.append({"type":"F", "particle":p, "subtype":2})
 
-                linestyle_set=["dotted","dotted","dotted", "dashed","dashed","dashed", "solid","solid","solid"]
+                linestyle_set=["solid","solid","solid", "dashed","dashed","dashed", "dotted","dotted","dotted"]
+            
+            case "7shell_difference":
+                test_args = [0.0, 1.5e-6, 50, ["CM", "RR", "LDR"]]  # [offset_lower, offset_upper, offset_number]
+
+                # Read forces on the only dipole present
+                read_parameters = []
+                for p in range(7):
+                    read_parameters.append({"type":"F", "particle":p, "subtype":0})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":1})
+                    read_parameters.append({"type":"F", "particle":p, "subtype":2})
+
+                linestyle_set=["solid","solid","solid", "dashed","dashed","dashed", "dotted","dotted","dotted"]
             
             case "multi_separated":
                 dipole_size = option_parameters["dipole_radius"]
-                test_args = [15, dipole_size*2.0, dipole_size*10.0, 100]  # [particle_number, lower_separation, upper_separation, separation_number]
+                #[15, dipole_size*2.0, dipole_size*10.0, 100]
+                test_args = [15, dipole_size*2.0, dipole_size*20.0, 100]  # [particle_number, lower_separation, upper_separation, separation_number]
 
                 # Read forces from all dipoles
                 read_parameters=[]
@@ -4415,19 +4488,19 @@ match(sys.argv[1]):
         # Measure torque experienced by entire shape (sphere/disc/ring)
         #
         disc_radius     = [1.14e-6]    #1.14e-6 #1.09e-6                   # Radius of full disc
-        particle_sizes  = [150e-9]                  # Radius of spherical particles used to model the disc
+        particle_sizes  = [100e-9] #150e-9                 # Radius of spherical particles used to model the disc
         separation_min = 0.0e-6
         separation_max = 1.4e-6#1.4e-6
         separation_iter = 20
         separations_list= [[separation_min+i*( (separation_max-separation_min)/separation_iter ), 0.0, 0.0e-6] for i in range(separation_iter)]     # NOTE; Currently just uses separation[0] as between particles in a layer, and separation[1] as between layers in a disc, and separation[2] as between discs in a sphere
-        dipole_sizes    = [50e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
+        dipole_sizes    = [100e-9] #[40e-9, 50e-9, 60e-9, 70e-9]
         object_offsets  = [[0.0e-6, 0.0, 1.0e-6]]      # Offset the whole object
         particle_shapes         = ["sphere"]
         indep_vector_component  = 0              # Which component to plot when dealing with vector quantities to plot (Often not used)
         indep_var               = "separations_list"
         beam_type               = "LAGUERRE" 
         linestyle_var           = None
-        mode        = "disc"     #"disc", "sphere"
+        mode        = "sphere"     #"disc", "sphere"
         frames      = 1
         time_step   = 1e-4
         materials   = ["FusedSilica", "FusedSilica01"]
@@ -4504,7 +4577,7 @@ match(sys.argv[1]):
         object_shape = "sphere" # cube or sphere
         separations = [0,0,0]
         dipole_size = 40e-9
-        num_particles_in_diameter = 10
+        num_particles_in_diameter = 20
         particle_size = dimensions[0]/(2*num_particles_in_diameter) # (assumes dimensions are isotropic)
         dipole_size=particle_size  # Done to fix the dipoles to reduce computation time
         # particle_size = 0.15e-6 # NOTE *2 for diameter
@@ -4563,8 +4636,8 @@ match(sys.argv[1]):
         #
         dimensions      = [400e-9]                       # Full width of sphere/cube
         separations_list= [[0.0e-6, 0.0, 0.0]]           # For each axis, sum of the separations between each particle
-        particle_sizes  = [40e-9, 100e-9, 200e-9]              # Single particle
-        dipole_sizes    = np.linspace(20e-9, 200e-9, 200)   # np.linspace(20e-9, 200e-9, 200)  
+        particle_sizes  = [50e-9, 100e-9, 200e-9]              # Single particle
+        dipole_sizes    = np.linspace(16e-9, 200e-9, 200)   # np.linspace(20e-9, 200e-9, 200)  
         object_offsets  = [[1.13e-6, 0.0, 0.0e-6]]          # Offset the whole object
         particle_shapes = ["sphere", "cube"]
         materials = ["FusedSilica"] # , "FusedSilica01"
@@ -4580,7 +4653,7 @@ match(sys.argv[1]):
 
         option_parameters = Generate_yaml.fill_yaml_options({
             "show_output": False,
-            "show_stress": True,
+            "show_stress": False,
             "force_terms": ["optical"],
         })
 
@@ -4708,8 +4781,8 @@ match(sys.argv[1]):
 
             "show_output": False,
             "show_stress": False,
-            "frames": 1800,
-            "frame_min": 0,
+            "frames": 3000,
+            "frame_min": 1,
             "max_size": 5e-6,
             "quiver_setting": 0,
             "resolution": 401,
@@ -4733,15 +4806,19 @@ match(sys.argv[1]):
         # }
 
         # # REPEAT VARS
+        # k=0, B=3e-20, E0=7e6  , w0=2.7  => P= 450mW  => Conv 1.125
+        # k=0, B=3e-20, E0=3.5e6, w0=2.7  => P= 110mW  => Conv 1.15     30 SEP --> Need 240 paticles, 10e-5 step for good (100, 5e-5, gave bad)
+        ### 0.5e-6 = K--> lets it diverge
+        # GOODGRAPH uses 25sep, k=1.0e-7, B=3.0e-20, dt=10e-5, p=200
         variables_list = { # NOTE order of this is important
-            "stiffness": [8.0e-7],  #2.7e-6, 6.5e-6
-            "bending": [3.0e-20],  #1.0e-19
-            "translation": ["0.0 0.0 130e-6"],
-            "num_particles": [160], # 40, 72, 84, 100, 120, 160, 200
+            "stiffness": [1.0e-7],  #1.0e-7    #8.0e-7
+            "bending": [0.0e-20],  #3.0e-20
+            "translation": ["0.0 0.0 30e-6"],
+            "num_particles": [240], # 40, 72, 84, 100, 120, 160, 200
             "particle_radius": [0.1e-6], # adjust dipole size to match this.§
-            "E0": [14e6],
-            "w0": [5],
-            "time_step": [5e-5], # largest one used to calc actual frames, shorter ones only have more frames.
+            "E0": [3.5e6],
+            "w0": [2.7],
+            "time_step": [10e-5], # largest one used to calc actual frames, shorter ones only have more frames.
             "num_averaged": [1], # num min and max to average the positions of to get the eccentricity / ratio, this also acts as a repeat.
             "sphere_radius": [3.36e-6], # sphere radius from Guck's paper is 3.36e-6m
             "repeat": [i+1 for i in range(3)],
@@ -4767,14 +4844,19 @@ match(sys.argv[1]):
             data_set_moi[:,1] = data_set_moi_ideal
             datalabel_set = ["Analytical", "Ellipsoidal"] # now averaged, overwrite and simplify the labels.
         
+        combined_moi_data   = []
+        combined_moi_labels = []
         for axi in range(len(axes)):
-            if should_average_moi: graphlabel_set["yAxis"] = f"Repeat-averaged MoI, axis {axes[axi]}"
+            if should_average_moi: graphlabel_set["yAxis"] = f"Repeat-averaged MoI" #, axis {axes[axi]} # NOTE; Add back in if using old MOI graphs (1 figure per axis)
             else: graphlabel_set["yAxis"] = f"MoI, axis {axes[axi]}"
             Display.plot_multi_data(data_set_moi[axi][[0,4]], datalabel_set[[0,4]], graphlabel_set=graphlabel_set)
             Display.plot_multi_data(data_set_moi[axi][[3,7]], datalabel_set[[3,7]], graphlabel_set=graphlabel_set)
             # Display.plot_multi_data(data_set_moi[axi][0::3], datalabel_set[0::3], graphlabel_set=graphlabel_set)
             # Display.plot_multi_data(data_set_moi[axi], datalabel_set, graphlabel_set=graphlabel_set)
-
+            for dataset_index in range(len(data_set_moi[axi])):
+                combined_moi_data.append(data_set_moi[axi][dataset_index])
+                combined_moi_labels.append(datalabel_set[dataset_index]+str(":")+axes[axi])
+        Display.plot_multi_data(np.array(combined_moi_data), np.array(combined_moi_labels), graphlabel_set=graphlabel_set, linestyle_set=["solid", "dotted", "solid", "dotted", "solid", "dotted"], datacolor_set=["blue", "blue", "red", "red", "green", "green"])
         
 
 
@@ -5039,7 +5121,7 @@ match(sys.argv[1]):
         #
         dimension = 6720e-9     # Base diameter of the full untransformed sphere
         transform_factor = 1.0  # Factor to multiply/dividing separation by; Will have XYZ total scaling to conserve volume
-        critical_transform_factor = 4.0 # The max transform you want to apply, which sets the default separation of particles in the system
+        critical_transform_factor = 1.3 # The max transform you want to apply, which sets the default separation of particles in the system
         num_factors_tested = 10
         particle_size = 100e-9   #100e-9      # Will fit as many particles into the dimension space as the transform factor (e.g. base separation) allows
         object_offset = [0.0, 0.0, 0.0e-6]
@@ -5048,10 +5130,10 @@ match(sys.argv[1]):
         connection_mode = "manual"  #"num"          # "dist", 0.0
         connection_args = []    #5    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
         force_reading = "XYZ_split"         # "Z_split", "XYZ_split", "RTZ_split"
-        transform_type = "radial_meridional"         # "linear", "inverse_area", "radial_meridional"
-        E0 = 14.0e6 #14e6
-        w0 = 4.0    #4.4   #5.4
-        translation = "0.0 0.0 135.0e-6"  # Offset applied to both beams
+        transform_type = "linear"         # "linear", "inverse_area", "radial_meridional"
+        E0 = 3.5e6 #14e6
+        w0 = 2.7    #4.4   #5.4
+        translation = "0.0 0.0 30.0e-6"  # Offset applied to both beams
         
         coords_list, nullMode, nullArgs = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
         
@@ -5070,7 +5152,7 @@ match(sys.argv[1]):
                 connection_args = []    # NOTE; This gets populated with arguments when the particles are generated (connections must stay the same at any stretching degree, based on the original sphere, hence must be made when the original sphere is generated)
                 coords_list, _, _ = Generate_yaml.get_stretch_sphere_equilibrium(dimension, particle_size, critical_transform_factor) # Get positions of unstretched sphere to set the spring natural lengths and bending equilibrium angles.
             case "shell":
-                num_particles = 100
+                num_particles = 200
                 connection_mode = "num"
                 connection_args = 5
                 coords_list = []
@@ -5082,10 +5164,10 @@ match(sys.argv[1]):
             "show_output": False,
             "show_stress": False,
             "quiver_setting": 0,
-            "wavelength": 1.0e-6,
+            "wavelength": 0.785e-6,
             "force_terms": ["optical", "spring", "bending"], #"optical", "spring", "bending"
-            "constants": {"bending": 0.75e-20}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
-            "stiffness_spec": {"type":"", "default_value": 2.0e-3}, #3.35e-5 #3.5e-5
+            "constants": {"bending": 5.0e-21}, # 0.75e-19 # 5e-20  # 0.5e-18 # 5e-19
+            "stiffness_spec": {"type":"", "default_value": 1.0e-8}, #3.35e-5 #3.5e-5
             "frames": 1,
             "max_size": 5e-6,
             "time_step": 0.0625e-4,  #0.125e-4 

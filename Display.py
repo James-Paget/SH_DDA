@@ -165,8 +165,10 @@ class DisplayObject (object):
         zlower = lower
         zupper = upper
         ax = fig.add_subplot(111, projection='3d', xlim=(lower, upper), ylim=(lower, upper), zlim=(zlower, zupper))
+        #alpha_override=1.0
         for X,Y,Z,I,I0 in values:
-            cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=self.beam_alpha)
+            cs = ax.plot_surface(X, Y, Z, facecolors=cm.viridis(I/I0), edgecolor='none', alpha=self.beam_alpha) #self.beam_alpha, alpha_override
+            #alpha_override=0.55
 
         ax.set_aspect('equal','box')
         ax.set_xlabel("x [m]")
@@ -423,8 +425,12 @@ class DisplayObject (object):
                 #plots.append(textplot)
             
             # NOTE; ** Remove Z axis for cleaner plots sometimes **
-            ax.set_zticks([])
-            ax.set_zlabel("")
+            # ax.set_zticks([])
+            # ax.set_zlabel("")
+            # ax.set_yticks([])
+            # ax.set_ylabel("")
+            # ax.set_xticks([])
+            # ax.set_xlabel("")
 
             #plt.savefig("myImage.png", format="png", dpi=1200)
             if t in save_frames:

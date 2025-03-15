@@ -589,10 +589,14 @@ def use_refine_sphere(filename, dimension, separations, object_offset, particle_
     #
     # particle_size = radius of sphere OR half width of cube
     #
-    coords_list = get_refine_sphere(dimension, separations, particle_size, place_regime, makeCube)
+    coords_list = get_refine_sphere(dimension, separations, particle_size, place_regime, makeCube, particle_shape)
     num_particles = len(coords_list)
     coords_list = np.array(coords_list) + object_offset
-    args_list = [[particle_size]] * num_particles
+    # NOTE**; This check accounts for a volume difference in spheres and cubes; if this is to be removed also remove the matching check in the get_refine_sphere method
+    if(particle_shape=="sphere"):
+        args_list = [[particle_size*pow(6/np.pi, 0.33333)]] * num_particles
+    else:
+        args_list = [[particle_size]] * num_particles
     
     use_default_particles(filename, particle_shape, args_list, coords_list, connection_mode="dist", connection_args=0.0, material=material)
     return num_particles
@@ -675,9 +679,9 @@ def use_beam(filename, beam, translation=None, translationargs=None, translation
     """
     match beam:
         case "GAUSS_CSP":
-            use_gaussCSP_beam(filename,translation=translation, translationargs=translationargs, translationtype=translationtype, rotation=rotation)
+            use_gaussCSP_beam(filename, translation=translation, translationargs=translationargs, translationtype=translationtype, rotation=rotation)
         case "LAGUERRE":
-            use_laguerre3_beam(filename,translation, translationargs, translationtype, rotation=rotation)
+            use_laguerre3_beam(filename,translation, translationargs, translationtype, rotation=rotation, E0=300)
         case "BESSEL":
             use_bessel_beam(filename, translation, translationargs, translationtype, rotation=rotation)
         case "STRETCHER":
@@ -695,11 +699,11 @@ def use_gaussCSP_beam(filename, E0=1.5e7, w0=0.4, translation="0.0 0.0 0.0", tra
     beam = {"beamtype":"BEAMTYPE_GAUSS_CSP", "E0":E0, "order":3, "w0":w0, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
     write_beams(filename, [beam])
 
-def use_laguerre3_beam(filename, translation, translationargs, translationtype=None, rotation=None):
+def use_laguerre3_beam(filename, translation, translationargs, translationtype=None, rotation=None, E0=300):
     """
     Makes a Laguerre-Gaussian beam.
     """
-    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":300, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
+    beam = {"beamtype":"BEAMTYPE_LAGUERRE_GAUSSIAN", "E0":E0, "order":3, "w0":0.6, "jones":"POLARISATION_LCP", "translation":translation, "translationargs":translationargs, "translationtype":translationtype, "rotation":rotation}
     write_beams(filename, [beam])
 
 def use_bessel_beam(filename, translation, translationargs, translationtype=None, rotation=None):
@@ -1260,24 +1264,39 @@ def get_refine_arch_prism(dimensions, separations, particle_size, deflection, pl
     # print("coords_list = ", coords_list)
     return coords_list
 
-def get_refine_sphere(dimension, separations, particle_size, place_regime="squish", makeCube=False):
+def get_refine_sphere(dimension, separations, particle_size, place_regime="squish", makeCube=False, particle_shape="cube"):
     #
     # particle_size = radius of sphere OR half width of cube
     #
 
-    def check_bounds(point, radius):
+    def check_bounds(point, radius, particle_shape):
         #
         # Checks whether a point is within the spherical/cubic bounds
         #
+        # Accounting for volume difference of cubes and spheres; An additional consideration that can be ignored if wanted --> Not
+        if(particle_shape=="sphere" and makeCube):
+            # radius += particle_number*pow(6/np.pi, 1.0/3.0)/2.0
+            return True # If considering a cube, will never need to disclude points, => let through in this case
+
         if makeCube:
-            return (abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
+            return True#(abs(point[0])<radius) and (abs(point[1])<radius) and (abs(point[2])<radius)
         else:
             return pow(point[0],2) + pow(point[1],2) + pow(point[2],2) <= radius**2
 
-
     coords_list = []
+
     # Get number of particles to place in each axis
     particle_number = np.floor((dimension-np.array(separations)) / (2.0*particle_size))
+
+    # Account for volume difference of spheres are cubes; 
+    # NOTE*; is performed AFTER patricle number found, required
+    # NOTE**; There is a matching check inside the use_refine_sphere method to account to add the correct radius to the YAML
+    #       This MUST be separate so the correct number of particles (just above) is still found correctly
+    if(particle_shape=="sphere"):
+        print("     SPHERE TRIGGER")
+        print("         particle_size=",particle_size)
+        particle_size *= pow(6/np.pi, 0.33333)
+        print("         particle_size=",particle_size)
 
     # Get particle displacement in each axis [X,Y,Z]
     displacement = np.array([0.0, 0.0, 0.0])
@@ -1313,7 +1332,7 @@ def get_refine_sphere(dimension, separations, particle_size, place_regime="squis
             j_coord = origin[1] +j*displacement[1]
             for k in range(int(particle_number[2])):
                 k_coord = origin[2] +k*displacement[2]
-                if(check_bounds([i_coord, j_coord, k_coord], dimension/2.0)):
+                if(check_bounds([i_coord, j_coord, k_coord], dimension/2.0, particle_shape)):
                     coords_list.append( 
                         [
                             i_coord,
@@ -1373,6 +1392,12 @@ def get_single_dipole_exp(test_type, test_args, dipole_size, extra_args):
                 coords_List.append([0.0,  2.0*dipole_size, 0.0])
                 coords_List.append([0.0, 0.0, -2.0*dipole_size])
                 coords_List.append([0.0, 0.0,  2.0*dipole_size])
+            else:
+                invalidArgs=True
+
+        case "single_difference":
+            if( len(test_args) == 4 ):
+                coords_List.append([0.0, 0.0, 0.0])
             else:
                 invalidArgs=True
 

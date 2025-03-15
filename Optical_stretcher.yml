@@ -1,0 +1,1259 @@
+options:
+  frames: 3001
+parameters:
+  wavelength: 7.85e-07
+  dipole_radius: 1e-07
+  time_step: 0.0001
+  polarisability_type: RR
+  constants:
+    bending: 0.0
+  stiffness_spec:
+    type: 
+    default_value: 1e-07
+  equilibrium_shape: None
+output:
+  vmd_output: True
+  excel_output: True
+  include_force: True
+  include_couple: True
+  verbosity: 0
+  include_dipole_forces: False
+  force_terms: optical spring bending
+display:
+  show_output: False
+  show_stress: False
+  frame_interval: 2
+  resolution: 401
+  max_size: 5e-06
+  frame_min: 1
+  frame_max: 3000
+  z_offset: 0.0
+  beam_planes: [['y', 0]]
+  quiver_setting: 0
+beams:
+  beam_0:
+    beamtype: BEAMTYPE_GAUSS_CSP
+    E0: 3500000.0
+    order: 3
+    w0: 2.7
+    jones: POLARISATION_X
+    translation: 0.0 0.0 30e-6
+    translationargs: None
+    translationtype: None
+    rotation: None
+  beam_1:
+    beamtype: BEAMTYPE_GAUSS_CSP
+    E0: 3500000.0
+    order: 3
+    w0: 2.7
+    jones: POLARISATION_X
+    translation: 0.0 0.0 30e-6
+    translationargs: None
+    translationtype: None
+    rotation: 180 90.0
+particles:
+  default_radius: 1e-07
+  default_material: FusedSilica
+  connection_mode: num
+  connection_args: 5
+  particle_list:
+    part_0:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.2160567037070845e-07 -3.1277119581843003e-07 3.3432e-06
+      altcolour: True
+    part_1:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -5.199390583953589e-07 2.565369672287949e-07 3.3096e-06
+      altcolour: True
+    part_2:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 7.168519552374494e-07 2.0867983676495024e-07 3.276e-06
+      altcolour: True
+    part_3:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -4.57479265814211e-07 -7.530969136506211e-07 3.2424e-06
+      altcolour: True
+    part_4:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.938300638694941e-07 9.775645586560248e-07 3.2088e-06
+      altcolour: True
+    part_5:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 8.857628259127901e-07 -6.504838016668741e-07 3.1751999999999997e-06
+      altcolour: True
+    part_6:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.1846475547235345e-06 -1.2868415243358117e-07 3.1416e-06
+      altcolour: True
+    part_7:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 8.427549466813687e-07 9.590099581568912e-07 3.108e-06
+      altcolour: True
+    part_8:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.8011304461650373e-08 -1.35531546395013e-06 3.0744e-06
+      altcolour: True
+    part_9:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -9.871068795904765e-07 1.0338062527694208e-06 3.0408e-06
+      altcolour: True
+    part_10:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.4954322304480086e-06 -1.0015290378862438e-07 3.0072e-06
+      altcolour: True
+    part_11:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.2215646651283093e-06 -9.772833820903543e-07 2.9736e-06
+      altcolour: True
+    part_12:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.501748503922584e-07 1.6072997680057105e-06 2.94e-06
+      altcolour: True
+    part_13:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 9.340995525417372e-07 -1.4035302155426961e-06 2.9064e-06
+      altcolour: True
+    part_14:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.6918339532941242e-06 4.175141129125759e-07 2.8728e-06
+      altcolour: True
+    part_15:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.5771273647066746e-06 8.609370682537609e-07 2.8392e-06
+      altcolour: True
+    part_16:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -5.982030058543997e-07 -1.7493889801261359e-06 2.8056e-06
+      altcolour: True
+    part_17:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -7.606302134283643e-07 1.7398441534861455e-06 2.772e-06
+      altcolour: True
+    part_18:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.7801298422397691e-06 -7.886083849208144e-07 2.7384e-06
+      altcolour: True
+    part_19:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.8893002579979018e-06 -6.357684288552418e-07 2.7048e-06
+      altcolour: True
+    part_20:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 9.853152208057027e-07 1.7842209716424166e-06 2.6712e-06
+      altcolour: True
+    part_21:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 4.888519386649312e-07 -2.023286935178384e-06 2.6376e-06
+      altcolour: True
+    part_22:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.7619290406027627e-06 1.185069641785084e-06 2.604e-06
+      altcolour: True
+    part_23:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.139794152197041e-06 3.223737368697188e-07 2.5704e-06
+      altcolour: True
+    part_24:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.3847536449548995e-06 -1.7136811555199295e-06 2.5368e-06
+      altcolour: True
+    part_25:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.3886130087699204e-07 2.237030911525084e-06 2.5032e-06
+      altcolour: True
+    part_26:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.6400976797301567e-06 -1.581377703442083e-06 2.4696e-06
+      altcolour: True
+    part_27:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.313441281652096e-06 5.910529881412847e-08 2.436e-06
+      altcolour: True
+    part_28:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.772083852210142e-06 1.5420094230373766e-06 2.4024e-06
+      altcolour: True
+    part_29:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.6888991034333894e-07 -2.367717207800701e-06 2.3688e-06
+      altcolour: True
+    part_30:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.4204644738514106e-06 1.9541549678891983e-06 2.3352e-06
+      altcolour: True
+    part_31:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.3988085555243964e-06 -4.878062668139458e-07 2.3016e-06
+      altcolour: True
+    part_32:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.1250276119859958e-06 -1.2767277111025262e-06 2.268e-06
+      altcolour: True
+    part_33:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 7.1313025370274e-07 2.4059305645121733e-06 2.2344e-06
+      altcolour: True
+    part_34:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.1122748492297302e-06 -2.282306732183687e-06 2.2008e-06
+      altcolour: True
+    part_35:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.388568770257905e-06 9.4211644171442e-07 2.1672e-06
+      altcolour: True
+    part_36:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.4237810614774168e-06 9.287822166812873e-07 2.1336e-06
+      altcolour: True
+    part_37:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.1720174978557159e-06 -2.346481405151131e-06 2.1000000000000002e-06
+      altcolour: True
+    part_38:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -7.281130962645633e-07 2.5474383916098993e-06 2.0664e-06
+      altcolour: True
+    part_39:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.2796992803562306e-06 -1.4001054785776976e-06 2.0328e-06
+      altcolour: True
+    part_40:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.65148011522073e-06 -5.123012381295464e-07 1.9992e-06
+      altcolour: True
+    part_41:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.6236942535315638e-06 2.188523157530799e-06 1.9656e-06
+      altcolour: True
+    part_42:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.835320265522293e-07 -2.734334579000746e-06 1.932e-06
+      altcolour: True
+    part_43:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.0735186360125915e-06 1.8401624673132752e-06 1.8984e-06
+      altcolour: True
+    part_44:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.794668895466955e-06 4.412170338408143e-08 1.8647999999999997e-06
+      altcolour: True
+    part_45:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.0469765538302503e-06 -1.935508601910421e-06 1.8311999999999997e-06
+      altcolour: True
+    part_46:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.035049968169373e-07 2.831398939794698e-06 1.7976000000000002e-06
+      altcolour: True
+    part_47:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.7755633080805157e-06 -2.241713393589416e-06 1.7640000000000002e-06
+      altcolour: True
+    part_48:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.8436973200653147e-06 4.5683847457645794e-07 1.7304e-06
+      altcolour: True
+    part_49:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.4220822603193336e-06 1.5949881768359248e-06 1.6968e-06
+      altcolour: True
+    part_50:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -7.13308849636188e-07 -2.830999160196043e-06 1.6631999999999998e-06
+      altcolour: True
+    part_51:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.3953094396010995e-06 2.585945747257677e-06 1.6296e-06
+      altcolour: True
+    part_52:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.793005578365072e-06 -9.703112074080102e-07 1.5960000000000003e-06
+      altcolour: True
+    part_53:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.7313393997733643e-06 -1.1782577490709233e-06 1.5623999999999996e-06
+      altcolour: True
+    part_54:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.2252312229512308e-06 2.7296847822240266e-06 1.5288000000000003e-06
+      altcolour: True
+    part_55:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 9.457499193971397e-07 -2.8564898126827454e-06 1.4951999999999999e-06
+      altcolour: True
+    part_56:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.641270737045199e-06 1.4754708853883602e-06 1.4616000000000001e-06
+      altcolour: True
+    part_57:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.959830979504732e-06 6.998689682819648e-07 1.428e-06
+      altcolour: True
+    part_58:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.7184740531101869e-06 -2.5282593950754035e-06 1.3944000000000004e-06
+      altcolour: True
+    part_59:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -4.428426513943846e-07 3.040018708183552e-06 1.3608e-06
+      altcolour: True
+    part_60:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.391402504319074e-06 -1.9517515780284285e-06 1.3272e-06
+      altcolour: True
+    part_61:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.0959429442191526e-06 -1.7702069409999767e-07 1.2936000000000002e-06
+      altcolour: True
+    part_62:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.1729057460589584e-06 2.2316990430485835e-06 1.2599999999999996e-06
+      altcolour: True
+    part_63:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -9.514906199477712e-08 -3.12673786813054e-06 1.2263999999999998e-06
+      altcolour: True
+    part_64:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.0503843527188966e-06 2.379653791232143e-06 1.1927999999999998e-06
+      altcolour: True
+    part_65:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.1317896599904137e-06 -3.711453698716e-07 1.1592e-06
+      altcolour: True
+    part_66:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.569850252545834e-06 -1.8489170666879882e-06 1.1255999999999997e-06
+      altcolour: True
+    part_67:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 6.483989094110894e-07 3.110741849507045e-06 1.0919999999999997e-06
+      altcolour: True
+    part_68:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.628963955232046e-06 -2.741507955953214e-06 1.0583999999999997e-06
+      altcolour: True
+    part_69:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.063498195812831e-06 9.243179995280479e-07 1.0248000000000001e-06
+      altcolour: True
+    part_70:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.8928174187625888e-06 1.3923828287162093e-06 9.912000000000004e-07
+      altcolour: True
+    part_71:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.196314445054744e-06 -2.9902230666880624e-06 9.575999999999997e-07
+      altcolour: True
+    part_72:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.1412036603925844e-06 3.0221644901471802e-06 9.240000000000003e-07
+      altcolour: True
+    part_73:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.8913393123085225e-06 -1.461829272213168e-06 8.903999999999997e-07
+      altcolour: True
+    part_74:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.128146059360912e-06 -8.776081080441307e-07 8.568e-07
+      altcolour: True
+    part_75:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.7183581078100757e-06 2.767523653615878e-06 8.232000000000002e-07
+      altcolour: True
+    part_76:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 6.039076294797047e-07 -3.209583682513389e-06 7.895999999999998e-07
+      altcolour: True
+    part_77:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.6196996299247964e-06 1.9634759608846463e-06 7.559999999999999e-07
+      altcolour: True
+    part_78:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.2655349992253043e-06 3.2252040064869036e-07 7.223999999999997e-07
+      altcolour: True
+    part_79:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.194861171434363e-06 -2.449028174221313e-06 6.887999999999999e-07
+      altcolour: True
+    part_80:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.5947256757381914e-08 3.29530283202191e-06 6.551999999999999e-07
+      altcolour: True
+    part_81:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.2568959076156384e-06 -2.4103182989364255e-06 6.215999999999999e-07
+      altcolour: True
+    part_82:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.298441883731471e-06 2.532531137932631e-07 5.879999999999998e-07
+      altcolour: True
+    part_83:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.6077997336299948e-06 2.044901266388999e-06 5.544000000000004e-07
+      altcolour: True
+    part_84:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -5.424894856686148e-07 -3.2747629712605156e-06 5.208000000000003e-07
+      altcolour: True
+    part_85:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.8148385958653684e-06 2.7854258257863227e-06 4.872000000000004e-07
+      altcolour: True
+    part_86:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.2243347577109283e-06 -8.291636811976327e-07 4.5360000000000004e-07
+      altcolour: True
+    part_87:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.9415033423753044e-06 -1.5686803647636172e-06 4.1999999999999963e-07
+      altcolour: True
+    part_88:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.1106961789160345e-06 3.1474829686816925e-06 3.864000000000001e-07
+      altcolour: True
+    part_89:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.3085576715769706e-06 -3.074542076498069e-06 3.527999999999998e-07
+      altcolour: True
+    part_90:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.0447871025447087e-06 1.384551501453592e-06 3.191999999999996e-07
+      altcolour: True
+    part_91:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.1832694525292755e-06 1.0367392307586154e-06 2.855999999999998e-07
+      altcolour: True
+    part_92:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.648263140287047e-06 -2.9170746682886066e-06 2.519999999999996e-07
+      altcolour: True
+    part_93:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -7.556090408879521e-07 3.266642988961051e-06 2.183999999999996e-07
+      altcolour: True
+    part_94:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.7654130079657693e-06 -1.8994577793080104e-06 1.8479999999999988e-07
+      altcolour: True
+    part_95:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.3238605012567385e-06 -4.676429494660458e-07 1.5120000000000027e-07
+      altcolour: True
+    part_96:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.1358785858129893e-06 2.591098783656367e-06 1.176e-07
+      altcolour: True
+    part_97:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.7538433941162772e-07 -3.3543679484351668e-06 8.39999999999998e-08
+      altcolour: True
+    part_98:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.3956452309527985e-06 2.3554073463868443e-06 5.040000000000001e-08
+      altcolour: True
+    part_99:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.3578648494096102e-06 -1.1858082939233954e-07 1.6800000000000008e-08
+      altcolour: True
+    part_100:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.5560852360878964e-06 -2.180767302087383e-06 -1.6799999999999598e-08
+      altcolour: True
+    part_101:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 4.116493840599112e-07 3.334307218089403e-06 -5.03999999999996e-08
+      altcolour: True
+    part_102:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.948364841761499e-06 -2.7361320222876107e-06 -8.399999999999939e-08
+      altcolour: True
+    part_103:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.2839079897111342e-06 7.012264649251181e-07 -1.1759999999999957e-07
+      altcolour: True
+    part_104:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.893963519311868e-06 1.7005039573291404e-06 -1.5119999999999987e-07
+      altcolour: True
+    part_105:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -9.847509692450816e-07 -3.2071349345749194e-06 -1.8479999999999948e-07
+      altcolour: True
+    part_106:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.4393967620409672e-06 3.028207126572748e-06 -2.1839999999999992e-07
+      altcolour: True
+    part_107:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.1047060791022066e-06 -1.2597206683966886e-06 -2.52e-07
+      altcolour: True
+    part_108:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.1377153009881644e-06 -1.1673796854257634e-06 -2.856000000000001e-07
+      altcolour: True
+    part_109:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.5237167576369872e-06 2.9775826776928004e-06 -3.191999999999999e-07
+      altcolour: True
+    part_110:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 8.8689055845416e-07 -3.2215768339936996e-06 -3.528000000000002e-07
+      altcolour: True
+    part_111:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.8269598020027574e-06 1.7744276028794558e-06 -3.8639999999999975e-07
+      altcolour: True
+    part_112:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.2791258242127414e-06 6.004446926912694e-07 -4.1999999999999995e-07
+      altcolour: True
+    part_113:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.0096714564889136e-06 -2.6542546367998925e-06 -4.536000000000004e-07
+      altcolour: True
+    part_114:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.1061018221758765e-07 3.3099482586141368e-06 -4.872e-07
+      altcolour: True
+    part_115:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.4610925932604564e-06 -2.227417923829859e-06 -5.207999999999998e-07
+      altcolour: True
+    part_116:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.313886137621814e-06 -1.9982664436363055e-08 -5.543999999999999e-07
+      altcolour: True
+    part_117:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.4258079741252673e-06 2.249291371225673e-06 -5.880000000000001e-07
+      altcolour: True
+    part_118:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.688402189387885e-07 -3.2910391028793545e-06 -6.216000000000003e-07
+      altcolour: True
+    part_119:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.020843121406514e-06 2.6031723029150374e-06 -6.552000000000002e-07
+      altcolour: True
+    part_120:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.241763550045256e-06 -5.53284416550819e-07 -6.888000000000002e-07
+      altcolour: True
+    part_121:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.758047869049619e-06 -1.7778948765410321e-06 -7.224e-07
+      altcolour: True
+    part_122:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 8.308248730256308e-07 3.166669232863127e-06 -7.560000000000003e-07
+      altcolour: True
+    part_123:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.5227274369868976e-06 -2.8891924464540805e-06 -7.896000000000001e-07
+      altcolour: True
+    part_124:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.0666133886079052e-06 1.0990105025934636e-06 -8.232000000000004e-07
+      altcolour: True
+    part_125:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.995597049783819e-06 1.2577329109657912e-06 -8.567999999999997e-07
+      altcolour: True
+    part_126:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.3554884918773515e-06 -2.9426924386330395e-06 -8.903999999999993e-07
+      altcolour: True
+    part_127:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -9.853911225098167e-07 3.0764961133859483e-06 -9.239999999999999e-07
+      altcolour: True
+    part_128:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.7962313409276457e-06 -1.5980276993888372e-06 -9.576000000000002e-07
+      altcolour: True
+    part_129:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.131375324465361e-06 -7.082451110522824e-07 -9.912e-07
+      altcolour: True
+    part_130:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.8245409279256994e-06 2.6287706941313896e-06 -1.0247999999999997e-06
+      altcolour: True
+    part_131:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 4.288759553195703e-07 -3.1599770339274183e-06 -1.0584e-06
+      altcolour: True
+    part_132:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.4420517141316343e-06 2.0331058569358233e-06 -1.092e-06
+      altcolour: True
+    part_133:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.162303191770807e-06 1.4987716075562492e-07 -1.1256e-06
+      altcolour: True
+    part_134:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.2219844348683576e-06 -2.237999225022821e-06 -1.1591999999999996e-06
+      altcolour: True
+    part_135:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.2617114600606513e-07 3.138615778000792e-06 -1.1928e-06
+      altcolour: True
+    part_136:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.018702825649221e-06 -2.3896405465500144e-06 -1.2264000000000002e-06
+      altcolour: True
+    part_137:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.089434724619801e-06 3.967279701676906e-07 -1.26e-06
+      altcolour: True
+    part_138:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.5347557875986516e-06 1.7863964110004084e-06 -1.2935999999999998e-06
+      altcolour: True
+    part_139:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -6.593169042116697e-07 -3.0155333491475e-06 -1.3272e-06
+      altcolour: True
+    part_140:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.5434362443101673e-06 2.6562431966500593e-06 -1.3608000000000004e-06
+      altcolour: True
+    part_141:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.9179313451782523e-06 -9.11551043456281e-07 -1.3944e-06
+      altcolour: True
+    part_142:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.7532588167281685e-06 -1.2922777906118354e-06 -1.4279999999999995e-06
+      altcolour: True
+    part_143:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.1511571245802781e-06 2.7978854005352083e-06 -1.4616000000000005e-06
+      altcolour: True
+    part_144:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.0354515357365315e-06 -2.8252109792263045e-06 -1.4952000000000007e-06
+      altcolour: True
+    part_145:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.656877538530605e-06 1.3759986574308678e-06 -1.5288000000000005e-06
+      altcolour: True
+    part_146:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.871767227670758e-06 7.755380261961421e-07 -1.5624e-06
+      altcolour: True
+    part_147:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.5840978302814186e-06 -2.4966013025907235e-06 -1.5960000000000005e-06
+      altcolour: True
+    part_148:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -5.151423750532316e-07 2.8928588236249122e-06 -1.6296000000000009e-06
+      altcolour: True
+    part_149:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.318945929057076e-06 -1.773655980766736e-06 -1.6632000000000009e-06
+      altcolour: True
+    part_150:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.8886828037098326e-06 -2.56868486878216e-07 -1.6967999999999994e-06
+      altcolour: True
+    part_151:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.9430724390265208e-06 2.1259786773849664e-06 -1.730399999999999e-06
+      altcolour: True
+    part_152:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 3.2932612290150096e-09 -2.859701584856448e-06 -1.7639999999999998e-06
+      altcolour: True
+    part_153:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.919925511387427e-06 2.0909615660560877e-06 -1.7976000000000002e-06
+      altcolour: True
+    part_154:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.8066401446451086e-06 -2.430589608849749e-07 -1.8312000000000001e-06
+      altcolour: True
+    part_155:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.216167828762664e-06 -1.703150350015341e-06 -1.8648000000000001e-06
+      altcolour: True
+    part_156:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 4.797414390828731e-07 2.7304808352425208e-06 -1.8984000000000001e-06
+      altcolour: True
+    part_157:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.4781331319369814e-06 -2.3177787737983472e-06 -1.9319999999999995e-06
+      altcolour: True
+    part_158:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.63245592348098e-06 7.044092921944588e-07 -1.9656e-06
+      altcolour: True
+    part_159:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.395135784718356e-06 1.2474469659114116e-06 -1.9992e-06
+      altcolour: True
+    part_160:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -9.148426972066032e-07 -2.514037986858541e-06 -2.0328000000000007e-06
+      altcolour: True
+    part_161:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.0137346700961604e-06 2.4478425314233406e-06 -2.0664000000000002e-06
+      altcolour: True
+    part_162:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.3769283369692644e-06 -1.1089687465896088e-06 -2.1000000000000002e-06
+      altcolour: True
+    part_163:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.475771047145998e-06 -7.796850403294949e-07 -2.1336e-06
+      altcolour: True
+    part_164:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.2848816722037766e-06 2.2230436901767872e-06 -2.1672e-06
+      altcolour: True
+    part_165:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 5.480092338416427e-07 -2.479065396399275e-06 -2.2008e-06
+      altcolour: True
+    part_166:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.054501363511204e-06 1.440861127010721e-06 -2.2344e-06
+      altcolour: True
+    part_167:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.4581429273951046e-06 3.214177165269887e-07 -2.268e-06
+      altcolour: True
+    part_168:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.5753881864334913e-06 -1.8736033470416828e-06 -2.3015999999999997e-06
+      altcolour: True
+    part_169:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.0259830840682136e-07 2.4136931344129186e-06 -2.3352e-06
+      altcolour: True
+    part_170:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.682819700927349e-06 -1.6871586807916986e-06 -2.3688000000000005e-06
+      altcolour: True
+    part_171:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.3466741894006332e-06 1.0580401127026066e-07 -2.4024000000000005e-06
+      altcolour: True
+    part_172:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.775093384482942e-06 1.48477186003941e-06 -2.4360000000000005e-06
+      altcolour: True
+    part_173:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -3.0120468439472394e-07 -2.2583072373126453e-06 -2.4696000000000005e-06
+      altcolour: True
+    part_174:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.282216625472469e-06 1.8383444414369115e-06 -2.5032000000000004e-06
+      altcolour: True
+    part_175:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.1500685851067645e-06 -4.810933790201211e-07 -2.5368e-06
+      altcolour: True
+    part_176:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.876297155220765e-06 -1.0780319222130979e-06 -2.5703999999999996e-06
+      altcolour: True
+    part_177:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 6.430423574365717e-07 2.0236799466670656e-06 -2.604e-06
+      altcolour: True
+    part_178:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 8.752058813841779e-07 -1.8885658328982193e-06 -2.6376e-06
+      altcolour: True
+    part_179:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.8810969268350124e-06 7.847068955042238e-07 -2.6711999999999995e-06
+      altcolour: True
+    part_180:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.874981582932563e-06 6.76831606578548e-07 -2.7048000000000003e-06
+      altcolour: True
+    part_181:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -9.038137388578812e-07 -1.7244959163337373e-06 -2.7384000000000003e-06
+      altcolour: True
+    part_182:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -4.861113892555294e-07 1.8355684997395388e-06 -2.7719999999999995e-06
+      altcolour: True
+    part_183:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.5562594726714595e-06 -9.981307999056794e-07 -2.8056e-06
+      altcolour: True
+    part_184:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.7705018082968933e-06 -3.0637674000718723e-07 -2.8392e-06
+      altcolour: True
+    part_185:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.0654058570861934e-06 1.3789599412914186e-06 -2.8728e-06
+      altcolour: True
+    part_186:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.411357300316234e-07 -1.680035638225702e-06 -2.9064e-06
+      altcolour: True
+    part_187:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.1953401420053216e-06 1.1032506265172467e-06 -2.94e-06
+      altcolour: True
+    part_188:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.5643749715252114e-06 -5.829962735183007e-09 -2.9736e-06
+      altcolour: True
+    part_189:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.108920630913009e-06 -1.0082872578464404e-06 -3.0072e-06
+      altcolour: True
+    part_190:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.302704184400347e-07 1.4234342197936152e-06 -3.0408e-06
+      altcolour: True
+    part_191:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 8.207877783943698e-07 -1.0788753694650896e-06 -3.0744e-06
+      altcolour: True
+    part_192:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -1.2563358818737439e-06 2.270597981072859e-07 -3.108e-06
+      altcolour: True
+    part_193:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 1.00780907876741e-06 6.35822538727578e-07 -3.1416000000000005e-06
+      altcolour: True
+    part_194:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -2.8924685071881003e-07 -1.0602081019070025e-06 -3.1752e-06
+      altcolour: True
+    part_195:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -4.5603869471632695e-07 8.861327603251267e-07 -3.2088e-06
+      altcolour: True
+    part_196:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 8.265597601233354e-07 -3.053542253594198e-07 -3.2424e-06
+      altcolour: True
+    part_197:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: -6.91180931448488e-07 -2.8229934467157037e-07 -3.2760000000000005e-06
+      altcolour: True
+    part_198:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 2.476938047472678e-07 5.242095183128787e-07 -3.3096000000000005e-06
+      altcolour: True
+    part_199:
+      material: RBC
+      shape: sphere
+      args: 1e-07
+      coords: 9.923962767414788e-08 -3.2057020494595874e-07 -3.3432000000000004e-06
+      altcolour: True
